@@ -1,33 +1,52 @@
 class nsxv::hiera_override (
-  $override_file = '/etc/hiera/override/plugins_nsxv.yaml',
-  $neutron_bridge = 'br-mgmt',
+  $plugin_name,
 ) {
+  $override_file = "/etc/hiera/override/${plugin_name}.yaml"
   $override_dir = dirname($override_file)
 
-  $network_roles_on_neutron_bridge = inline_template("<%-
-    network_scheme = scope.function_hiera(['network_scheme'])
-    roles = network_scheme['roles']
-  -%>
-<%= roles.key(scope.lookupvar('neutron_bridge')) %>")
-
-  $network_scheme_patch = inline_template("<%-
+  $quantum_settings = inline_template("<%-
     require 'yaml'
-    network_scheme = {}
-    network_scheme['network_scheme'] = scope.function_hiera(['network_scheme'])
-    network_scheme['network_scheme']['roles']['neutron/api'] = scope.lookupvar('neutron_bridge')
+    settings = scope.function_hiera(['quantum_settings'])
+    settings['predefined_networks'] = {}
+    quantum_settings = { 'quantum_settings' => settings }
+  -%>
+<%= quantum_settings.to_yaml %>")
+
+  $network_metadata = inline_template("<%-
+    require 'yaml'
+    delete_roles = ['neutron/floating','neutron/mesh','neutron/private']
+    network_metadata = { 'network_metadata' => scope.function_hiera(['network_metadata']) }
+    nodes = network_metadata['network_metadata']['nodes']
+    nodes.each do |node, meta|
+      (nodes[node]['network_roles']).delete_if { | key, value | delete_roles.include?(key) }
+    end
+  -%>
+<%= network_metadata.to_yaml %>")
+
+  $network_scheme = inline_template("<%-
+    require 'yaml'
+    delete_bridges = ['br-mesh','br-floating']
+    network_scheme = { 'network_scheme' => scope.function_hiera(['network_scheme']) }
+
+    transformations = network_scheme['network_scheme']['transformations']
+    transformations.delete_if { |action| action['action'] == 'add-br' and delete_bridges.include?(action['name']) }
+    transformations.delete_if { |action| action['action'] == 'add-patch' and not (action['bridges'] & delete_bridges).empty? }
+    transformations.delete_if { |action| action['action'] == 'add-port' and delete_bridges.include?(action['bridge']) }
+
+    roles = network_scheme['network_scheme']['roles']
+    roles.delete_if { |role, bridge| delete_bridges.include?(bridge) }
+
+    endpoints = network_scheme['network_scheme']['endpoints']
+    endpoints.delete_if { |bridge, value| delete_bridges.include?(bridge) }
   -%>
 <%= network_scheme.to_yaml %>")
 
-  $neutron_nodes = inline_template("<%-
-    require 'yaml'
-    neutron_nodes = {}
-    nodes = scope.function_hiera_hash(['neutron_nodes'])
-    neutron_nodes['neutron_nodes'] = nodes
-    nodes.each do |node, meta|
-      neutron_nodes['neutron_nodes'][node]['network_roles']['neutron/api'] = neutron_nodes['neutron_nodes'][node]['network_roles'][(scope.lookupvar('network_roles_on_neutron_bridge')).strip]
-    end
+  $neutron_advanced_configuration = inline_template("<%-
+    neutron_advanced_configuration = { 'neutron_advanced_configuration' => scope.function_hiera(['neutron_advanced_configuration']) }
+    neutron_advanced_configuration['neutron_advanced_configuration']['neutron_dvr'] = false
+    neutron_advanced_configuration['neutron_advanced_configuration']['neutron_l2_pop'] = false
   -%>
-<%= neutron_nodes.to_yaml %>")
+<%= neutron_advanced_configuration.to_yaml %>")
 
   file { $override_dir:
     ensure => directory,
@@ -38,22 +57,34 @@ class nsxv::hiera_override (
     order          => 'numeric',
     replace        => true,
   }
+  concat::fragment{ 'quantum_settings':
+    ensure  => present,
+    target  => $override_file,
+    content => $quantum_settings,
+    order   => '01'
+  }
+  concat::fragment{ 'network_metadata':
+    ensure  => present,
+    target  => $override_file,
+    content => regsubst($network_metadata,'---',''),
+    order   => '10'
+  }
   concat::fragment{ 'network_scheme':
     ensure  => present,
     target  => $override_file,
-    content => $network_scheme_patch,
-    order   => '01'
-  }
-  concat::fragment{ 'neutron_nodes':
-    ensure  => present,
-    target  => $override_file,
-    content => regsubst($neutron_nodes,'---',''),
-    order   => '10'
-  }
-  concat::fragment{ 'use_neutron':
-    ensure  => present,
-    target  => $override_file,
-    content => "  use_neutron: true",
+    content => regsubst($network_scheme,'---',''),
     order   => '20'
+  }
+  concat::fragment{ 'neutron_advanced_configuration':
+    ensure  => present,
+    target  => $override_file,
+    content => regsubst($neutron_advanced_configuration,'---',''),
+    order   => '30'
+  }
+
+  file_line {"${plugin_name}_hiera_override":
+    path  => '/etc/hiera.yaml',
+    line  => "  - override/${plugin_name}",
+    after => '  - override/module/%{calling_module}',
   }
 }
