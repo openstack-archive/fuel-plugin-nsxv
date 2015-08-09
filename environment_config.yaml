@@ -1,0 +1,198 @@
+attributes:
+  # Show only if vcenter used
+  metadata:
+    restrictions:
+      - condition: 'settings:common.use_vcenter.value == false'
+        action: 'hide'
+  nsxv_manager_host:
+    value: ''
+    label: 'NSX Manager hostname (or IP)'
+    description: ''
+    weight: 5
+    type: 'text'
+    regex:
+      source: '^.+$'
+      error: 'Hostname must be specified'
+  nsxv_user:
+    value: ''
+    label: 'NSX Manager user'
+    description: ''
+    weight: 10
+    type: 'text'
+    regex:
+      source: '^.+$'
+      error: 'You must specify the user name'
+  nsxv_password:
+    value: ''
+    label: 'NSX Manager password'
+    description: ''
+    weight: 15
+    type: 'password'
+    regex:
+      source: '^.+$'
+      error: 'You must specify the password'
+  nsxv_datacenter_moid:
+    value: ''
+    label: 'Datacenter MoRef ID'
+    description: 'Datacenter MoRef ID for Edge deployment, e.g. datacenter-126'
+    weight: 20
+    type: 'text'
+    regex:
+      source: '^[a-z]+-[a-z0-9]+$'
+      error: 'Invalid datacenter MoRef ID'
+  nsxv_cluster_moid:
+    value: ''
+    label: 'Cluster MoRef IDs for OpenStack VMs'
+    description: 'Comma separated cluster MoRef IDs for OpenStack VMs, e.g. domain-c133,domain-c134'
+    weight: 25
+    type: 'text'
+    regex:
+      source: '^(?:[a-z]+-[a-z0-9]+)(?:,[a-z]+-[a-z0-9]+)*'
+      error: 'Invalid cluster MoRef IDs'
+  nsxv_resource_pool_id:
+    value: ''
+    label: 'Resource pool MoRef ID'
+    description: 'Resource pool MoRef ID for NSX Edge nodes deployment'
+    weight: 35
+    type: 'text'
+    regex:
+      source: '^[a-z]+-[a-z0-9]+$'
+      error: 'Invalid resource pool MoRef ID'
+  nsxv_datastore_id:
+    value: ''
+    label: 'Datastore MoRef ID'
+    description: 'Datastore MoRef ID for NSX Edge nodes deployment'
+    weight: 40
+    type: 'text'
+    regex:
+      source: '^[a-z]+-[a-z0-9]+$'
+      error: 'Invalid datastore MoRef ID'
+  nsxv_external_network:
+    value: ''
+    label: 'External portgroup MoRef ID'
+    description: 'External portgroup MoRef ID for NSX Edge physical connectivity'
+    weight: 45
+    type: 'text'
+    regex:
+      source: '^[a-z]+-[a-z0-9]+$'
+      error: 'Invalid portgroup MoRef ID'
+  nsxv_vdn_scope_id:
+    value: ''
+    label: 'Transport zone MoRef ID'
+    description: 'Transport zone MoRef ID for VXLAN networks'
+    weight: 50
+    type: 'text'
+  nsxv_dvs_id:
+    value: ''
+    label: 'Distributed virtual switch MoRef ID'
+    description: 'DVS MoRef ID connected to Edge cluster'
+    weight: 55
+    type: 'text'
+  nsxv_backup_edge_pool:
+    value: ''
+    label: 'NSX backup Edge pool'
+    description: 'Define backup edge pools management range with the four-tuple: <edge_type>:[edge_size]:<minimum_pooled_edges>:<maximum_pooled_edges>'
+    weight: 60
+    type: 'text'
+    regex:
+      source: '^(?:(?:service|vdr):(?:compact|large|xlarge|quadlarge):[0-9]+:[0-9]+)(?:,(?:service|vdr):(?:compact|large|xlarge|quadlarge):[0-9]+:[0-9]+)*$'
+      error: 'Invalid Edge pool'
+  nsxv_edge_ha:
+    value: true
+    label: 'Enable HA for NSX Edges'
+    description: 'Deploy NSX Edges in HA pair'
+    weight: 65
+    type: 'checkbox'
+  nsxv_insecure:
+    value: false
+    label: 'Verify NSX Manager certificate'
+    description: 'If true, the NSXv server certificate is not verified'
+    weight: 70
+    type: 'checkbox'
+    restrictions:
+      - condition: 'settings:nsxv.nsxv_additional.value == false'
+        action: 'hide'
+  nsxv_ca_file:
+    value: ''
+    label: 'CA certificate file'
+    description: 'Specify a CA certificate file to use in verifying NSX Manager certificate'
+    weight: 71
+    type: 'file'
+    restrictions:
+      - condition: 'settings:nsxv.nsxv_insecure.value == true'
+        action: 'hide'
+  nsxv_mgt_net_moid:
+    value: ''
+    label: 'Metadata portgroup MoRef ID'
+    description: 'Portgroup MoRef ID for metadata proxy management network'
+    weight: 80
+    type: 'text'
+  nsxv_mgt_net_proxy_ips:
+    value: ''
+    label: 'Metadata proxy IP addresses'
+    description: 'Management network IP address for metadata proxy, comma separated'
+    weight: 85
+    type: 'text'
+  nsxv_mgt_net_proxy_netmask:
+    value: ''
+    label: 'Management network netmask'
+    description: 'Management network netmask for metadata proxy'
+    weight: 90
+    type: 'text'
+  nsxv_mgt_net_default_gateway:
+    value: ''
+    label: 'Management network default gateway'
+    description: 'Management network default gateway for metadata proxy'
+    weight: 95
+    type: 'text'
+  nsxv_additional:
+    value: false
+    label: 'Additional settings'
+    description: ''
+    weight: 100
+    type: 'checkbox'
+  nsxv_task_status_check_interval:
+    value: ''
+    label: 'Task status check interval (millisecond)'
+    description: 'Asynchronous task status check interval'
+    weight: 105
+    type: 'text'
+    restrictions:
+      - condition: 'settings:nsxv.nsxv_additional.value == false'
+        action: 'hide'
+  nsxv_maximum_tunnels_per_vnic:
+    value: ''
+    label: 'Maximum tunnels per vnic'
+    description: 'Maximum number of sub interfaces supported per vnic in edge'
+    weight: 110
+    type: 'text'
+    restrictions:
+      - condition: 'settings:nsxv.nsxv_additional.value == false'
+        action: 'hide'
+  nsxv_retries:
+    value: ''
+    label: 'API retries'
+    description: 'Maximum number of API retries'
+    weight: 115
+    type: 'text'
+    restrictions:
+      - condition: 'settings:nsxv.nsxv_additional.value == false'
+        action: 'hide'
+  nsxv_spoofguard_enabled:
+    value: false
+    label: 'Enable SpoofGuard'
+    description: 'Indicates if NSXv SpoofGuard component is used to implement port-security feature'
+    weight: 120
+    type: 'checkbox'
+    restrictions:
+      - condition: 'settings:nsxv.nsxv_additional.value == false'
+        action: 'hide'
+  nsxv_tenant_router_types:
+    value: ''
+    label: 'Tenant router types'
+    description: 'Ordered list of router types to allocate as tenant routers'
+    weight: 125
+    type: 'text'
+    restrictions:
+      - condition: 'settings:nsxv.nsxv_additional.value == false'
+        action: 'hide'
