@@ -1,0 +1,75 @@
+- role: ['primary-controller','controller','compute-vmware']
+  stage: pre_deployment/4010
+  type: puppet
+  parameters:
+    puppet_manifest: puppet/manifests/repo-priority.pp
+    puppet_modules: puppet/modules:/etc/puppet/modules
+    timeout: 120
+- role: ['primary-controller','controller','compute-vmware']
+  stage: post_deployment/4010
+  type: puppet
+  parameters:
+    puppet_manifest: puppet/manifests/hiera-override.pp
+    puppet_modules: puppet/modules:/etc/puppet/modules
+    timeout: 60
+- role: ['primary-controller','controller','compute-vmware']
+  stage: post_deployment/4010
+  type: shell
+  parameters:
+    cmd: if [ -e /etc/hiera/override/plugins.yaml ]; then mv /etc/hiera/override/plugins.yaml /etc/hiera/override/plugins.yaml.nsxv ;fi ; ln -s /etc/hiera/override/plugins_nsxv.yaml /etc/hiera/override/plugins.yaml
+    timeout: 30
+- role: ['primary-controller','controller']
+  stage: post_deployment/4010
+  type: puppet
+  parameters:
+    puppet_manifest: puppet/manifests/nsxv-config.pp
+    puppet_modules: puppet/modules:/etc/puppet/modules
+    timeout: 300
+- role: ['primary-controller']
+  stage: post_deployment/4010
+  type: puppet
+  parameters:
+    puppet_manifest: /etc/puppet/modules/osnailyfacter/modular/openstack-network/db.pp
+    puppet_modules: /etc/puppet/modules
+    timeout: 300
+- role: ['primary-controller']
+  stage: post_deployment/4010
+  type: puppet
+  parameters:
+    puppet_manifest: /etc/puppet/modules/osnailyfacter/modular/openstack-network/keystone.pp
+    puppet_modules: /etc/puppet/modules
+    timeout: 300
+- role: ['primary-controller','controller']
+  stage: post_deployment/4010
+  type: puppet
+  parameters:
+    puppet_manifest: /etc/puppet/modules/osnailyfacter/modular/openstack-haproxy/openstack-haproxy-neutron.pp
+    puppet_modules: /etc/puppet/modules
+    timeout: 300
+- role: ['primary-controller','controller']
+  stage: post_deployment/4010
+  type: puppet
+  parameters:
+    puppet_manifest: puppet/manifests/neutron-install.pp
+    puppet_modules: puppet/modules:/etc/puppet/modules
+    timeout: 900
+- role: ['primary-controller','controller','compute-vmware']
+  stage: post_deployment/4010
+  type: puppet
+  parameters:
+    puppet_manifest: puppet/manifests/nova-config.pp
+    puppet_modules: puppet/modules:/etc/puppet/modules
+    timeout: 300
+- role: ['primary-controller','controller']
+  stage: post_deployment/4010
+  type: puppet
+  parameters:
+    puppet_manifest: puppet/manifests/disable-nova-network.pp
+    puppet_modules: puppet/modules:/etc/puppet/modules
+    timeout: 300
+- role: ['primary-controller','controller','compute-vmware']
+  stage: post_deployment/4010
+  type: shell
+  parameters:
+    cmd: rm -f /etc/hiera/override/plugins_nsxv.yaml /etc/hiera/override/plugins.yaml; if [ -e /etc/hiera/override/plugins.yaml.nsxv ]; then mv -f /etc/hiera/override/plugins.yaml.nsxv /etc/hiera/override/plugins.yaml; fi
+    timeout: 30
