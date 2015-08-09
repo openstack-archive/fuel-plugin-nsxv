@@ -1,6 +1,6 @@
 class nsxv::repo_priority (
-  $plugin_name = 'nsxv',
-  $plugin_version = '1.0.0',
+  $plugin_name,
+  $plugin_version,
 ) {
   if $operatingsystem == 'Ubuntu' {
     include apt
