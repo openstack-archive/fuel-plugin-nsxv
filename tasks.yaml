@@ -1,0 +1,14 @@
+- role: ['primary-controller','controller','compute-vmware']
+  stage: pre_deployment/4010
+  type: puppet
+  parameters:
+    puppet_manifest: puppet/manifests/repo-priority.pp
+    puppet_modules: puppet/modules:/etc/puppet/modules
+    timeout: 120
+- role: ['primary-controller','controller']
+  stage: pre_deployment/4010
+  type: puppet
+  parameters:
+    puppet_manifest: puppet/manifests/patch-neutron-manifest.pp
+    puppet_modules: puppet/modules
+    timeout: 120

@@ -1,0 +1,14 @@
+#!/bin/bash
+# Add here any the actions which are required before plugin build
+# like packages building, packages downloading from mirrors and so on.
+# The script should return 0 if there were no errors.
+
+set -eux
+
+ROOT="$(dirname `readlink -f $0`)"
+
+version=$(sed -rn 's/^version:\s*([0-9.])/\1/p' $ROOT/metadata.yaml)
+name=$(sed -rn 's/^name:\s*(.*)/\1/p' $ROOT/metadata.yaml)
+
+sed -i "s/NAME/$name/" $ROOT/deployment_scripts/puppet/manifests/*.pp
+sed -i "s/VERSION/$version/" $ROOT/deployment_scripts/puppet/manifests/repo-priority.pp
