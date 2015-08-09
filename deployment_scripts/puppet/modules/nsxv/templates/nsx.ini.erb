@@ -1,0 +1,167 @@
+[nsxv]<% settings = scope.lookupvar('settings') %>
+# URL for NSXv manager
+manager_uri = https://<%= settings['nsxv_manager_uri'] %>
+
+# (Optional) If true, the NSXv server certificate is not verified.
+# If false, then the default CA truststore is used for verification.
+# This option is ignored if "ca_file" is set.
+<% if not (settings['nsxv_insecure']).to_s.strip.empty? -%>
+insecure = <%= settings['nsxv_insecure'] %>
+<% else -%>
+# insecure =
+<% end -%>
+
+# (Optional) Specify a CA bundle file to use in verifying the NSXv server certificate.
+<% if not (settings['nsxv_ca_file']).to_s.strip.empty? -%>
+ca_file = <%= settings['nsxv_ca_file'] %>
+<% else -%>
+# ca_file =
+<% end -%>
+
+# User name for NSXv manager
+user = <%= settings['nsxv_user'] %>
+
+# Password for NSXv manager
+password = <%= settings['nsxv_password'] %>
+
+# (Required) Datacenter ID for Edge deployment
+datacenter_moid = <%= settings['nsxv_datacenter_moid'] %>
+
+# (Required) Cluster IDs for clusters containing OpenStack hosts
+cluster_moid = <%= settings['nsxv_cluster_moid'] %>
+
+# (Optional) Deployment Container ID for NSX Edge deployment
+# If not specified, either a default global container will be used, or
+# the resource pool and datastore specified below will be used
+<% if not (settings['nsxv_deployment_container_id']).to_s.strip.empty? -%>
+deployment_container_id = <%= settings['nsxv_deployment_container_id'] %>
+<% else -%>
+# deployment_container_id =
+<% end -%>
+
+# (Optional) Resource pool ID for NSX Edge deployment
+<% if not (settings['nsxv_resource_pool_id']).to_s.strip.empty? -%>
+resource_pool_id = <%= settings['nsxv_resource_pool_id'] %>
+<% else -%>
+# resource_pool_id =
+<% end -%>
+
+# (Optional) Datastore ID for NSX Edge deployment
+<% if not (settings['nsxv_datastore_id']).to_s.strip.empty? -%>
+datastore_id = <%= settings['nsxv_datastore_id'] %>
+<% else -%>
+# datastore_id =
+<% end -%>
+
+# (Required) UUID of logic switch for physical network connectivity
+external_network = <%= settings['nsxv_external_network'] %>
+
+# (Optional) Asynchronous task status check interval
+# default is 2000 (millisecond)
+<% if not (settings['nsxv_task_status_check_interval']).to_s.strip.empty?  -%>
+task_status_check_interval = <%= settings['nsxv_task_status_check_interval'] %>
+<% else -%>
+# task_status_check_interval =
+<% end -%>
+
+# (Optional) Network scope ID for VXLAN virtual wires
+<% if not (settings['nsxv_vdn_scope_id']).to_s.strip.empty?  -%>
+vdn_scope_id = <%= settings['nsxv_vdn_scope_id'] %>
+<% else -%>
+# vdn_scope_id =
+<% end -%>
+
+# (Optional) DVS ID for VLANS
+<% if not (settings['nsxv_dvs_id']).to_s.strip.empty?  -%>
+dvs_id = <%= settings['nsxv_dvs_id'] %>
+<% else -%>
+# dvs_id =
+<% end -%>
+
+# (ListOpt) Define backup edge pool's management range with the four-tuple:
+# <edge_type>:[edge_size]:<minimum_pooled_edges>:<maximum_pooled_edges>.
+# edge_type:'service'(service edge) or 'vdr'(distributed edge).
+# edge_size: 'compact', 'large'(by default), 'xlarge' or 'quadlarge'.
+#
+# By default, edge pool manager would manage service edge
+# with compact&&large size and distributed edge with large size as following:
+# backup_edge_pool = service:large:4:10,service:compact:4:10,vdr:large:4:10
+<% if not (settings['nsxv_backup_edge_pool']).to_s.strip.empty? -%>
+backup_edge_pool = <%= settings['nsxv_backup_edge_pool'] %>
+<% else -%>
+# backup_edge_pool =
+<% end -%>
+
+# (Optional) Maximum number of sub interfaces supported per vnic in edge
+# default is 20
+<% if not (settings['nsxv_maximum_tunnels_per_vnic']).to_s.strip.empty? -%>
+maximum_tunnels_per_vnic = <%= settings['nsxv_maximum_tunnels_per_vnic'] %>
+<% else -%>
+# maximum_tunnels_per_vnic =
+<% end -%>
+
+# Maximum number of API retries
+<% if not (settings['nsxv_retries']).to_s.strip.empty? -%>
+retries = <%= settings['nsxv_retries'] %>
+<% else -%>
+# retries =
+<% end -%>
+
+# (Optional) Network ID for management network connectivity
+<% if not (settings['nsxv_mgt_net_moid']).to_s.strip.empty? -%>
+mgt_net_moid = <%= settings['nsxv_mgt_net_moid'] %>
+<% else -%>
+# mgt_net_moid =
+<% end -%>
+
+# (Optional) Management network IP address for metadata proxy
+<% if not (settings['nsxv_mgt_net_proxy_ips']).to_s.strip.empty? -%>
+mgt_net_proxy_ips = <%= settings['nsxv_mgt_net_proxy_ips'] %>
+<% else -%>
+#mgt_net_proxy_ips =
+<% end -%>
+
+# (Optional) Management network netmask for metadata proxy
+<% if not (settings['nsxv_mgt_net_proxy_netmask']).to_s.strip.empty? -%>
+# mgt_net_proxy_netmask = <%= settings['nsxv_mgt_net_proxy_netmask'] %>
+<% else -%>
+# mgt_net_proxy_netmask =
+<% end -%>
+
+# (Optional) Management network default gateway for metadata proxy
+<% if not (settings['nsxv_mgt_net_default_gateway']).to_s.strip.empty? -%>
+mgt_net_default_gateway = <%= settings['nsxv_mgt_net_default_gateway'] %>
+<% else -%>
+# mgt_net_default_gateway =
+<% end -%>
+
+# (Optional) IP addresses used by Nova metadata service
+nova_metadata_ips = <%= scope.lookupvar('nova_metadata_ips') %>
+
+# (Optional) TCP Port used by Nova metadata server
+nova_metadata_port = <%= scope.lookupvar('nova_metadata_port') %>
+
+# (Optional) Shared secret to sign metadata requests
+metadata_shared_secret = <%= scope.lookupvar('metadata_shared_secret') %>
+
+# (Optional) Indicates if Nsxv spoofguard component is used to implement
+# port-security feature.
+<% if not (settings['nsxv_spoofguard_enabled']).to_s.strip.empty? -%>
+spoofguard_enabled = <%= settings['nsxv_spoofguard_enabled'] %>
+<% else -%>
+# spoofguard_enabled = True
+<% end -%>
+
+# (Optional) Ordered list of router_types to allocate as tenant routers.
+<% if not (settings['nsxv_tenant_router_types']).to_s.strip.empty? -%>
+tenant_router_types = <%= settings['nsxv_tenant_router_types'] %>
+<% else -%>
+# tenant_router_types =
+<% end -%>
+
+# Enable HA for NSX Edges
+<% if not (settings['nsxv_edge_ha']).to_s.strip.empty? -%>
+edge_ha = <%= settings['nsxv_edge_ha'] %>
+<% else -%>
+# edge_ha =
+<% end -%>
