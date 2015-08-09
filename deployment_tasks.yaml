@@ -1,0 +1,36 @@
+- id: hiera-override
+  type: puppet
+  groups: ['primary-controller','controller','compute-vmware']
+  required_for: [netconfig]
+  requires: [globals]
+  parameters:
+    puppet_manifest: puppet/manifests/hiera-override.pp
+    puppet_modules: puppet/modules:/etc/puppet/modules
+    timeout: 120
+- id: compute-vmware-nova-config
+  type: puppet
+  groups: ['compute-vmware']
+  required_for: [top-role-compute-vmware]
+  requires: [top-role-compute]
+  parameters:
+    puppet_manifest: puppet/manifests/compute-vmware-nova-config.pp
+    puppet_modules: puppet/modules:/etc/puppet/modules
+    timeout: 300
+- id: openstack-haproxy-nova-metadata-public_vip
+  type: puppet
+  groups: ['primary-controller','controller']
+  required_for: [openstack-haproxy]
+  requires: [openstack-haproxy-nova]
+  parameters:
+    puppet_manifest: puppet/manifests/haproxy-nova-metadata-config.pp
+    puppet_modules: puppet/modules:/etc/puppet/modules
+    timeout: 120
+- id: nsxv-install
+  type: puppet
+  groups: ['primary-controller','controller']
+  required_for: [openstack-network]
+  requires: [hiera-override]
+  parameters:
+    puppet_manifest: puppet/manifests/nsxv-config.pp
+    puppet_modules: puppet/modules:/etc/puppet/modules
+    timeout: 300

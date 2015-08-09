@@ -104,19 +104,16 @@ attributes:
     weight: 65
     type: 'checkbox'
   nsxv_insecure:
-    value: false
-    label: 'Verify NSX Manager certificate'
-    description: 'If true, the NSXv server certificate is not verified'
+    value: true
+    label: 'Bypass NSX Manager certificate verification'
+    description: ''
     weight: 70
     type: 'checkbox'
-    restrictions:
-      - condition: 'settings:nsxv.nsxv_additional.value == false'
-        action: 'hide'
   nsxv_ca_file:
     value: ''
     label: 'CA certificate file'
     description: 'Specify a CA certificate file to use in verifying NSX Manager certificate'
-    weight: 71
+    weight: 75
     type: 'file'
     restrictions:
       - condition: 'settings:nsxv.nsxv_insecure.value == true'
