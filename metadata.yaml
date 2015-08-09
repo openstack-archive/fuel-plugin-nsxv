@@ -1,0 +1,30 @@
+# Plugin name
+name: nsxv
+# Human-readable name for your plugin
+title: Fuel Nsx-v plugin
+# Plugin version
+version: 1.1.0
+# Description
+description: Nsxv plugin for Fuel provides the functionality to add Vmware Nsx-v SDN for Mirantis OpenStack as network backend using Fuel Web UI in a user-friendly manner
+# Required fuel version
+fuel_version: ['7.0']
+
+# The plugin is compatible with releases in the list
+releases:
+  - os: ubuntu
+    version: 2015.1.0-7.0
+    mode: ['ha', 'multinode']
+    deployment_scripts_path: deployment_scripts/
+    repository_path: repositories/ubuntu
+  - os: centos
+    version: 2015.1.0-7.0
+    mode: ['ha', 'multinode']
+    deployment_scripts_path: deployment_scripts/
+    repository_path: repositories/centos
+
+# Version of plugin package
+package_version: '2.0.0'
+licenses: ['Apache 2.0']
+authors: ['Igor Zinovik, Mirantis', 'Artem Savinov, Mirantis']
+homepage: https://github.com/stackforge/fuel-plugin-nsxv
+groups: ['network']
