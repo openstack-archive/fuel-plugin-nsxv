@@ -1,6 +1,9 @@
 class nsxv (
   $nsxv_config_dir = '/etc/neutron/plugins/vmware',
+  $neutron_plugin_file = '/etc/neutron/plugin.ini',
+  $neutron_plugin_name = 'python-vmware-nsx',
 ) {
+
   $quantum_settings = hiera('quantum_settings')
 
   $settings = hiera('nsxv')
@@ -10,11 +13,6 @@ class nsxv (
   $nova_metadata_port = '8775'
   $metadata_shared_secret = $quantum_settings['metadata']['metadata_proxy_shared_secret']
 
-  $nsxv_config_dirs = [ '/etc/neutron', '/etc/neutron/plugins', '/etc/neutron/plugins/vmware' ]
-  file { $nsxv_config_dirs:
-    ensure => directory
-  }
-
   if ! $settings['nsxv_insecure'] {
     $ca_certificate_content = $settings['nsxv_ca_file']['content']
     $ca_file = "${nsxv_config_dir}/ca.pem"
@@ -22,12 +20,17 @@ class nsxv (
     file { "${ca_file}":
       ensure  => present,
       content => $ca_certificate_content,
-      require => File[$nsxv_config_dirs],
+      require => Exec['nsxv_config_dir'],
     }
   }
 
-  package { 'python-vmware-nsx':
+  package { $neutron_plugin_name:
     ensure => latest,
+  }
+
+  $nsxv_config_dirs = [ '/etc/neutron', '/etc/neutron/plugins', '/etc/neutron/plugins/vmware' ]
+  file { $nsxv_config_dirs:
+    ensure => directory
   }
 
   file { "${nsxv_config_dir}/nsx.ini":
@@ -35,11 +38,10 @@ class nsxv (
     content => template("${module_name}/nsx.ini.erb"),
     require => File[$nsxv_config_dirs],
   }
-
-  file { '/etc/neutron/plugin.ini':
+  file { $neutron_plugin_file:
     ensure  => link,
     target  => "${nsxv_config_dir}/nsx.ini",
     replace => true,
-    require => File[$nsxv_config_dirs],
+    require => File[$nsxv_config_dirs]
   }
 }
