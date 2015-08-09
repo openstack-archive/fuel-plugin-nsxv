@@ -1,0 +1,195 @@
+attributes:
+  # Show only if vcenter used
+  metadata:
+    restrictions:
+      - condition: 'settings:common.use_vcenter.value == false'
+        action: 'hide'
+  nsxv_edge_ha:
+    value: true
+    label: 'edge_ha'
+    description: 'Enable HA for NSX Edges'
+    weight: 1
+    type: 'checkbox'
+  nsxv_insecure:
+    value: false
+    label: 'insecure'
+    description: 'If true, the NSXv server certificate is not verified'
+    weight: 2
+    type: 'checkbox'
+  nsxv_ca_file:
+    value: ''
+    label: 'ca_file'
+    description: 'Specify a CA bundle file to use in verifying the NSXv server certificate'
+    weight: 3
+    type: 'file'
+    restrictions:
+      - condition: 'settings:nsxv.nsxv_insecure.value == true'
+        action: 'hide'
+  nsxv_manager_uri:
+    value: ''
+    label: 'manager_uri'
+    description: 'URL for NSXv manager'
+    weight: 5
+    type: 'text'
+    regex:
+      source: '^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$'
+      error: 'Invalid IP address'
+  nsxv_user:
+    value: ''
+    label: 'user'
+    description: 'User name for NSXv manager'
+    weight: 10
+    type: 'text'
+    regex:
+      source: '^.+$'
+      error: 'You must specify the user name'
+  nsxv_password:
+    value: ''
+    label: 'password'
+    description: 'Password for NSXv manager'
+    weight: 15
+    type: 'text'
+    regex:
+      source: '^.+$'
+      error: 'You must specify the password'
+  nsxv_datacenter_moid:
+    value: ''
+    label: 'datacenter_moid'
+    description: 'Datacenter ID for Edge deployment'
+    weight: 20
+    type: 'text'
+    regex:
+      source: '^[a-z]+-[a-z0-9]+$'
+      error: 'Invalid datacenter_moid'
+  nsxv_cluster_moid:
+    value: ''
+    label: 'cluster_moid'
+    description: 'Cluster IDs for clusters containing OpenStack hosts'
+    weight: 25
+    type: 'text'
+    regex:
+      source: '^(?:[a-z]+-[a-z0-9]+)(?:,[a-z]+-[a-z0-9]+)*'
+      error: 'Invalid cluster_moid'
+  nsxv_deployment_container_id:
+    value: ''
+    label: 'deployment_container_id'
+    description: 'Deployment Container ID for NSX Edge deployment. If not specified, either a default global container will be used, or the resource pool and datastore specified below will be used'
+    weight: 30
+    type: 'text'
+  nsxv_resource_pool_id:
+    value: ''
+    label: 'resource_pool_id'
+    description: 'Resource pool ID for NSX Edge deployment'
+    weight: 35
+    type: 'text'
+  nsxv_datastore_id:
+    value: ''
+    label: 'datastore_id'
+    description: 'Datastore ID for NSX Edge deployment'
+    weight: 40
+    type: 'text'
+  nsxv_external_network:
+    value: ''
+    label: 'external_network'
+    description: 'UUID of logic switch for physical network connectivity'
+    weight: 45
+    type: 'text'
+    regex:
+      source: '^[a-z]+-[a-z0-9]+$'
+      error: 'Invalid external_network'
+  nsxv_vdn_scope_id:
+    value: ''
+    label: 'vdn_scope_id'
+    description: 'Network scope ID for VXLAN virtual wires'
+    weight: 50
+    type: 'text'
+  nsxv_dvs_id:
+    value: ''
+    label: 'dvs_id'
+    description: 'DVS ID for VLANS'
+    weight: 55
+    type: 'text'
+  nsxv_backup_edge_pool:
+    value: ''
+    label: 'backup_edge_pool'
+    description: 'Define backup edge pools management range with the four-tuple: <edge_type>:[edge_size]:<minimum_pooled_edges>:<maximum_pooled_edges>'
+    weight: 60
+    type: 'text'
+    regex:
+      source: '^(?:(?:service|vdr):(?:compact|large|xlarge|quadlarge):[0-9]+:[0-9]+)(?:,(?:service|vdr):(?:compact|large|xlarge|quadlarge):[0-9]+:[0-9]+)*$'
+      error: 'Invalid backup_edge_pool'
+  nsxv_mgt_net_moid:
+    value: ''
+    label: 'mgt_net_moid'
+    description: 'Network ID for management network connectivity'
+    weight: 80
+    type: 'text'
+  nsxv_mgt_net_proxy_ips:
+    value: ''
+    label: 'mgt_net_proxy_ips'
+    description: 'Management network IP address for metadata proxy'
+    weight: 85
+    type: 'text'
+  nsxv_mgt_net_proxy_netmask:
+    value: ''
+    label: 'mgt_net_proxy_netmask'
+    description: 'Management network netmask for metadata proxy'
+    weight: 90
+    type: 'text'
+  nsxv_mgt_net_default_gateway:
+    value: ''
+    label: 'mgt_net_default_gateway'
+    description: 'Management network default gateway for metadata proxy'
+    weight: 95
+    type: 'text'
+  nsxv_additional:
+    value: false
+    label: 'Additional settings'
+    description: ''
+    weight: 100
+    type: 'checkbox'
+  nsxv_task_status_check_interval:
+    value: ''
+    label: 'task_status_check_interval'
+    description: 'Asynchronous task status check interval'
+    weight: 105
+    type: 'text'
+    restrictions:
+      - condition: 'settings:nsxv.nsxv_additional.value == false'
+        action: 'hide'
+  nsxv_maximum_tunnels_per_vnic:
+    value: ''
+    label: 'maximum_tunnels_per_vnic'
+    description: 'Maximum number of sub interfaces supported per vnic in edge'
+    weight: 110
+    type: 'text'
+    restrictions:
+      - condition: 'settings:nsxv.nsxv_additional.value == false'
+        action: 'hide'
+  nsxv_retries:
+    value: ''
+    label: 'retries'
+    description: 'Maximum number of API retries'
+    weight: 115
+    type: 'text'
+    restrictions:
+      - condition: 'settings:nsxv.nsxv_additional.value == false'
+        action: 'hide'
+  nsxv_spoofguard_enabled:
+    value: ''
+    label: 'spoofguard_enabled'
+    description: 'Management network default gateway for metadata proxy'
+    weight: 120
+    type: 'text'
+    restrictions:
+      - condition: 'settings:nsxv.nsxv_additional.value == false'
+        action: 'hide'
+  nsxv_tenant_router_types:
+    value: ''
+    label: 'tenant_router_types'
+    description: 'Ordered list of router_types to allocate as tenant routers'
+    weight: 125
+    type: 'text'
+    restrictions:
+      - condition: 'settings:nsxv.nsxv_additional.value == false'
+        action: 'hide'
