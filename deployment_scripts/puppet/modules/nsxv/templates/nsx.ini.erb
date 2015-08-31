@@ -1,0 +1,81 @@
+[nsxv]
+# URL for NSXv manager
+manager_uri = https://<%= scope.function_hiera(['nsxv_manager_uri']) %>
+
+# User name for NSXv manager
+user = <%= scope.function_hiera(['nsxv_user']) %>
+
+# Password for NSXv manager
+password = <%= scope.function_hiera(['nsxv_password']) %>
+
+# (Required) Datacenter ID for Edge deployment
+datacenter_moid = <%= scope.function_hiera(['nsxv_datacenter_moid']) %>
+
+# (Required) Cluster IDs for clusters containing OpenStack hosts
+cluster_moid = <%= scope.function_hiera(['nsxv_cluster_moid']) %>
+
+# (Optional) Deployment Container ID for NSX Edge deployment
+# If not specified, either a default global container will be used, or
+# the resource pool and datastore specified below will be used
+# deployment_container_id = <%= scope.function_hiera(['nsxv_deployment_container_id','']) %>
+
+# (Optional) Resource pool ID for NSX Edge deployment
+# resource_pool_id = <%= scope.function_hiera(['nsxv_resource_pool_id','']) %>
+
+# (Optional) Datastore ID for NSX Edge deployment
+datastore_id = <%= scope.function_hiera(['nsxv_datastore_id','']) %>
+
+# (Required) UUID of logic switch for physical network connectivity
+external_network = <%= scope.function_hiera(['nsxv_external_network'],'') %>
+
+# (Optional) Asynchronous task status check interval
+# default is 2000 (millisecond)
+# task_status_check_interval = <%= scope.function_hiera(['nsxv_task_status_check_interval','2000']) %>
+
+# (Optional) Network scope ID for VXLAN virtual wires
+vdn_scope_id = <%= scope.function_hiera(['nsxv_vdn_scope_id']) %>
+
+# (Optional) DVS ID for VLANS
+dvs_id = <%= scope.function_hiera(['nsxv_dvs_id']) %>
+
+# (ListOpt) Define backup edge pool's management range with the four-tuple:
+# <edge_type>:[edge_size]:<minimum_pooled_edges>:<maximum_pooled_edges>.
+# edge_type:'service'(service edge) or 'vdr'(distributed edge).
+# edge_size: 'compact', 'large'(by default), 'xlarge' or 'quadlarge'.
+#
+# By default, edge pool manager would manage service edge
+# with compact&&large size and distributed edge with large size as following:
+# backup_edge_pool = service:large:4:10,service:compact:4:10,vdr:large:4:10
+backup_edge_pool = <%= scope.function_hiera(['nsxv_backup_edge_pool']) %>
+
+# (Optional) Maximum number of sub interfaces supported per vnic in edge
+# default is 20
+# maximum_tunnels_per_vnic = <%= scope.function_hiera(['nsxv_maximum_tunnels_per_vnic','20']) %>
+
+# Maximum number of API retries
+# retries = <%= scope.function_hiera(['nsxv_retries','10']) %>
+
+# (Optional) Network ID for management network connectivity
+# mgt_net_moid = <%= scope.function_hiera(['nsxv_mgt_net_moid','']) %>
+
+# (Optional) Management network IP address for metadata proxy
+# mgt_net_proxy_ips = <%= scope.function_hiera(['nsxv_mgt_net_proxy_ips','']) %>
+
+# (Optional) Management network netmask for metadata proxy
+# mgt_net_proxy_netmask = <%= scope.function_hiera(['nsxv_mgt_net_proxy_netmask','']) %>
+
+# (Optional) Management network default gateway for metadata proxy
+# mgt_net_default_gateway = <%= scope.function_hiera(['nsxv_mgt_net_default_gateway','']) %>
+
+# (Optional) IP addresses used by Nova metadata service <%- network_metadata = scope.function_hiera(['network_metadata']) -%>
+nova_metadata_ips = <%= network_metadata['vips']['public']['ipaddr'] %>
+
+# (Optional) TCP Port used by Nova metadata server
+nova_metadata_port = <%= scope.function_hiera(['nsxv_nova_metadata_port','8775']) %>
+
+# (Optional) Shared secret to sign metadata requests <%- quantum_settings = scope.function_hiera(['quantum_settings']) -%>
+metadata_shared_secret = <%= quantum_settings['metadata']['metadata_proxy_shared_secret'] %>
+
+# (Optional) Indicates if Nsxv spoofguard component is used to implement
+# port-security feature.
+# spoofguard_enabled = <%= scope.function_hiera(['nsxv_spoofguard_enabled','True']) %>
