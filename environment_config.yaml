@@ -1,0 +1,97 @@
+attributes:
+  # Show only if vcenter used
+  metadata:
+    restrictions:
+      - condition: "settings:common.use_vcenter.value == 'true'"
+        message: "Used only with Vcenter."
+        action: "hide"
+  nsxv_manager_uri:
+    value: ''
+    label: 'manager_uri'
+    description: 'The IP address of Nsx-v manager'
+    weight: 15
+    type: "text"
+#    regex:
+#      source: '^$'
+#      error: "Invalid IP address"
+  nsxv_user:
+    value: 'admin'
+    label: 'user'
+    description: 'Password to connect to the Nsx-v manager'
+    weight: 40
+    type: "text"
+#    regex:
+#      source: '^$'
+#      error: ""
+  nsxv_password:
+    value: ''
+    label: 'password'
+    description: 'Password to connect to the Nsx-v manager'
+    weight: 50
+    type: "text"
+#    regex:
+#      source: '^$'
+#      error: ""
+  nsxv_datacenter_moid:
+    value: ''
+    label: 'datacenter_moid'
+    description: ''
+    weight: 50
+    type: "text"
+#    regex:
+#      source: '^$'
+#      error: ""
+  nsxv_cluster_moid:
+    value: ''
+    label: 'cluster_moid'
+    description: ''
+    weight: 50
+    type: "text"
+#    regex:
+#      source: '^$'
+#      error: ""
+  nsxv_datastore_id:
+    value: ''
+    label: 'datastore_id'
+    description: ''
+    weight: 50
+    type: "text"
+#    regex:
+#      source: '^$'
+#      error: ""
+  nsxv_external_network:
+    value: ''
+    label: 'external_network'
+    description: ''
+    weight: 50
+    type: "text"
+#    regex:
+#      source: '^$'
+#      error: ""
+  nsxv_vdn_scope_id:
+    value: ''
+    label: 'vdn_scope_id'
+    description: ''
+    weight: 50
+    type: "text"
+#    regex:
+#      source: '^$'
+#      error: ""
+  nsxv_dvs_id:
+    value: ''
+    label: 'nsxv_dvs_id'
+    description: ''
+    weight: 50
+    type: "text"
+#    regex:
+#      source: '^$'
+#      error: ""
+  nsxv_backup_edge_pool:
+    value: 'service:compact:1:2,vdr:compact:1:2'
+    label: 'backup_edge_pool'
+    description: ''
+    weight: 50
+    type: "text"
+#    regex:
+#      source: '^$'
+#      error: ""
