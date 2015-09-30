@@ -1,7 +1,7 @@
 notice('MODULAR: openstack-network-controller.pp(fuel-plugin-nsxv patch)')
 
 $core_plugin = 'vmware_nsx.neutron.plugins.vmware.plugin.NsxVPlugin'
-$policy_file = '/etc/neutron/policy.json'
+$policy_file = '/etc/neutron/policy.d/nsxv.json'
 
 $neutron_config  = hiera_hash('quantum_settings')
 $rabbit_hash     = hiera_hash('rabbit_hash', {})

@@ -2,7 +2,7 @@ attributes:
   # Show only if vcenter used
   metadata:
     restrictions:
-      - condition: 'settings:common.use_vcenter.value == false'
+      - condition: "settings:common.use_vcenter.value == false or cluster:net_provider != 'neutron'"
         action: 'hide'
   nsxv_manager_host:
     value: ''
