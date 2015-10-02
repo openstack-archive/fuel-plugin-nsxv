@@ -17,7 +17,7 @@ class nsxv (
     $ca_certificate_content = $settings['nsxv_ca_file']['content']
     $ca_file = "${nsxv_config_dir}/ca.pem"
 
-    file { "${ca_file}":
+    file { $ca_file:
       ensure  => present,
       content => $ca_certificate_content,
       require => Exec['nsxv_config_dir'],

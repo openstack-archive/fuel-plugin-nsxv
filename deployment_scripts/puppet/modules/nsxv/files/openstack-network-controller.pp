@@ -133,10 +133,10 @@ class { 'openstack::network':
   nova_admin_password    => $nova_hash['user_password'],
   nova_url               => "http://${nova_endpoint}:8774/v2",
 }
-file { "${policy_file}":
+file { $policy_file:
   ensure  => file,
   source  => 'file:///etc/puppet/files/policy.json',
-  mode    => 644,
+  mode    => '0644',
   require => Class['openstack::network'],
   replace => true,
 }

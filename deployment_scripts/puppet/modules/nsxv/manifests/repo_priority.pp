@@ -15,7 +15,7 @@ class nsxv::repo_priority (
       match  => '^\s*Pin-Priority.*$',
       notify => Exec['apt_update']
     }
-    exec { "rename_nsxv_repo_file":
+    exec { 'rename_nsxv_repo_file':
       path      => '/usr/bin:/usr/sbin:/bin',
       command   => "mv -f ${source_file} ${target_file}",
       onlyif    => "test ! -e ${target_file}",

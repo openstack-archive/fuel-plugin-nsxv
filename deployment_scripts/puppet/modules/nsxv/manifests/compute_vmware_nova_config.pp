@@ -6,7 +6,7 @@ class nsxv::compute_vmware_nova_config (
   $neutron_metadata_proxy_secret = $neutron_config['metadata']['metadata_proxy_shared_secret']
   $nova_parameters = {
     'neutron/service_metadata_proxy'       => { value => 'True' },
-    'neutron/metadata_proxy_shared_secret' => { value => "${neutron_metadata_proxy_secret}" }
+    'neutron/metadata_proxy_shared_secret' => { value => $neutron_metadata_proxy_secret }
   }
 
   $management_vip            = hiera('management_vip')

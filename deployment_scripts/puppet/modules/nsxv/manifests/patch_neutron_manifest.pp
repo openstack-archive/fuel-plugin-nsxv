@@ -5,13 +5,13 @@ class nsxv::patch_neutron_manifest (
   file { $manifest_file:
     ensure  => file,
     source  => "puppet:///modules/${module_name}/openstack-network-controller.pp",
-    mode    => 644,
+    mode    => '0644',
     replace => true,
   }
   file { $policy_file:
     ensure  => file,
     source  => "puppet:///modules/${module_name}/policy.json",
-    mode    => 644,
+    mode    => '0644',
     replace => true,
   }
 }
