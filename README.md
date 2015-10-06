@@ -4,32 +4,15 @@ Fuel NSXv plugin
 Fuel NSXv plugin enables OpenStack deployment which utilizes vCenter with
 installed and configured VMware NSXv network virtualization software.
 
-Supported features:
-- VM port provisioning
-- Security groups
+Plugin is compatible with Fuel 7.0
 
-How to build plugin:
+See doc/ for documentation.
 
-* Install fuel plugin builder:
+To build HTML variant of documentation install sphinx document generator,
+easiest way to do this is to use requirements.txt file in doc/ directory.
 
-..
-  pip install fuel-plugin-builder
+  $ pip install -r doc/requirements.txt
+  $ cd doc/source
+  $ make html
 
-* Clone plugin source repository
-
-..
-  git clone https://github.com/stackforge/fuel-plugin-nsxv
-
-  cd fuel-plugin-nsxv/
-
-  fpb --build .
-
-Installation
-============
-
-* Upload the plugin to Fuel master node
-
-* Install the plugin using Fuel command line client:
-
-..
-  fuel plugins --install nsxv-1.0-1.0.0-1.noarch.rpm
+After that you can find HTML documentation in _build/ directory.
