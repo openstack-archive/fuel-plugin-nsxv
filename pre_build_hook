@@ -12,4 +12,5 @@ name=$(sed -rn 's/^name:\s*(.*)/\1/p' $ROOT/metadata.yaml)
 
 sed -i "s/NAME/$name/" $ROOT/deployment_scripts/puppet/manifests/hiera-override.pp
 sed -i "s/NAME/$name/" $ROOT/deployment_scripts/puppet/manifests/repo-priority.pp
+sed -i "s/NAME/$name/" $ROOT/post_install.sh
 sed -i "s/VERSION/$version/" $ROOT/deployment_scripts/puppet/manifests/repo-priority.pp
