@@ -44,6 +44,11 @@ def clear_restriction():
         except:
             pass
 
+        try:
+            release.roles_metadata['compute']['restrictions'] = [ {'condition' : 'settings:nsxv.metadata.enabled == true', 'message' : "You can't use compute role with enabled nsxv plugin" } ]
+        except:
+            pass
+
     db().commit()
     return 0
 
