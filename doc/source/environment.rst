@@ -52,17 +52,3 @@ for GRE tunneling which does not have an effect with NSXv.
 
 .. image:: /image/neutron-network-settings.png
    :scale: 70 %
-
-Public network assignment
--------------------------
-
-If you are going to use *Cinder proxy to VMware datastore* or *Compute VMware*
-roles in your environment then you have to assign public IP addresses to all
-nodes, because all communication between OpenStack services (Cinder and Nova in
-this case) and vCenter happens via Public network.
-
-You can achieve this by enabling following option (*Settings -> Public network
-assignment -> Assign public network to all nodes*):
-
-.. image:: /image/public-network-assignment.png
-   :scale: 70 %
