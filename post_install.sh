@@ -37,13 +37,6 @@ def clear_restriction():
         except:
             pass
 
-        release.roles_metadata = deepcopy(release.roles_metadata)
-
-        try:
-            release.roles_metadata['compute-vmware']['public_ip_required'] = True
-        except:
-            pass
-
     db().commit()
     return 0
 
