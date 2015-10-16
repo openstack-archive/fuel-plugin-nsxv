@@ -30,16 +30,6 @@ Plugin contains the following settings:
    cluster where OpenStack VM instances will be launched.  You must obtain IDs
    for clusters that you specified on VMware tab.
 
-   .. warning::
-
-      In this list you must also enumerate clusters that form Resource pool for
-      NSX Edge nodes (see next setting).  This must be done, because default
-      firewall rules that are applied to cluster allow DHCP traffic only within
-      this cluster.  Typically NSX Edges run in separate management cluster.
-      If you do not explicitly specify that cluster MoRef ID then virtual
-      machines would not have connectivity with DHCP service provided by NSX
-      Edge nodes.
-
 #. Resource pool MoRef ID -- resource pool for NSX Edge nodes deployment.
 
 #. Datastore MoRef ID -- datastore for NSX Edge nodes.
