@@ -12,3 +12,10 @@
     puppet_manifest: puppet/manifests/patch-neutron-manifest.pp
     puppet_modules: puppet/modules
     timeout: 120
+- role: ['primary-controller']
+  stage: post_deployment/6010
+  type: puppet
+  parameters:
+    puppet_manifest: puppet/manifests/upload-glance-image.pp
+    puppet_modules: puppet/modules
+    timeout: 300
