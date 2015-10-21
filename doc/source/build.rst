@@ -11,7 +11,7 @@ After that you can build plugin:
 
 .. code-block:: bash
 
-  $ git clone https://github.com/stackforge/fuel-plugin-nsxv
+  $ git clone https://git.openstack.org/openstack/fuel-plugin-nsxv
 
   $ cd fuel-plugin-nsxv/
 

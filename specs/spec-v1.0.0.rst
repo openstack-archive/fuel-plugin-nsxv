@@ -377,4 +377,4 @@ References
 .. [1] NSX for vSphere getting started guide
   https://communities.vmware.com/servlet/JiveServlet/previewBody/27705-102-1-37093/NSXv-GSG.pdf
 .. [2] Fuel Plug-in Guide http://docs.mirantis.com/openstack/fuel/fuel-6.0/plugin-dev.html
-.. [3] https://github.com/stackforge/fuel-library
+.. [3] https://github.com/openstack/fuel-library
