@@ -70,9 +70,9 @@ Plugin contains the following settings:
    Edge size Edge VM parameters
    ========= ===================
    compact   1 vCPU 512  MB vRAM
-   large     2 vCPU 2014 MB vRAM
-   xlarge    4 vCPU 1024 MB vRAM
-   quadlarge 6 vCPU 8192 MB vRAM
+   large     2 vCPU 1024 MB vRAM
+   quadlarge 4 vCPU 1024 MB vRAM
+   xlarge    6 vCPU 8192 MB vRAM
    ========= ===================
 
    Consider following example values:
