@@ -9,6 +9,9 @@ Contents:
    :maxdepth: 2
 
 
+   plugin-1.0.0spec
+   plugin-2.0.0spec
+
 
 Indices and tables
 ==================
