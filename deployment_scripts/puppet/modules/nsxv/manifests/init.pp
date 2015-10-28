@@ -1,7 +1,7 @@
 class nsxv (
   $nsxv_config_dir = '/etc/neutron/plugins/vmware',
-  $neutron_plugin_file = '/etc/neutron/plugin.ini',
   $neutron_plugin_name = 'python-vmware-nsx',
+  $neutron_plugin_file = '/etc/neutron/plugin.ini',
 ) {
 
   $quantum_settings = hiera('quantum_settings')
@@ -38,6 +38,11 @@ class nsxv (
     content => template("${module_name}/nsx.ini.erb"),
     require => File[$nsxv_config_dirs],
   }
+  file { '/etc/default/neutron-server':
+    ensure  => file,
+    content => "CONF_ARG='--config-file ${neutron_plugin_file}'",
+  }
+  # need for work db_sync
   file { $neutron_plugin_file:
     ensure  => link,
     target  => "${nsxv_config_dir}/nsx.ini",
