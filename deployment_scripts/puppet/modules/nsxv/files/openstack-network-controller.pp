@@ -1,7 +1,6 @@
 notice('MODULAR: openstack-network-controller.pp(fuel-plugin-nsxv patch)')
 
-$core_plugin = 'vmware_nsx.neutron.plugins.vmware.plugin.NsxVPlugin'
-$policy_file = '/etc/neutron/policy.d/nsxv.json'
+$core_plugin = 'vmware_nsx.plugin.NsxVPlugin'
 
 $neutron_config  = hiera_hash('quantum_settings')
 $rabbit_hash     = hiera_hash('rabbit_hash', {})
@@ -132,11 +131,4 @@ class { 'openstack::network':
   nova_admin_tenant_name => $nova_hash['tenant'],
   nova_admin_password    => $nova_hash['user_password'],
   nova_url               => "http://${nova_endpoint}:8774/v2",
-}
-file { $policy_file:
-  ensure  => file,
-  source  => 'file:///etc/puppet/files/policy.json',
-  mode    => '0644',
-  require => Class['openstack::network'],
-  replace => true,
 }
