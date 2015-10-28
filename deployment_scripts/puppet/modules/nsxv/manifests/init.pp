@@ -27,6 +27,9 @@ class nsxv (
   package { $neutron_plugin_name:
     ensure => latest,
   }
+  package { 'tcl-testvm':
+    ensure => latest,
+  }
 
   $nsxv_config_dirs = [ '/etc/neutron', '/etc/neutron/plugins', '/etc/neutron/plugins/vmware' ]
   file { $nsxv_config_dirs:
