@@ -10,7 +10,9 @@ To build HTML variant of documentation you need to install sphinx document
 generator, easiest way to do this is to use doc/requirements.txt.
 
   $ pip install -r doc/requirements.txt
+
   $ cd doc/source
+
   $ make html
 
 After that you can start exploring documentation in doc/source/_build/html/ directory.

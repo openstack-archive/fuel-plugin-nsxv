@@ -4,9 +4,9 @@
 
  http://creativecommons.org/licenses/by/3.0/legalcode
 
-===========================================
-Fuel Plugin for VMware NSXv SDN integration
-===========================================
+==================================================
+Fuel Plugin v1.0.0 for VMware NSXv SDN integration
+==================================================
 
 NSXv plugin for Fuel provides an ability to deploy OpenStack cluster that is
 utilizing vCenter computing clusters and NSXv network virtualization
