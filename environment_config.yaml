@@ -193,3 +193,49 @@ attributes:
     restrictions:
       - condition: 'settings:nsxv.nsxv_additional.value == false'
         action: 'hide'
+  nsxv_exclusive_router_appliance_size:
+    value: ''
+    label: 'Exclusive router type'
+    description: 'Edge form factor for exclusive router'
+    regex: ^(compact|large|quadlarge|xlarge)$
+    weight: 130
+    type: 'text'
+    restrictions:
+      - condition: 'settings:nsxv.nsxv_additional.value == false'
+        action: 'hide'
+  nsxv_edge_appliance_user:
+    value: ''
+    label: 'User for Edge node login'
+    description: ''
+    weight: 135
+    type: 'text'
+    restrictions:
+      - condition: 'settings:nsxv.nsxv_additional.value == false'
+        action: 'hide'
+  nsxv_edge_appliance_password:
+    value: ''
+    label: 'Password for Edge node login'
+    description: 'Password for Edge node login'
+    weight: 140
+    type: 'password'
+    restrictions:
+      - condition: 'settings:nsxv.nsxv_additional.value == false'
+        action: 'hide'
+  nsxv_dhcp_lease_time:
+    value: ''
+    label: 'DHCP lease time'
+    description: ''
+    weight: 145
+    type: 'text'
+    restrictions:
+      - condition: 'settings:nsxv.nsxv_additional.value == false'
+        action: 'hide'
+  nsxv_locking_coordinator_url:
+    value: ''
+    label: 'Coordinator url'
+    description: 'URL for distributed locking coordinator'
+    weight: 150
+    type: 'text'
+    restrictions:
+      - condition: 'settings:nsxv.nsxv_additional.value == false'
+        action: 'hide'

@@ -146,3 +146,48 @@ tenant_router_types = <%= settings['nsxv_tenant_router_types'] %>
 
 # Enable HA for NSX Edges
 edge_ha = <%= settings['nsxv_edge_ha'] %>
+
+# (Optional) Edge appliance size to be used for creating exclusive router.
+# Valid values: ['compact', 'large', 'xlarge', 'quadlarge']
+# This exclusive_router_appliance_size will be picked up if --router-size
+# parameter is not specified while doing neutron router-create
+# exclusive_router_appliance_size = compact
+<% if not (settings['nsxv_exclusive_router_appliance_size']).to_s.strip.empty? -%>
+exclusive_router_appliance_size = <%= settings['nsxv_exclusive_router_appliance_size'] %>
+<% else -%>
+# exclusive_router_appliance_size = compact
+<% end -%>
+
+# (Optional) Enable an administrator to configure the edge user and password
+# Username to configure for Edge appliance login
+<% if not (settings['nsxv_edge_appliance_user']).to_s.strip.empty? -%>
+edge_appliance_user = <%= settings['nsxv_edge_appliance_user'] %>
+<% else -%>
+# edge_appliance_user =
+<% end -%>
+
+# (Optional) Password to configure for Edge appliance login
+# edge_appliance_password =
+<% if not (settings['nsxv_edge_appliance_password']).to_s.strip.empty? -%>
+edge_appliance_password = <%= settings['nsxv_edge_appliance_password'] %>
+<% else -%>
+# edge_appliance_password =
+<% end -%>
+
+# (Optional) URL for distributed locking coordination resource for lock manager
+# This value is passed as a parameter to tooz coordinator.
+# By default, value is None and oslo_concurrency is used for single-node
+# lock management.
+<% if not (settings['nsxv_locking_coordinator_url']).to_s.strip.empty? -%>
+locking_coordinator_url = <%= settings['nsxv_locking_coordinator_url'] %>
+<% else -%>
+# locking_coordinator_url =
+<% end -%>
+
+# (Optional) DHCP lease time
+# dhcp_lease_time = 86400
+<% if not (settings['nsxv_dhcp_lease_time']).to_s.strip.empty? -%>
+dhcp_lease_time = <%= settings['nsxv_dhcp_lease_time'] %>
+<% else -%>
+# dhcp_lease_time = 86400
+<% end -%>
