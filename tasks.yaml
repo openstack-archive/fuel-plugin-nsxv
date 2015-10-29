@@ -12,3 +12,10 @@
     puppet_manifest: puppet/manifests/upload-glance-image.pp
     puppet_modules: puppet/modules
     timeout: 300
+- role: ['primary-controller']
+  stage: post_deployment/6010
+  type: puppet
+  parameters:
+    puppet_manifest: puppet/manifests/create-predefined-newtrok.pp
+    puppet_modules: puppet/modules
+    timeout: 300

@@ -142,6 +142,30 @@ attributes:
     description: 'Management network default gateway for metadata proxy'
     weight: 95
     type: 'text'
+  nsxv_floating_ip_range:
+    value: ''
+    label: 'Floating Ip ranges'
+    description: 'Comma separated ip addresses allocation pool for external network, e.g. "start_ip_address,end_ip_address"'
+    weight: 96
+    type: 'text'
+  nsxv_floating_ip_cidr:
+    value: ''
+    label: 'Floating Ip CIDR'
+    description: 'Floating ip network in CIDR notation'
+    weight: 97
+    type: 'text'
+  nsxv_internal_ip_cidr:
+    value: ''
+    label: 'Internal network CIDR'
+    description: 'Comma separated ip addresses allocation pool for internal network inside nsx-v, e.g. "start_ip_address,end_ip_address"'
+    weight: 98
+    type: 'text'
+  nsxv_internal_ip_dns:
+    value: ''
+    label: 'Dns for inetrnal network'
+    description: 'Comma separated ip addresses of dns server for internal network'
+    weight: 99
+    type: 'text'
   nsxv_additional:
     value: false
     label: 'Additional settings'
