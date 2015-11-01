@@ -22,11 +22,19 @@ Documentation contents:
 .. toctree::
    :maxdepth: 2
 
-   build
-   installation
-   environment
-   configuration
-   usage
+   /source/build
+   /source/installation
+   /source/environment
+   /source/configuration
+   /source/usage
+
+Testing documents:
+
+.. toctree::
+   :glob:
+   :maxdepth: 1
+
+   test_plan/*
 
 Pre-built package of the plugin you can find in
 `Fuel Plugin Catalog <https://www.mirantis.com/products/openstack-drivers-and-plugins/fuel-plugins>`_.
