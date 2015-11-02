@@ -25,6 +25,14 @@
     puppet_manifest: puppet/manifests/haproxy-nova-metadata-config.pp
     puppet_modules: puppet/modules:/etc/puppet/modules
     timeout: 120
+- id: haproxy-increase-neutron-timeouts
+  type: puppet
+  groups: ['primary-controller','controller']
+  required_for: [openstack-haproxy]
+  parameters:
+    puppet_manifest: puppet/manifests/haproxy-neutron-timeouts.pp
+    puppet_modules: puppet/modules:/etc/puppet/modules
+    timeout: 30
 - id: nsxv-install
   type: puppet
   groups: ['primary-controller','controller']
