@@ -44,6 +44,15 @@ $syslog_log_facility_neutron  = hiera('syslog_log_facility_neutron', 'LOG_LOCAL4
 $queue_provider  = hiera('queue_provider', 'rabbitmq')
 $amqp_hosts      = split(hiera('amqp_hosts', ''), ',')
 
+case hiera('nsxv_fuel_version') {
+  '7.0': {
+      $auth_url = "http://${service_endpoint}:35357/v2.0"
+  }
+  default: {
+      $auth_url = "http://${service_endpoint}:5000"
+  }
+}
+
 class { 'l23network' :
   use_ovs => false
 }
@@ -101,7 +110,7 @@ class { 'openstack::network':
 
   # keystone
   admin_password    => $neutron_user_password,
-  auth_url          => "http://${service_endpoint}:5000",
+  auth_url          => $auth_url,
   identity_uri      => "http://${service_endpoint}:35357",
   neutron_url       => "http://${neutron_endpoint}:9696",
   admin_tenant_name => $keystone_tenant,

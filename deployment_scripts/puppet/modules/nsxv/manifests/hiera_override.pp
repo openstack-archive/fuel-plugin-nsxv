@@ -87,4 +87,10 @@ class nsxv::hiera_override (
     line  => "  - override/${plugin_name}",
     after => '  - override/module/%{calling_module}',
   }
+  file_line {"${plugin_name}_hiera_override_pre_deployment":
+    path  => '/etc/hiera.yaml',
+    line  => "  - override/${plugin_name}_pre_deployment",
+    after => "  - override/${plugin_name}",
+    require => File_line["${plugin_name}_hiera_override"],
+  }
 }
