@@ -142,6 +142,36 @@ attributes:
     description: 'Management network default gateway for metadata proxy'
     weight: 95
     type: 'text'
+  nsxv_floating_ip_range:
+    value: ''
+    label: 'Floating IP ranges'
+    description: 'Dash separated IP addresses allocation pool from external network, e.g. "start_ip_address-end_ip_address"'
+    weight: 96
+    type: 'text'
+  nsxv_floating_net_cidr:
+    value: ''
+    label: 'External network CIDR'
+    description: 'Network in CIDR notation includes floating IP ranges'
+    weight: 97
+    type: 'text'
+  nsxv_floating_net_gw:
+    value: ''
+    label: 'Gateway'
+    description: 'Default gateway for external network, if not defined use first IP of the network address'
+    weight: 97
+    type: 'text'
+  nsxv_internal_net_cidr:
+    value: ''
+    label: 'Internal network CIDR'
+    description: 'Network in CIDR notation for use as internal'
+    weight: 98
+    type: 'text'
+  nsxv_internal_net_dns:
+    value: ''
+    label: 'DNS for internal network'
+    description: 'Comma separated IP addresses of DNS server for internal network'
+    weight: 99
+    type: 'text'
   nsxv_additional:
     value: false
     label: 'Additional settings'
