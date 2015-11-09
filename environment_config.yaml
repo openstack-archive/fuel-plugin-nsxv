@@ -142,17 +142,47 @@ attributes:
     description: 'Management network default gateway for metadata proxy'
     weight: 95
     type: 'text'
+  nsxv_floating_ip_range:
+    value: ''
+    label: 'Floating IP ranges'
+    description: 'Dash separated IP addresses allocation pool from external network, e.g. "start_ip_address-end_ip_address"'
+    weight: 100
+    type: 'text'
+  nsxv_floating_net_cidr:
+    value: ''
+    label: 'External network CIDR'
+    description: 'Network in CIDR notation includes floating IP ranges'
+    weight: 105
+    type: 'text'
+  nsxv_floating_net_gw:
+    value: ''
+    label: 'Gateway'
+    description: 'Default gateway for external network, if not defined use first IP of the network address'
+    weight: 110
+    type: 'text'
+  nsxv_internal_net_cidr:
+    value: ''
+    label: 'Internal network CIDR'
+    description: 'Network in CIDR notation for use as internal'
+    weight: 115
+    type: 'text'
+  nsxv_internal_net_dns:
+    value: ''
+    label: 'DNS for internal network'
+    description: 'Comma separated IP addresses of DNS server for internal network'
+    weight: 120
+    type: 'text'
   nsxv_additional:
     value: false
     label: 'Additional settings'
     description: ''
-    weight: 100
+    weight: 125
     type: 'checkbox'
   nsxv_task_status_check_interval:
     value: ''
     label: 'Task status check interval (millisecond)'
     description: 'Asynchronous task status check interval'
-    weight: 105
+    weight: 130
     type: 'text'
     restrictions:
       - condition: 'settings:nsxv.nsxv_additional.value == false'
@@ -161,7 +191,7 @@ attributes:
     value: ''
     label: 'Maximum tunnels per vnic'
     description: 'Maximum number of sub interfaces supported per vnic in edge'
-    weight: 110
+    weight: 135
     type: 'text'
     restrictions:
       - condition: 'settings:nsxv.nsxv_additional.value == false'
@@ -170,7 +200,7 @@ attributes:
     value: ''
     label: 'API retries'
     description: 'Maximum number of API retries'
-    weight: 115
+    weight: 140
     type: 'text'
     restrictions:
       - condition: 'settings:nsxv.nsxv_additional.value == false'
@@ -179,7 +209,7 @@ attributes:
     value: false
     label: 'Enable SpoofGuard'
     description: 'Indicates if NSXv SpoofGuard component is used to implement port-security feature'
-    weight: 120
+    weight: 145
     type: 'checkbox'
     restrictions:
       - condition: 'settings:nsxv.nsxv_additional.value == false'
@@ -188,17 +218,16 @@ attributes:
     value: ''
     label: 'Tenant router types'
     description: 'Ordered list of router types to allocate as tenant routers'
-    weight: 125
+    weight: 150
     type: 'text'
     restrictions:
       - condition: 'settings:nsxv.nsxv_additional.value == false'
         action: 'hide'
   nsxv_exclusive_router_appliance_size:
     value: ''
-    label: 'Exclusive router type'
+    label: 'Exclusive router size'
     description: 'Edge form factor for exclusive router'
-    regex: ^(compact|large|quadlarge|xlarge)$
-    weight: 130
+    weight: 155
     type: 'text'
     restrictions:
       - condition: 'settings:nsxv.nsxv_additional.value == false'
@@ -207,7 +236,7 @@ attributes:
     value: ''
     label: 'Edge user'
     description: 'User for Edge node login'
-    weight: 135
+    weight: 160
     type: 'text'
     restrictions:
       - condition: 'settings:nsxv.nsxv_additional.value == false'
@@ -216,7 +245,7 @@ attributes:
     value: ''
     label: 'Edge password'
     description: 'Password for Edge node login'
-    weight: 140
+    weight: 165
     type: 'password'
     restrictions:
       - condition: 'settings:nsxv.nsxv_additional.value == false'
@@ -225,7 +254,7 @@ attributes:
     value: ''
     label: 'DHCP lease time'
     description: ''
-    weight: 145
+    weight: 170
     type: 'text'
     restrictions:
       - condition: 'settings:nsxv.nsxv_additional.value == false'
@@ -234,7 +263,7 @@ attributes:
     value: ''
     label: 'Coordinator url'
     description: 'URL for distributed locking coordinator'
-    weight: 150
+    weight: 175
     type: 'text'
     restrictions:
       - condition: 'settings:nsxv.nsxv_additional.value == false'
