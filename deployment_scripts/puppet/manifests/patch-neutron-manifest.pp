@@ -1,3 +1,5 @@
 notice('fuel-plugin-nsxv: patch-neutron-manifest.pp')
 
-class { '::nsxv::patch_neutron_manifest': }
+class { '::nsxv::patch_neutron_manifest': 
+  plugin_name => 'NAME',
+}
