@@ -31,6 +31,13 @@ Pre-built package of the plugin you can find in
 After installation plugin can be used for new OpenStack clusters, it is not
 possible to enable plugin on deployed clusters.
 
+If you update Fuel Master node by applying maintenance updates, you need to
+reinstall the plugin:
+
+   .. code-block:: bash
+
+    [root@nailgun ~] fuel plugins --force --install nsxv-1.0-1.0.0-1.noarch.rpm
+
 Uninstallation
 --------------
 
