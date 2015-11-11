@@ -20,7 +20,7 @@ class nsxv (
     file { $ca_file:
       ensure  => present,
       content => $ca_certificate_content,
-      require => Exec['nsxv_config_dir'],
+      require => File[$nsxv_config_dirs],
     }
   }
 
