@@ -42,11 +42,27 @@ class nsxv::hiera_override (
 <%= network_scheme.to_yaml %>")
 
   $neutron_advanced_configuration = inline_template("<%-
+    require 'yaml'
     neutron_advanced_configuration = { 'neutron_advanced_configuration' => scope.function_hiera(['neutron_advanced_configuration']) }
     neutron_advanced_configuration['neutron_advanced_configuration']['neutron_dvr'] = false
     neutron_advanced_configuration['neutron_advanced_configuration']['neutron_l2_pop'] = false
   -%>
 <%= neutron_advanced_configuration.to_yaml %>")
+
+  $override_testvm_image = inline_template("<%-
+    require 'yaml'
+    test_vm_image = {}
+    test_vm_image['os_name'] = 'TinyCoreLinux'
+    test_vm_image['img_path'] = '/usr/share/tcl-testvm/tcl.vmdk'
+    test_vm_image['container_format'] = 'bare'
+    test_vm_image['min_ram'] = '128'
+    test_vm_image['disk_format'] = 'vmdk'
+    test_vm_image['glance_properties'] = '--property hypervisor_type=vmware --property vmware_disktype=streamOptimized --property vmware_adaptertype=lsiLogic'
+    test_vm_image['img_name'] = 'TestVM-VMDK'
+    test_vm_image['public'] = 'true'
+    override_testvm_image = { 'test_vm_image' => test_vm_image }
+  -%>
+<%= override_testvm_image.to_yaml %>")
 
   file { $override_dir:
     ensure => directory,
@@ -80,6 +96,12 @@ class nsxv::hiera_override (
     target  => $override_file,
     content => regsubst($neutron_advanced_configuration,'---',''),
     order   => '30'
+  }
+  concat::fragment{ 'override-testvm-image':
+    ensure  => present,
+    target  => $override_file,
+    content => regsubst($override_testvm_image,'---',''),
+    order   => '40'
   }
 
   file_line {"${plugin_name}_hiera_override":
