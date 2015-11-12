@@ -13,9 +13,15 @@ class nsxv (
   $nova_metadata_port = '8775'
   $metadata_shared_secret = $quantum_settings['metadata']['metadata_proxy_shared_secret']
 
+  $nsxv_config_dirs = [ '/etc/neutron', '/etc/neutron/plugins', '/etc/neutron/plugins/vmware' ]
+  file { $nsxv_config_dirs:
+    ensure => directory
+  }
+
   if ! $settings['nsxv_insecure'] {
     $ca_certificate_content = $settings['nsxv_ca_file']['content']
-    $ca_file = "${nsxv_config_dir}/ca.pem"
+    $ca_filename = $settings['nsxv_ca_file']['name']
+    $ca_file = "${nsxv_config_dir}/$ca_filename"
 
     file { $ca_file:
       ensure  => present,
@@ -26,11 +32,6 @@ class nsxv (
 
   package { $neutron_plugin_name:
     ensure => latest,
-  }
-
-  $nsxv_config_dirs = [ '/etc/neutron', '/etc/neutron/plugins', '/etc/neutron/plugins/vmware' ]
-  file { $nsxv_config_dirs:
-    ensure => directory
   }
 
   file { "${nsxv_config_dir}/nsx.ini":
