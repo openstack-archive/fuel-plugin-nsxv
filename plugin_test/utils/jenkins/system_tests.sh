@@ -229,6 +229,122 @@ CheckVariables() {
     echo "Error! WORKSPACE is not set!"
     exit $NOWORKSPACE_ERR
   fi
+
+  # Vcenter variables
+  if [ -z "${DISABLE_SSL}" ]; then
+    export DISABLE_SSL="true"
+  fi
+  if [ -z "${VCENTER_USE}" ]; then
+    export VCENTER_USE="true"
+  fi
+  if [ -z "${VCENTER_IP}" ]; then
+    export VCENTER_IP="172.16.0.254"
+  fi
+  if [ -z "${VCENTER_USERNAME}" ]; then
+    export VCENTER_USERNAME="administrator@vsphere.local"
+  fi
+  if [ -z "${VCENTER_PASSWORD}" ]; then
+    echo "Error! VCENTER_PASSWORD is not set!"
+  fi
+  if [ -z "${VC_DATACENTER}" ]; then
+    export VC_DATACENTER="Datacenter"
+  fi
+  if [ -z "${VC_DATASTORE}" ]; then
+    export VC_DATASTORE="nfs"
+  fi
+  if [ -z "${VCENTER_IMAGE_DIR}" ]; then
+    export VCENTER_IMAGE_DIR="/openstack_glance"
+  fi
+  if [ -z "${WORKSTATION_NODES}" ]; then
+    export WORKSTATION_NODES="esxi1 esxi2 esxi3 vcenter trusty"
+  fi
+  if [ -z "${WORKSTATION_IFS}" ]; then
+    export WORKSTATION_IFS="vmnet1 vmnet2"
+  fi
+  if [ -z "${VCENTER_CLUSTERS}" ]; then
+    export VCENTER_CLUSTERS="Cluster1,Cluster2"
+  fi
+  if [ -z "${WORKSTATION_SNAPSHOT}" ]; then
+    export WORKSTATION_SNAPSHOT="nsxv"
+  fi
+  if [ -z "${WORKSTATION_USERNAME}" ]; then
+    echo "Error! WORKSTATION_USERNAME is not set!"
+  fi
+  if [ -z "${WORKSTATION_PASSWORD}" ]; then
+    echo "Error! WORKSTATION_PASSWORD is not set!"
+  fi
+  # NSXv variables
+  if [ -z "${NEUTRON_SEGMENT_TYPE}" ]; then
+    export NEUTRON_SEGMENT_TYPE="tun"
+  fi
+  if [ -z "${NSXV_MANAGER_IP}" ]; then
+    export NSXV_MANAGER_IP="172.16.0.249"
+  fi
+  if [ -z "${NSXV_USER}" ]; then
+    export NSXV_USER='admin'
+  fi
+  if [ -z "${NSXV_PASSWORD}" ]; then
+    echo "Error! NSXV_PASSWORD is not set!"
+  fi
+  if [ -z "${NSXV_DATACENTER_MOID}" ]; then
+    export NSXV_DATACENTER_MOID='datacenter-126'
+  fi
+  if [ -z "${NSXV_CLUSTER_MOID}" ]; then
+    export NSXV_CLUSTER_MOID='domain-c131,domain-c133'
+  fi
+  if [ -z "${NSXV_RESOURCE_POOL_ID}" ]; then
+    export NSXV_RESOURCE_POOL_ID='resgroup-134'
+  fi
+  if [ -z "${NSXV_DATASTORE_ID}" ]; then
+    export NSXV_DATASTORE_ID='datastore-138'
+  fi
+  if [ -z "${NSXV_EXTERNAL_NETWORK}" ]; then
+    export NSXV_EXTERNAL_NETWORK='network-222'
+  fi
+  if [ -z "${NSXV_VDN_SCOPE_ID}" ]; then
+    export NSXV_VDN_SCOPE_ID='vdnscope-1'
+  fi
+  if [ -z "${NSXV_DVS_ID}" ]; then
+    export NSXV_DVS_ID='dvs-141'
+  fi
+  if [ -z "${NSXV_BACKUP_EDGE_POOL}" ]; then
+    export NSXV_BACKUP_EDGE_POOL='service:compact:1:2,vdr:compact:1:2'
+  fi
+  if [ -z "${NSXV_MGT_NET_MOID}" ]; then
+    export NSXV_MGT_NET_MOID='network-222'
+  fi
+  if [ -z "${NSXV_MGT_NET_PROXY_IPS}" ]; then
+    export NSXV_MGT_NET_PROXY_IPS='172.16.0.29'
+  fi
+  if [ -z "${NSXV_MGT_NET_PROXY_NETMASK}" ]; then
+    export NSXV_MGT_NET_PROXY_NETMASK='255.255.255.0'
+  fi
+  if [ -z "${NSXV_MGT_NET_DEFAULT_GW}" ]; then
+    export NSXV_MGT_NET_DEFAULT_GW='172.16.0.1'
+  fi
+  if [ -z "${NSXV_EDGE_HA}" ]; then
+    export NSXV_EDGE_HA='true'
+  fi
+  if [ -z "${NSXV_INSECURE}" ]; then
+    export NSXV_INSECURE='true'
+  fi
+  if [ -z "${JOB_NAME}" ]; then
+    export JOB_NAME="nsxv_system_test"
+  fi
+
+  # Export settings
+  if [ -z "${ADMIN_NODE_MEMORY}" ]; then
+    export ADMIN_NODE_MEMORY=4096
+  fi
+  if [ -z "${ADMIN_NODE_CPU}" ]; then
+    export ADMIN_NODE_CPU=4
+  fi
+  if [ -z "${SLAVE_NODE_MEMORY}" ]; then
+    export SLAVE_NODE_MEMORY=4096
+  fi
+  if [ -z "${SLAVE_NODE_CPU}" ]; then
+    export SLAVE_NODE_CPU=4
+  fi
 }
 
 MakeISO() {
@@ -424,18 +540,40 @@ RunTest() {
     else
         export PYTHONPATH="${PYTHONPATH:+${PYTHONPATH}:}${WORKSPACE}"
         echo ${PYTHONPATH}
-        python plugin_test/run_tests.py -q --nologcapture --with-xunit ${OPTS}
+        python plugin_test/run_tests.py -q --nologcapture --with-xunit ${OPTS} &
 
     fi
-    ec=$?
 
-    # Extract logs using fuel_logs utility
-    if [ "${FUELLOGS_TOOL}" != "no" ]; then
-      for logfile in $(find "${LOGS_DIR}" -name "fail*.tar.xz" -type f);
-      do
-         ./fuel-qa/utils/jenkins/fuel_logs.py "${logfile}" > "${logfile}.filtered.log"
-      done
+    SYSTEST_PID=$!
+
+    if ! ps -p $SYSTEST_PID > /dev/null
+    then
+	echo System tests exited prematurely, aborting
+	exit 1
     fi
+
+    while [ $(virsh net-list | grep $ENV_NAME | wc -l) -ne 5 ];do sleep 10
+	if ! ps -p $SYSTEST_PID > /dev/null
+	then
+	    echo System tests exited prematurely, aborting
+	    exit 1
+	fi
+    done
+    sleep 10
+
+
+    # Configre vcenter nodes and interfaces
+    clean_old_bridges
+    setup_net $ENV_NAME
+    clean_iptables
+    revert_ws "$WORKSTATION_NODES" || { echo "killing $SYSTEST_PID and its childs" && pkill --parent $SYSTEST_PID && kill $SYSTEST_PID && exit 1; }
+
+    echo waiting for system tests to finish
+    wait $SYSTEST_PID
+
+    export RES=$?
+    echo ENVIRONMENT NAME is $ENV_NAME
+    virsh net-dumpxml ${ENV_NAME}_admin | grep -P "(\d+\.){3}" -o | awk '{print "Fuel master node IP: "$0"2"}'
 
     if [ "${KEEP_AFTER}" != "yes" ]; then
       # remove environment after tests
@@ -446,7 +584,7 @@ RunTest() {
       fi
     fi
 
-    exit "${ec}"
+    exit "${RES}"
 }
 
 RouteTasks() {
@@ -468,6 +606,73 @@ RouteTasks() {
   esac
   exit 0
 }
+
+add_interface_to_bridge() {
+  env=$1
+  net_name=$2
+  nic=$3  
+  ip=$4
+
+  for net in $(virsh net-list |grep ${env}_${net_name} |awk '{print $1}');do
+    bridge=`virsh net-info $net |grep -i bridge |awk '{print $2}'`
+    setup_bridge $bridge $nic $ip && echo $net_name bridge $bridge ready
+  done
+}
+
+setup_bridge() {
+  bridge=$1
+  nic=$2
+  ip=$3
+
+  sudo /sbin/brctl stp $bridge off
+  sudo /sbin/brctl addif $bridge $nic
+  # set if with existing ip down
+  for itf in `sudo ip -o addr show to $ip |cut -d' ' -f2`; do
+      echo deleting $ip from $itf
+      sudo ip addr del dev $itf $ip
+  done
+  echo adding $ip to $bridge
+  sudo /sbin/ip addr add $ip dev $bridge
+  echo $nic added to $bridge
+  sudo /sbin/ip link set dev $bridge up
+  if sudo /sbin/iptables-save |grep $bridge | grep -i reject| grep -q FORWARD;then
+    sudo /sbin/iptables -D FORWARD -o $bridge -j REJECT --reject-with icmp-port-unreachable
+    sudo /sbin/iptables -D FORWARD -i $bridge -j REJECT --reject-with icmp-port-unreachable
+  fi
+}
+
+clean_old_bridges() {
+  for intf in $WORKSTATION_IFS; do
+    for br in `/sbin/brctl show | grep -v "bridge name" | cut -f1 -d'	'`; do 
+      /sbin/brctl show $br| grep -q $intf && sudo /sbin/brctl delif $br $intf \
+        && sudo /sbin/ip link set dev $br down && echo $intf deleted from $br
+    done
+  done
+}
+
+clean_iptables() {
+  sudo /sbin/iptables -F
+  sudo /sbin/iptables -t nat -F
+  sudo /sbin/iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+}
+
+revert_ws() {
+  for i in $1
+  do
+    vmrun -T ws-shared -h https://localhost:443/sdk -u $WORKSTATION_USERNAME -p $WORKSTATION_PASSWORD listRegisteredVM | grep -q $i || { echo "VM $i does not exist"; continue; }
+    echo vmrun: reverting $i to $WORKSTATION_SNAPSHOT 
+    vmrun -T ws-shared -h https://localhost:443/sdk -u $WORKSTATION_USERNAME -p $WORKSTATION_PASSWORD revertToSnapshot "[standard] $i/$i.vmx" $WORKSTATION_SNAPSHOT || { echo "Error: revert of $i failed";  return 1; }
+    echo vmrun: starting $i
+    vmrun -T ws-shared -h https://localhost:443/sdk -u $WORKSTATION_USERNAME -p $WORKSTATION_PASSWORD start "[standard] $i/$i.vmx" || { echo "Error: $i failed to start";  return 1; }
+  done
+}
+
+setup_net() {
+  env=$1
+  add_interface_to_bridge $env private vmnet2 10.0.0.1/24
+  add_interface_to_bridge $env public vmnet1 172.16.0.1/24
+}
+
 
 # MAIN
 
