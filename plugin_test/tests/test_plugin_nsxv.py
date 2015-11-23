@@ -604,10 +604,10 @@ class TestNSXvPlugin(TestBasic):
 
         # create security group with rules for ssh and ping
         security_group = {}
-        security_group[os_actions.get_tenant(SERVTEST_TENANT).id] =\
-            os_actions.create_sec_group_for_ssh()
+        security_group[os_conn.get_tenant(SERVTEST_TENANT).id] =\
+            os_conn.create_sec_group_for_ssh()
         sec_group = security_group[
-            os_actions.get_tenant(SERVTEST_TENANT).id].id
+            os_conn.get_tenant(SERVTEST_TENANT).id].id
 
         self.create_instances(
             os_conn=os_conn, vm_count=1,
