@@ -17,16 +17,18 @@ Through documentation we use term "NSX" and "NSXv" interchangeably, both of
 these term refer to `VMware NSX virtualized network platform
 <https://www.vmware.com/products/nsx>`_.
 
-Documentation contents:
+Documentation contents
+======================
 
 .. toctree::
    :maxdepth: 2
 
-   build
-   installation
-   environment
-   configuration
-   usage
+   source/build
+   source/installation
+   source/environment
+   source/configuration
+   source/usage
+
 
 Pre-built package of the plugin you can find in
 `Fuel Plugin Catalog <https://www.mirantis.com/products/openstack-drivers-and-plugins/fuel-plugins>`_.
