@@ -24,19 +24,13 @@ Yes
 **Steps**
 ::
 
- Copy plugin to to the Fuel master node using scp.
- Install plugin
- fuel plugins --install plugin-name-1.0-0.0.1-0.noarch.rpm
- Ensure that plugin is installed successfully using cli, run command 'fuel plugins list'.
- Connect to the Fuel web UI.
- Create a new environment using the Fuel UI Wizard:
- add name of env and select release version with OS
- as hypervisor type: select vcenter check box and Qemu radio button
- network setup : Neutron with tunnel segmentation
- storage backends: default
- additional services: all by default
- Click on the Settings tab and check that section of  NSXv  plugin is displayed with all required GUI elements.
- Section of  NSXv plugin is displayed with all required GUI elements.
+ Connect to fuel node via ssh.
+ Upload plugin.
+ Install plugin.
+
+**Expected result**
+
+Ensure that plugin is installed successfully using cli, run command 'fuel plugins'. Check name, version and package version of plugin.
 
 TC-002: Verify that Fuel VMware NSXv plugin  is uninstalled.
 -------------------------------------------------------------
@@ -61,19 +55,15 @@ Yes
 **Steps**
 ::
 
+ Connect to fuel node with preinstalled plugin via ssh.
  Remove plugin from master node
- fuel plugins --remove plugin-name==1.0.0
- Verify that plugin is removed, run command 'fuel plugins'.
  Connect to the Fuel web UI.
- Create a new environment using the Fuel UI Wizard:
- add name of env and select release version with OS
- as hypervisor type: select vcenter check box and Qemu radio button
- network setup : Neutron with tunnel segmentation.
- storage backhands: default
- additional services: all by default
-
+ Create a new environment.
  Click on the Settings tab and check that section of NSXv plugin is not displayed.
- Section of NSXv  plugin is not displayed.
+
+**Expected result**
+
+Verify that plugin is removed, run command 'fuel plugins'. Section of NSXv  plugin is not displayed.
 
 TC-003: Deploy cluster with plugin and vmware datastore backend.
 ----------------------------------------------------------------
@@ -152,5 +142,8 @@ No
  Deploy cluster
 
  Run OSTF
- Cluster should be deployed and all OSTF test cases should be passed.
 
+**Expected result**
+
+Cluster should be deployed and all OSTF test cases should be passed besides
+exceptions that are described in Limitation section of Test plan.

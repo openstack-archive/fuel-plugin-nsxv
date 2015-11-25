@@ -6,7 +6,7 @@ Setup for system tests
 
 **ID**
 
-TO DO
+nsxv_setup_system
 
 **Description**
 ::
@@ -69,7 +69,11 @@ Yes
  Deploy cluster
 
  Run OSTF
- Cluster should be deployed and all OSTF test cases should be passed.
+
+**Expected result**
+
+Cluster should be deployed and all OSTF test cases should be passed besides
+exceptions that are described in Limitation section of Test plan.
 
 TC-061: Check abilities to create and terminate networks on NSX.
 ----------------------------------------------------------------
@@ -105,7 +109,11 @@ Yes
  Check that network net_01 is not present in the vSphere.
  Add private network net_01.
 
- Check that networks is  present in the vSphere. Networks net_01 and  net_02 should be added.
+ Check that networks is  present in the vSphere.
+
+**Expected result**
+
+Networks net_01 and net_02 should be added.
 
 TC-062: Check abilities to assign multiple vNIC to a single VM.
 ---------------------------------------------------------------
@@ -138,14 +146,18 @@ Yes
  Check abilities to assign multiple vNIC net01 and net02 to VM_1 .
 
  Check abilities to assign multiple vNIC net01 and net02 to VM_2.
- Send icmp ping from VM _1 to VM_2  and vice versa.VM_1 and VM_2 should be attached to multiple vNIC net01 and net02.  Pings should get a response.
+ Send icmp ping from VM _1 to VM_2  and vice versa.VM_1 and VM_2 should be attached to multiple vNIC net01 and net02.
+
+**Expected result**
+
+Pings should get a response.
 
 TC-063: Check connection between VMs in one tenant.
 ---------------------------------------------------
 
 **ID**
 
-TO DO
+nsxv_connectivity_in_one_tenant
 
 **Description**
 ::
@@ -172,7 +184,10 @@ Yes
  Launch instance VM_2 with image TestVM-TCL and flavor m1.tiny in vcenter2 az.
 
  Verify that VMs on same tenants should communicate between each other. Send icmp ping from VM _1 to VM_2  and vice versa.
- Pings should get a response
+
+**Expected result**
+
+Pings should get a response
 
 TC-064: Check connectivity between VMs attached to different networks with a router between them.
 -------------------------------------------------------------------------------------------------
@@ -221,7 +236,10 @@ Yes
  Detach net_02 from Router_01 and attach to Router_02
 
  Verify that VMs of different networks should communicate between each other. Send icmp ping from VM 1 to VM3, VM_4 to VM_2 and vice versa
- Pings should get a response.
+
+**Expected result**
+
+Pings should get a response.
 
 TC-065: Check connectivity between VMs attached on the same provider network with shared router.
 ------------------------------------------------------------------------------------------------
@@ -257,7 +275,10 @@ Yes
 
  Verify that VMs of  same provider network should communicate
  between each other. Send icmp ping from VM _1 to VM_2  and vice versa.
- Pings should get a response.
+
+**Expected result**
+
+Pings should get a response.
 
 TC-066: Check connectivity between VMs attached on the same provider network with distributed router.
 -----------------------------------------------------------------------------------------------------
@@ -296,7 +317,10 @@ Yes
 
  Verify that VMs of  same provider network should communicate
  between each other. Send icmp ping from VM _1 to VM_2  and vice versa.
- Pings should get a response.
+
+**Expected result**
+
+Pings should get a response.
 
 TC-067: Check connectivity between VMs attached on the same provider network with exclusive router.
 ---------------------------------------------------------------------------------------------------
@@ -334,7 +358,11 @@ Yes
  Launch instance VM_2  in the provider network  with image TestVMDK-TCL and flavor m1.tiny in the vcenter2 az.
 
  Verify that VMs of  same provider network should communicate
- between each other. Send icmp ping from VM _1 to VM_2  and vice versa. Pings should get a response.
+ between each other. Send icmp ping from VM _1 to VM_2  and vice versa.
+
+**Expected result**
+
+Pings should get a response.
 
 TC-068: Check isolation between VMs in different tenants.
 ---------------------------------------------------------
@@ -386,7 +414,11 @@ Yes
  Launch instance VM_2
 
  Verify that VMs on different tenants should not communicate
- between each other. Send icmp ping from VM _1 of admin tenant to VM_2  of test_tenant and vice versa. Pings should not get a response.
+ between each other. Send icmp ping from VM _1 of admin tenant to VM_2  of test_tenant and vice versa.
+
+**Expected result**
+
+Pings should not get a response.
 
 TC-069: Check connectivity between VMs with same ip in different tenants.
 -------------------------------------------------------------------------
@@ -437,7 +469,11 @@ Yes
  In tenant ‘test_2’  add  VM_3 of vcenter1  in net1 with ip 10.0.0.4 and  ‘SG_1’ as security group.
  In tenant ‘test_2’  add  VM_4 of  vcenter2 in net1 with ip 10.0.0.5 and  ‘SG_1’ as security group.
  Verify that VMs with same ip on different tenants should communicate
- between each other. Send icmp ping from VM _1 to VM_3,  VM_2 to Vm_4 and vice versa. Pings should  get a response.
+ between each other. Send icmp ping from VM _1 to VM_3,  VM_2 to Vm_4 and vice versa.
+
+**Expected result**
+
+Pings should get a response.
 
 TC-070: Check connectivity Vms to public network.
 -------------------------------------------------
@@ -467,7 +503,11 @@ Yes
  Create net01: net01_subnet, 192.168.112.0/24 and attach it to the router04
  Launch instance VM_1 of vcenter1 AZ with image TestVM-TCL and flavor m1.tiny in the net_04.
  Launch instance VM_1 of vcenter2 AZ with image TestVM-TCL and flavor m1.tiny in the net_01.
- Send ping from instances VM_1 and VM_2 to 8.8.8.8 or other outside ip. Pings should  get a response
+ Send ping from instances VM_1 and VM_2 to 8.8.8.8 or other outside ip.
+
+**Expected result**
+
+Pings should get a response
 
 TC-071: Check connectivity Vms to public network with floating ip.
 ------------------------------------------------------------------
@@ -498,7 +538,11 @@ Yes
 
  Launch instance VM_1 of vcenter2 AZ with image TestVM-TCL and flavor m1.tiny in the net_01. Associate floating ip.
 
- Send ping from instances VM_1 and VM_2 to 8.8.8.8 or other outside ip. Pings should  get a response
+ Send ping from instances VM_1 and VM_2 to 8.8.8.8 or other outside ip.
+
+**Expected result**
+
+Pings should get a response
 
 TC-072: Check abilities to create and delete security group.
 ------------------------------------------------------------
@@ -555,7 +599,10 @@ Yes
 
  Check ping between VM_1 and VM_2 and vice verse
  Check SSH from VM_1 to VM_2 and vice verse
- We should have the ability to send ICMP and TCP traffic between VMs in different tenants.
+
+**Expected result**
+
+We should have the ability to send ICMP and TCP traffic between VMs in different tenants.
 
 TC-073: Verify that only the associated MAC and IP addresses can communicate on the logical port.
 -------------------------------------------------------------------------------------------------
@@ -588,7 +635,10 @@ Yes
  Confirm that the instance cannot communicate with that IP address.
  Configure a new MAC address on the instance associated with the logical port.
  Confirm that the instance cannot communicate with that MAC address and the original IP address.
- Instance should not communicate with new ip and mac addresses but it should communicate with old IP.
+
+**Expected result**
+
+Instance should not communicate with new ip and mac addresses but it should communicate with old IP.
 
 TC-075: Check creation instance in the one group simultaneously.
 ----------------------------------------------------------------
@@ -625,7 +675,10 @@ Yes
  Check connection between VMs (ping, ssh)
 
  Delete all VMs from horizon simultaneously.
- All instance should be created without any error.
+
+**Expected result**
+
+All instance should be created without any error.
 
 TC-076: Check that environment support assigning public network to all nodes
 ----------------------------------------------------------------------------
@@ -638,7 +691,6 @@ nsxv_public_network_to_all_nodes
 ::
 
  Verifies that checkbox "Assign public network to all nodes" works as designed.
-
  Assuming default installation has been done with unchecked option "Assign public network to all nodes".
 
 **Complexity**
@@ -653,12 +705,15 @@ Yes
 ::
 
  Connect through ssh to Controller node.
- Run 'ifconfig'There is an interface with ip from public network IP Range (Networks tab).
+ Run 'ifconfig'. There is an interface with ip from public network IP Range (Networks tab).
  Connect through ssh to compute-vmware node.
- Run 'ifconfig'There is no interface with ip from public network IP Range.
+ Run 'ifconfig'. There is no interface with ip from public network IP Range.
  Redeploy environment with checked option Public network assignment -> Assign public network to all nodes.Option is checked after deploy.
  Connect through ssh to Controller node.
- Run 'ifconfig'There is an interface with ip from public network IP Range.
+ Run 'ifconfig'. There is an interface with ip from public network IP Range.
  Connect through ssh to compute-vmware node.
- Run 'ifconfig'There is an interface with ip from public network IP Range also.
+ Run 'ifconfig'. There is an interface with ip from public network IP Range also.
 
+**Expected result**
+
+"Assign public network to all nodes" works as designed.
