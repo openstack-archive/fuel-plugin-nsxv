@@ -11,8 +11,8 @@ generator, easiest way to do this is to use doc/requirements.txt.
 
   $ pip install -r doc/requirements.txt
 
-  $ cd doc/
+  $ cd doc/user
 
   $ make html
 
-After that you can start exploring documentation in doc/_build/html/ directory.
+After that you can start exploring documentation in doc/user/source/_build/html/ directory.
