@@ -64,7 +64,12 @@ No
  Service name: vmcluster2
  Datastore regex: .*
  Deploy cluster
- Run OSTFCluster should be deployed and all OSTF test cases should be passed.
+ Run OSTF
+
+**Expected result**
+
+Cluster should be deployed and all OSTF test cases should be passed besides
+exceptions that are described in Limitation section of Test plan.
 
 TC-032: Deploy cluster with Fuel NSXv plugin and Ceph for Glance and Cinder.
 -----------------------------------------------------------------------------
@@ -135,7 +140,12 @@ No
  Datastore regex: .*
 
  Deploy cluster
- Run OSTFCluster should be deployed and all OSTF test cases should be passed.
+ Run OSTF
+
+**Expected result**
+
+Cluster should be deployed and all OSTF test cases should be passed besides
+exceptions that are described in Limitation section of Test plan.
 
 TC-034: Deploy cluster with Fuel VMware NSXv plugin and ceilometer.
 --------------------------------------------------------------------
@@ -204,7 +214,12 @@ No
  Datastore regex:.*
 
  Deploy cluster
- Run OSTF. Cluster should be deployed and all OSTF test cases should be passed.
+ Run OSTF.
+
+**Expected result**
+
+Cluster should be deployed and all OSTF test cases should be passed besides
+exceptions that are described in Limitation section of Test plan.
 
 TC-035: Deploy cluster with Fuel VMware NSXv plugin, Ceph for Cinder and VMware datastore backend for Glance.
 -------------------------------------------------------------------------------------------------------------
@@ -279,3 +294,7 @@ No
  Deploy cluster
  Run OSTF
 
+**Expected result**
+
+Cluster should be deployed and all OSTF test cases should be passed besides
+exceptions that are described in Limitation section of Test plan.

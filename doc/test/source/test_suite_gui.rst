@@ -11,7 +11,7 @@ nsxv_plugin
 **Description**
 ::
 
- Verify that all elements of NSXv plugin section require GUI regiments.
+ Verify that all elements of NSXv plugin section meets the requirements.
 
 **Complexity**
 
@@ -32,5 +32,8 @@ Yes
 
  Verify that user can enabled. Enable NSXv plugin by click on check box ‘NSXv  plugin’.
  Verify that all labels of NSXv plugin section have same font style and color.
- Verify that all elements of NSXv plugin section are vertical aligned. All elements of NSXv plugin section are required GUI regiments.
+ Verify that all elements of NSXv plugin section are vertical aligned.
 
+**Expected result**
+
+All elements of NSXv plugin section meets the requirements.

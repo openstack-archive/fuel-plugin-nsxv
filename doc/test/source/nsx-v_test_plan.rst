@@ -1,5 +1,5 @@
 ==================================
-Test Plan for NSXv plugin v.1.0.0
+Test Plan for NSXv plugin v.1.1.0
 ==================================
 
 .. contents:: Table of contents
@@ -58,6 +58,9 @@ Plugin (or its components) has the following limitations:
 * VMware NSXv plugin can be enabled only with Neutron tunnel segmentation.
 * Enviroment with enabled VMware NSXv plugin can't contains compute nodes.
 * Only VMware NSX Manager Virtual Appliance 6.1.4 or later is supported.
+
+Running OSTF right after plugin installation can cause some of the tests to
+fail due to of absent default networks net04 and net04_ext.
 
 Product compatibility matrix
 ============================
