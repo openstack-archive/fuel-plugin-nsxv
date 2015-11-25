@@ -21,7 +21,7 @@ class nsxv (
   if ! $settings['nsxv_insecure'] {
     $ca_certificate_content = $settings['nsxv_ca_file']['content']
     $ca_filename = $settings['nsxv_ca_file']['name']
-    $ca_file = "${nsxv_config_dir}/$ca_filename"
+    $ca_file = "${nsxv_config_dir}/${ca_filename}"
 
     file { $ca_file:
       ensure  => present,
