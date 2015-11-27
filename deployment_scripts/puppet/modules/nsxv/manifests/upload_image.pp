@@ -5,7 +5,7 @@ class nsxv::upload_image (
   $os_auth_url,
   $disk_format = 'vmdk',
   $container_format = 'bare',
-  $public = 'true',
+  $public = true,
   $img_name = 'TestVM-TCL',
   $img_path = '/usr/share/tcl-testvm/tcl.vmdk',
   $min_ram = 128,
