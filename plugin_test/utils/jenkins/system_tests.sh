@@ -214,20 +214,20 @@ CheckVariables() {
     echo "Error! JOB_NAME is not set!"
     exit $NOJOBNAME_ERR
   fi
-
   if [ -z "${ISO_PATH}" ]; then
     echo "Error! ISO_PATH is not set!"
     exit $NOISOPATH_ERR
   fi
-
   if [ -z "${TASK_NAME}" ]; then
     echo "Error! TASK_NAME is not set!"
     exit $NOTASKNAME_ERR
   fi
-
   if [ -z "${WORKSPACE}" ]; then
     echo "Error! WORKSPACE is not set!"
     exit $NOWORKSPACE_ERR
+  fi
+  if [ -z "${POOL_PUBLIC}" ]; then
+    export POOL_PUBLIC='172.16.0.0/24:24'
   fi
 
   # Vcenter variables
@@ -245,6 +245,7 @@ CheckVariables() {
   fi
   if [ -z "${VCENTER_PASSWORD}" ]; then
     echo "Error! VCENTER_PASSWORD is not set!"
+    exit 1
   fi
   if [ -z "${VC_DATACENTER}" ]; then
     export VC_DATACENTER="Datacenter"
@@ -269,11 +270,18 @@ CheckVariables() {
   fi
   if [ -z "${WORKSTATION_USERNAME}" ]; then
     echo "Error! WORKSTATION_USERNAME is not set!"
+    exit 1
   fi
   if [ -z "${WORKSTATION_PASSWORD}" ]; then
     echo "Error! WORKSTATION_PASSWORD is not set!"
+    exit 1
   fi
+
   # NSXv variables
+  if [ -z "${NSXV_PLUGIN_PATH}" ]; then 
+    echo "Error! NSXV_PLUGIN_PATH is not set!"
+    exit 1
+  fi
   if [ -z "${NEUTRON_SEGMENT_TYPE}" ]; then
     export NEUTRON_SEGMENT_TYPE="tun"
   fi
@@ -285,6 +293,7 @@ CheckVariables() {
   fi
   if [ -z "${NSXV_PASSWORD}" ]; then
     echo "Error! NSXV_PASSWORD is not set!"
+    exit 1
   fi
   if [ -z "${NSXV_DATACENTER_MOID}" ]; then
     export NSXV_DATACENTER_MOID='datacenter-126'
@@ -327,9 +336,6 @@ CheckVariables() {
   fi
   if [ -z "${NSXV_INSECURE}" ]; then
     export NSXV_INSECURE='true'
-  fi
-  if [ -z "${JOB_NAME}" ]; then
-    export JOB_NAME="nsxv_system_test"
   fi
 
   # Export settings
