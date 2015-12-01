@@ -1,148 +1,257 @@
 Smoke
 =====
 
-TC-001: Verify that Fuel VMware NSXv plugin is installed.
-----------------------------------------------------------
 
-**ID**
+Install Fuel VMware NSX-v plugin.
+---------------------------------
 
-nsxv_plugin
 
-**Description**
-::
+ID
+##
 
- Test case verifies plugin installation.
+nsxv_install
 
-**Complexity**
+
+Description
+###########
+
+Check that plugin can be installed.
+
+
+Complexity
+##########
 
 smoke
 
-**Requre to automate**
 
-Yes
+Steps
+#####
 
-**Steps**
-::
+    1. Connect to fuel node via ssh.
+    2. Upload plugin.
+    3. Install plugin.
 
- Connect to fuel node via ssh.
- Upload plugin.
- Install plugin.
 
-**Expected result**
+Expected result
+###############
 
 Ensure that plugin is installed successfully using cli, run command 'fuel plugins'. Check name, version and package version of plugin.
 
-TC-002: Verify that Fuel VMware NSXv plugin  is uninstalled.
--------------------------------------------------------------
 
-**ID**
+Uninstall Fuel VMware NSX-v plugin.
+-----------------------------------
 
-nsxv_plugin
 
-**Description**
-::
+ID
+##
 
- Test verifies that plugin could be uninstalled.
+nsxv_uninstall
 
-**Complexity**
+
+Description
+###########
+
+Check that plugin can be removed.
+
+
+Complexity
+##########
 
 smoke
 
-**Requre to automate**
 
-Yes
+Steps
+#####
 
-**Steps**
-::
+    1. Connect to fuel node with preinstalled plugin via ssh.
+    2. Remove plugin.
 
- Connect to fuel node with preinstalled plugin via ssh.
- Remove plugin from master node
- Connect to the Fuel web UI.
- Create a new environment.
- Click on the Settings tab and check that section of NSXv plugin is not displayed.
 
-**Expected result**
+Expected result
+###############
 
-Verify that plugin is removed, run command 'fuel plugins'. Section of NSXv  plugin is not displayed.
+Verify that plugin is removed, run command 'fuel plugins'.
 
-TC-003: Deploy cluster with plugin and vmware datastore backend.
+
+Verify that all elements of NSXv plugin section meets the requirements.
+-----------------------------------------------------------------------
+
+
+ID
+##
+
+nsxv_gui
+
+
+Description
+###########
+
+Verify that all elements of NSXv plugin section meets the requirements.
+
+
+Complexity
+##########
+
+smoke
+
+
+Steps
+#####
+
+    1. Login to the Fuel web UI.
+    2. Click on the Settings tab.
+    3. Verify that section of NSXv plugin is present on the Settings tab.
+    4. Verify that check box 'NSXv  plugin' is disabled by default.
+    5. Verify that user can enabled. Enable NSX-v plugin by click on check box 'NSXv  plugin'.
+    6. Verify that all labels of NSX-v plugin section have same font style and color.
+    7. Verify that all elements of NSX-v plugin section are vertical aligned.
+
+
+Expected result
+###############
+
+All elements of NSX-v plugin section are required GUI regiments.
+
+
+Deployment with plugin, controller and vmware datastore backend.
 ----------------------------------------------------------------
 
-**ID**
+
+ID
+##
 
 nsxv_smoke
 
-**Description**
-::
 
- Test verifies installation with base configuration.
+Description
+###########
 
-**Complexity**
+Check deployment with NSXv plugin and one controller.
+
+
+Complexity
+##########
 
 smoke
 
-**Requre to automate**
 
-No
+Steps
+#####
 
-**Steps**
-::
+    1. Log into Fuel with preinstalled plugin.
+    2. Create a new environment with following parameters:
+        * Compute: KVM/QEMU with vCenter
+        * Networking: Neutron with tunnel segmentation
+        * Storage: default
+        * Additional services: default
+    3. Add nodes with following roles:
+        * Controller
+    4. Configure interfaces on nodes.
+    5. Configure network settings.
+    6. Enable and configure NSXv plugin.
+    7. Configure settings:
+        * Enable VMWare vCenter/ESXi datastore for images (Glance).
+    8. Configure VMware vCenter Settings. Add 1 vSphere cluster and configure Nova Compute instances on conrollers.
+    9. Verify networks.
+    10. Deploy cluster.
+    11. Run OSTF.
 
- Create a new environment using the Fuel UI Wizard.
- add name of env and select release version with OS
- as hypervisor type: select vcenter check box and QEMU/KVM radio button
-  network setup : Neutron with tunnel segmentation.
- storage backends: default
- additional services: all by default
- In Settings tab:
- enable NSXv plugin
- select Vmware vcenter esxi datastore for images (glance)
- Add nodes:
- 1 controller
- 1 compute-vmware
- Interfaces on slaves should be setup this way in Fuel interface:
- eth0 - admin(PXE)
- eth1 - public
- eth2 - management
- eth3 - VM(Fixed) ID:103
- eth4 – storage
- Networks tab:
- Public network: start '172.16.0.2' end '172.16.0.126'
- CIDR '172.16.0.0/24'
- Gateway 172.16.0.1
- Floating ip range start '172.16.0.130' end '172.16.0.254'
- Storage: CIDR '192.168.1.0/24'
- Vlan tag is not set-Management: CIDR '192.168.0.0/24'
- Vlan tag is not set
- Neutron L2 configuration by default
- Neutron L3 configuration by default
 
- Verify networks.
- Fill vcenter credentials:
- Availability zone: vcenter
- vCenter host: '172.16.0.254'
- vCenter username: <login>
- vCenter password: <password>
-
- Add 2 vSphere Clusters:
- vSphere Cluster: Cluster1
- Service name: vmcluster1
- Datastore regex:.*
- vSphere Cluster: Cluster2
- Service name: vmcluster2
- Datastore regex: .*
-
- Fill Glance credentials:
- vCenter host: 172.16.0.254
- vCenter username: <login>
- vCenter password: <password>
- Datacenter name: Datacenter
- Datastore name: nfs
-
- Deploy cluster
-
- Run OSTF
-
-**Expected result**
+Expected result
+###############
 
 Cluster should be deployed and all OSTF test cases should be passed.
+
+
+Deploy HA cluster with NSX-v plugin.
+------------------------------------
+
+
+ID
+##
+
+nsxv_bvt
+
+
+Description
+###########
+
+Check deployment with NSXv plugin, 3 Controllers, 2 CephOSD, CinderVMware and computeVMware roles.
+
+
+Complexity
+##########
+
+smoke
+
+
+Steps
+#####
+
+    1. Connect to a Fuel web UI with preinstalled plugin.
+    2. Create a new environment with following parameters:
+        * Compute: KVM/QEMU with vCenter
+        * Networking: Neutron with tunnel segmentation
+        * Storage: Ceph
+        * Additional services: default
+    3. Add nodes with following roles:
+        * Controller
+        * Controller
+        * Controller
+        * CephOSD
+        * CephOSD
+        * CinderVMware
+        * ComputeVMware
+    4. Configure interfaces on nodes.
+    5. Configure network settings.
+    6. Enable and configure NSXv plugin.
+    7. Configure VMware vCenter Settings. Add 2 vSphere clusters and configure Nova Compute instances on conrollers and compute-vmware.
+    8. Verify networks.
+    9. Deploy cluster.
+    10. Run OSTF.
+
+
+Expected result
+###############
+
+Cluster should be deployed and all OSTF test cases should be passed.
+
+
+Verify that nsxv driver configured properly after enabling NSX-v plugin
+-----------------------------------------------------------------------
+
+
+ID
+##
+
+nsxv_config_ok
+
+
+Description
+###########
+
+Need to check that all parameters of nsxv driver config files have been filled up with values entered from GUI. Applicable values that are typically used are described in plugin docs. Root & intermediate certificate are signed, in attachment.
+
+
+Complexity
+##########
+
+smoke
+
+
+Steps
+#####
+
+    1. Install NSXv plugin.
+    2. Enable plugin on tab Settings -> NSXv plugin.
+    3. Fill the form with corresponding values.
+    4. Uncheck option "Bypass NSX Manager certificate verification".
+    5. Do all things that are necessary to provide interoperability of NSXv plugin and NSX Manager with certificate.
+    6. Check Additional settings. Fill the form with corresponding values. Save settings by pressing the button.
+
+
+Expected result
+###############
+
+Check that nsx.ini on controller nodes is properly configured.
+
