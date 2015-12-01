@@ -245,6 +245,7 @@ CheckVariables() {
   fi
   if [ -z "${VCENTER_PASSWORD}" ]; then
     echo "Error! VCENTER_PASSWORD is not set!"
+    exit 1
   fi
   if [ -z "${VC_DATACENTER}" ]; then
     export VC_DATACENTER="Datacenter"
@@ -269,9 +270,11 @@ CheckVariables() {
   fi
   if [ -z "${WORKSTATION_USERNAME}" ]; then
     echo "Error! WORKSTATION_USERNAME is not set!"
+    exit 1
   fi
   if [ -z "${WORKSTATION_PASSWORD}" ]; then
     echo "Error! WORKSTATION_PASSWORD is not set!"
+    exit 1
   fi
   # NSXv variables
   if [ -z "${NEUTRON_SEGMENT_TYPE}" ]; then
@@ -285,6 +288,7 @@ CheckVariables() {
   fi
   if [ -z "${NSXV_PASSWORD}" ]; then
     echo "Error! NSXV_PASSWORD is not set!"
+    exit 1
   fi
   if [ -z "${NSXV_DATACENTER_MOID}" ]; then
     export NSXV_DATACENTER_MOID='datacenter-126'
