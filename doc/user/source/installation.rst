@@ -39,3 +39,16 @@ To uninstall plugin run following:
 .. code-block:: bash
 
    [root@nailgun ~] fuel plugins --remove nsxv==1.0.0
+
+During installation plugin changes Fuels database content.  It removes
+restriction that forbids configuring vCenter with Neutron.  After plugin gets
+uninstalled it is possible to configure inoperable configuration of cluster.
+To prevent this situation execute *restore_db.py* script that comes with plugin
+in *nailgun* docker container.  This action is not done automatically on plugin
+uninstallation, because there are might be another plugin that also rely on
+absence of restriction.
+
+.. code-block:: bash
+
+   [root@nailgun ~] dockerctl nailgun
+   [root@nailgun ~] python /var/www/nailgun/plugins/nsxv-1.1/restore_db.py
