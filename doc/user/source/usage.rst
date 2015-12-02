@@ -55,3 +55,11 @@ NSX Edge nodes.
 .. code-block:: bash
 
   $ neutron net-create External --router:external --provider:physical_network network-222
+
+
+OpenStack environment reset/deletion
+------------------------------------
+
+Fuel NSXv plugin does not provide cleanup functionality when OpenStack
+environment gets reseted or deleted.  All logical switches and edge virtual
+machines remain intact, it is up to operator to delete them and free resources.
