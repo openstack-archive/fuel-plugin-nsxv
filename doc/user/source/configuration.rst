@@ -111,7 +111,7 @@ available for configuration:
 #. Maximum tunnels per vnic -- specify maximum amount of tunnels per vnic,
    possible range of values 1-110 (20 is used if no other value is provided).
 
-#. API retries -- maximum number of API retries (10 by default)
+#. API retries -- maximum number of API retries (10 by default).
 
 #. Enable SpoofGuard -- option allows to control behaviour of port-security
    feature that prevents traffic flow if IP address of VM that was reported by
@@ -120,3 +120,29 @@ available for configuration:
 
 #. Tenant router types -- ordered list of preferred tenant router types (default
    value is 'shared, distributed, exclusive').
+
+#. Exclusive router type -- size of edge for exclusive router
+   (value must be one of *compact*, *large*, *quadlarge* or *xlarge*).
+
+#. Edge user -- user that will be created on Edge VMs for remote login.
+
+#. Edge password -- password for Edge VMs.  It must match following rules
+
+   * not less 12 characters (max 255 chars)
+   * at least 1 upper case letter
+   * at least 1 lower case letter
+   * at least 1 number
+   * at least 1 special character
+
+   .. warning::
+
+      Plugin cannot verify that password does conforms policy, it only checks
+      its length.  If you enter password that does not match policy, Neutron
+      server will be not able to create routers and deployment process will
+      stop, because NSX will not permit creating Edge nodes with password that
+      does not match security policy.
+
+#. DHCP lease time -- DHCP lease time in seconds for VMs. Default value is
+   86400 (24 hours).
+
+#. Coordinator URL -- URL for distributed locking coordinator.
