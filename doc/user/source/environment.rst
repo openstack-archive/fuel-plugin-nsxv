@@ -52,3 +52,9 @@ for GRE tunneling which does not have an effect with NSXv.
 
 .. image:: /image/neutron-network-settings.png
    :scale: 70 %
+
+During deployment process plugin creates simple network topology for admin
+tenant. It creates provider network which connects tenants with transport
+(physical) network, one internal network and router that is connected to both
+networks.
+
