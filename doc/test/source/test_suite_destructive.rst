@@ -38,7 +38,10 @@ Yes
  Enable NSXv_port of VM_1.
 
  Verify that VMs  should communicate between each other. Send icmp ping from VM _1 to VM_2  and vice versa.
- Pings should get a response
+
+**Expected result**
+
+Pings should get a response
 
 TC-102: Verify that vmclusters should migrate after shutdown controller.
 ------------------------------------------------------------------------
@@ -116,7 +119,11 @@ No
 
  Shutdown controller with  vmclusters.
 
- Check that vmclusters should migrate to another controller. Vmclusters should migrate to another controller.
+ Check that vmclusters should migrate to another controller.
+
+**Expected result**
+
+VMclusters should migrate to another controller.
 
 TC-103: Deploy cluster with plugin, addition and deletion of nodes.
 -------------------------------------------------------------------
@@ -207,7 +214,12 @@ No
 
  Redeploy cluster.
 
- Run OSTFCluster should be deployed and all OSTF test cases should be passed.
+ Run OSTF
+
+**Expected result**
+
+Cluster should be deployed and all OSTF test cases should be passed besides
+exceptions that are described in Limitation section of Test plan.
 
 TC-104: Deploy cluster with plugin and deletion one node with controller role.
 ------------------------------------------------------------------------------
@@ -291,7 +303,12 @@ No
  Add controller
  Redeploy cluster
 
- Run OSTFCluster should be deployed and all OSTF test cases should be passed.
+ Run OSTF
+
+**Expected result**
+
+Cluster should be deployed and all OSTF test cases should be passed besides
+exceptions that are described in Limitation section of Test plan.
 
 TC-105: Verify that it is not possible to uninstall of Fuel NSXv plugin with deployed environment.
 ---------------------------------------------------------------------------------------------------
@@ -372,7 +389,10 @@ Yes
  Deploy cluster
  Run OSTF
  Try to delete plugin via cli Remove plugin from master node  fuel plugins --remove plugin-name==1.0.0
- Alert: "400 Client Error: Bad Request (Can't delete plugin which is enabled for some environment.)" should be displayed.
+
+**Expected result**
+
+Alert: "400 Client Error: Bad Request (Can't delete plugin which is enabled for some environment.)" should be displayed.
 
 TC-106: Check cluster functionality after reboot vcenter.
 ---------------------------------------------------------
@@ -466,5 +486,9 @@ Yes
 
  Ensure connectivity between vcenter1's and vcenter2's VM.
  Run OSTF
- Cluster should be deployed and all OSTF test cases should be passed. Ping should get response.
 
+**Expected result**
+
+Cluster should be deployed and all OSTF test cases should be passed besides
+exceptions that are described in Limitation section of Test plan.
+Ping should get response.
