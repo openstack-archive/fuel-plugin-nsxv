@@ -1,7 +1,10 @@
 Installation
 ============
 
-#. Download plugin .rpm package from the Fuel Plugin Catalog.
+Pre-built package of the plugin you can find in
+`Fuel Plugin Catalog`_.
+
+#. Download plugin .rpm package.
 
 #. Upload package to Fuel master node.
 
@@ -52,3 +55,5 @@ absence of restriction.
 
    [root@nailgun ~] dockerctl nailgun
    [root@nailgun ~] python /var/www/nailgun/plugins/nsxv-1.1/restore_db.py
+
+.. _Fuel Plugin Catalog: https://www.mirantis.com/products/openstack-drivers-and-plugins/fuel-plugins
