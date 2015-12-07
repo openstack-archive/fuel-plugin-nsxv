@@ -23,7 +23,6 @@ Documentation contents
 .. toctree::
    :maxdepth: 2
 
-   source/build
    source/installation
    source/environment
    source/configuration

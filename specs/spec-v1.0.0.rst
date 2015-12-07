@@ -15,6 +15,12 @@ platform [1]_.
 Problem description
 ===================
 
+Fuel functionality does not allow user to deploy OpenStack over vCenter and NSX
+infrastructure out-of-the-box.  Major efforts are required to deploy and then
+reconfigure OpenStack with Neutron to use vCenter and NSX.  Plugin automates
+deployment process to reduce human error that can be made during
+reconfiguration process.
+
 Proposed change
 ===============
 
