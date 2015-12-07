@@ -53,9 +53,9 @@ for GRE tunneling which does not have an effect with NSXv.
 .. image:: /image/neutron-network-settings.png
    :scale: 70 %
 
-Environment reset
------------------
+Environment reset/deletion
+--------------------------
 
-Each time environment gets reset Edge VMs that were created by that environment
-will remain in vSphere infrastructure.  It is up to user to remove VMs that
-were left after OpenStack environment deletion.
+Each time OpenStack environment gets reset or deleted Edge VMs that were
+created by that environment will remain in vSphere infrastructure.  It is up to
+user to remove VMs that were left after environment reset/deletion.
