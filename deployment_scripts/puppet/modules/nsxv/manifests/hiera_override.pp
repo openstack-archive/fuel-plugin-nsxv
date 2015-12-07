@@ -4,13 +4,13 @@ class nsxv::hiera_override (
   $override_file = "/etc/hiera/override/${plugin_name}.yaml"
   $override_dir = dirname($override_file)
 
-  $quantum_settings = inline_template("<%-
+  $neutron_config = inline_template("<%-
     require 'yaml'
-    settings = scope.function_hiera(['quantum_settings'])
+    settings = scope.function_hiera(['neutron_config'])
     settings['predefined_networks'] = {}
-    quantum_settings = { 'quantum_settings' => settings }
+    neutron_config = { 'neutron_config' => settings }
   -%>
-<%= quantum_settings.to_yaml %>")
+<%= neutron_config.to_yaml %>")
 
   $network_metadata = inline_template("<%-
     require 'yaml'
@@ -76,8 +76,14 @@ class nsxv::hiera_override (
   concat::fragment{ 'quantum_settings':
     ensure  => present,
     target  => $override_file,
-    content => $quantum_settings,
+    content => regsubst($neutron_config,'neutron_config','quantum_settings'),
     order   => '01'
+  }
+  concat::fragment{ 'neutron_config':
+    ensure  => present,
+    target  => $override_file,
+    content => regsubst($neutron_config,'---',''),
+    order   => '05'
   }
   concat::fragment{ 'network_metadata':
     ensure  => present,

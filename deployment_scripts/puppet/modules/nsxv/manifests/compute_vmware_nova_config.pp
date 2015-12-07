@@ -2,7 +2,7 @@ class nsxv::compute_vmware_nova_config (
 ) {
   include ::nova::params
 
-  $neutron_config = hiera_hash('quantum_settings')
+  $neutron_config = hiera_hash('neutron_config')
   $neutron_metadata_proxy_secret = $neutron_config['metadata']['metadata_proxy_shared_secret']
   $nova_parameters = {
     'neutron/service_metadata_proxy'       => { value => 'True' },
