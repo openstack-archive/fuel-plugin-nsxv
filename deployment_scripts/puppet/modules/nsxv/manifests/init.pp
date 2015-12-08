@@ -4,7 +4,7 @@ class nsxv (
   $lbaas_plugin_name = 'python-neutron-lbaas',
 ) {
 
-  $neutron_config = hiera('neutron_config')
+  $neutron_config = hiera_hash('neutron_config')
 
   $settings = hiera('nsxv')
 

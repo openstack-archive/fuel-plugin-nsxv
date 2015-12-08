@@ -18,8 +18,9 @@ releases:
     repository_path: repositories/ubuntu
 
 # Version of plugin package
-package_version: '3.0.0'
+package_version: '4.0.0'
 licenses: ['Apache 2.0']
 authors: ['Artem Savinov, Mirantis', 'Igor Zinovik, Mirantis']
 homepage: https://github.com/openstack/fuel-plugin-nsxv
 groups: ['network']
+is_hotpluggable: false

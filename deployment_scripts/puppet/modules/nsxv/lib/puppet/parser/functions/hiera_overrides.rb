@@ -7,22 +7,16 @@ module Puppet::Parser::Functions
 
     # override network_metadata
     delete_roles = ['neutron/floating','neutron/mesh','neutron/private']
-    network_metadata = function_hiera(['network_metadata'])
+    network_metadata = function_hiera_hash(['network_metadata'])
     nodes = network_metadata['nodes']
     nodes.each do |node, meta|
       (nodes[node]['network_roles']).delete_if { | key, value | delete_roles.include?(key) }
     end
     hiera_overrides['network_metadata'] = network_metadata
 
-    # override neutron_config/quantum_settings
-    neutron_config = function_hiera(['neutron_config'])
-    neutron_config['predefined_networks'] = {}
-    hiera_overrides['neutron_config'] = neutron_config
-    hiera_overrides['quantum_settings'] = neutron_config
-
     # override network_scheme
     delete_bridges = ['br-mesh','br-floating']
-    network_scheme = function_hiera(['network_scheme'])
+    network_scheme = function_hiera_hash(['network_scheme'])
 
     transformations = network_scheme['transformations']
     transformations.delete_if { |action| action['action'] == 'add-br' and delete_bridges.include?(action['name']) }
@@ -40,6 +34,7 @@ module Puppet::Parser::Functions
     neutron_advanced_configuration = function_hiera(['neutron_advanced_configuration'])
     neutron_advanced_configuration['neutron_dvr'] = false
     neutron_advanced_configuration['neutron_l2_pop'] = false
+    neutron_advanced_configuration['neutron_l3_ha'] = false
     hiera_overrides['neutron_advanced_configuration'] = neutron_advanced_configuration
 
     # override testvm image
