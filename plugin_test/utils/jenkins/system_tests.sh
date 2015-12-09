@@ -226,8 +226,18 @@ CheckVariables() {
     echo "Error! WORKSPACE is not set!"
     exit $NOWORKSPACE_ERR
   fi
+
+  if [ -z "${NSXV_PLUGIN_PATH}" ]; then
+    echo "Error! NSXV_PLUGIN_PATH is not set!"
+  fi
   if [ -z "${POOL_PUBLIC}" ]; then
     export POOL_PUBLIC='172.16.0.0/24:24'
+  fi
+  if [ -z "${POOL_MANAGEMENT}" ]; then
+    export POOL_MANAGEMENT='172.16.1.0/24:24'
+  fi
+  if [ -z "${POOL_PRIVATE}" ]; then
+    export POOL_PRIVATE='192.168.0.0/24:24'
   fi
 
   # Vcenter variables
@@ -336,6 +346,22 @@ CheckVariables() {
   fi
   if [ -z "${NSXV_INSECURE}" ]; then
     export NSXV_INSECURE='true'
+  fi
+
+  if [ -z "${NSXV_FLOATING_IP_RANGE}" ]; then
+    export NSXV_FLOATING_IP_RANGE='172.16.0.30-172.16.0.40'
+  fi
+  if [ -z "${NSXV_FLOATING_NET_CIDR}" ]; then
+    export NSXV_FLOATING_NET_CIDR='172.16.0.0/24'
+  fi
+  if [ -z "${NSXV_FLOATING_NET_GW}" ]; then
+    export NSXV_FLOATING_NET_GW='172.16.0.1'
+  fi
+  if [ -z "${NSXV_INTERNAL_NET_CIDR}" ]; then
+    export NSXV_INTERNAL_NET_CIDR='192.168.0.0/24'
+  fi
+  if [ -z "${NSXV_INTERNAL_NET_DNS}" ]; then
+    export NSXV_INTERNAL_NET_DNS='8.8.8.8'
   fi
 
   # Export settings
@@ -569,10 +595,10 @@ RunTest() {
 
 
     # Configre vcenter nodes and interfaces
-    clean_old_bridges
-    setup_net $ENV_NAME
-    clean_iptables
-    revert_ws "$WORKSTATION_NODES" || { echo "killing $SYSTEST_PID and its childs" && pkill --parent $SYSTEST_PID && kill $SYSTEST_PID && exit 1; }
+    # clean_old_bridges
+    # setup_net $ENV_NAME
+    # clean_iptables
+    # revert_ws "$WORKSTATION_NODES" || { echo "killing $SYSTEST_PID and its childs" && pkill --parent $SYSTEST_PID && kill $SYSTEST_PID && exit 1; }
 
     echo waiting for system tests to finish
     wait $SYSTEST_PID
