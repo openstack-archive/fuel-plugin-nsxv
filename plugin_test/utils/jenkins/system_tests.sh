@@ -226,8 +226,15 @@ CheckVariables() {
     echo "Error! WORKSPACE is not set!"
     exit $NOWORKSPACE_ERR
   fi
+
   if [ -z "${POOL_PUBLIC}" ]; then
     export POOL_PUBLIC='172.16.0.0/24:24'
+  fi
+  if [ -z "${POOL_MANAGEMENT}" ]; then
+    export POOL_MANAGEMENT='172.16.1.0/24:24'
+  fi
+  if [ -z "${POOL_PRIVATE}" ]; then
+    export POOL_PRIVATE='192.168.0.0/24:24'
   fi
 
   # Vcenter variables
@@ -336,6 +343,22 @@ CheckVariables() {
   fi
   if [ -z "${NSXV_INSECURE}" ]; then
     export NSXV_INSECURE='true'
+  fi
+
+  if [ -z "${NSXV_FLOATING_IP_RANGE}" ]; then
+    export NSXV_FLOATING_IP_RANGE='172.16.0.30-172.16.0.40'
+  fi
+  if [ -z "${NSXV_FLOATING_NET_CIDR}" ]; then
+    export NSXV_FLOATING_NET_CIDR='172.16.0.0/24'
+  fi
+  if [ -z "${NSXV_FLOATING_NET_GW}" ]; then
+    export NSXV_FLOATING_NET_GW='172.16.0.1'
+  fi
+  if [ -z "${NSXV_INTERNAL_NET_CIDR}" ]; then
+    export NSXV_INTERNAL_NET_CIDR='192.168.0.0/24'
+  fi
+  if [ -z "${NSXV_INTERNAL_NET_DNS}" ]; then
+    export NSXV_INTERNAL_NET_DNS='8.8.8.8'
   fi
 
   # Export settings

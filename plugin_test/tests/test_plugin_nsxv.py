@@ -61,6 +61,11 @@ class TestNSXvPlugin(TestBasic):
     nsxv_mgt_net_default_gw = os.environ.get('NSXV_MGT_NET_DEFAULT_GW')
     nsxv_edge_ha = True if os.environ.get('NSXV_EDGE_HA') == 'true' \
         else False
+    nsxv_floating_ip_range = os.environ.get('NSXV_FLOATING_IP_RANGE')
+    nsxv_floating_net_cidr = os.environ.get('NSXV_FLOATING_NET_CIDR')
+    nsxv_floating_net_gw = os.environ.get('NSXV_FLOATING_NET_GW')
+    nsxv_internal_net_cidr = os.environ.get('NSXV_INTERNAL_NET_CIDR')
+    nsxv_internal_net_dns = os.environ.get('NSXV_INTERNAL_NET_DNS')
 
     def node_name(self, name_node):
         return self.fuel_web.get_nailgun_node_by_name(name_node)['hostname']
@@ -86,30 +91,40 @@ class TestNSXvPlugin(TestBasic):
             "Test aborted")
 
         plugin_settings = {'metadata/enabled': True,
-                           'nsxv_manager_host/value': self.nsxv_manager_ip,
-                           'nsxv_insecure/value': self.nsxv_insecure,
-                           'nsxv_user/value': self.nsxv_user,
-                           'nsxv_password/value': self.nsxv_password,
-                           'nsxv_datacenter_moid/value':
+                           '#1_nsxv_manager_host/value': self.nsxv_manager_ip,
+                           '#1_nsxv_insecure/value': self.nsxv_insecure,
+                           '#1_nsxv_user/value': self.nsxv_user,
+                           '#1_nsxv_password/value': self.nsxv_password,
+                           '#1_nsxv_datacenter_moid/value':
                            self.nsxv_datacenter_moid,
-                           'nsxv_cluster_moid/value': self.nsxv_cluster_moid,
-                           'nsxv_resource_pool_id/value':
+                           '#1_nsxv_cluster_moid/value': self.nsxv_cluster_moid,
+                           '#1_nsxv_resource_pool_id/value':
                            self.nsxv_resource_pool_id,
-                           'nsxv_datastore_id/value': self.nsxv_datastore_id,
-                           'nsxv_external_network/value':
+                           '#1_nsxv_datastore_id/value': self.nsxv_datastore_id,
+                           '#1_nsxv_external_network/value':
                            self.nsxv_external_network,
-                           'nsxv_vdn_scope_id/value': self.nsxv_vdn_scope_id,
-                           'nsxv_dvs_id/value': self.nsxv_dvs_id,
-                           'nsxv_backup_edge_pool/value':
+                           '#1_nsxv_vdn_scope_id/value': self.nsxv_vdn_scope_id,
+                           '#1_nsxv_dvs_id/value': self.nsxv_dvs_id,
+                           '#1_nsxv_backup_edge_pool/value':
                            self.nsxv_backup_edge_pool,
-                           'nsxv_mgt_net_moid/value': self.nsxv_mgt_net_moid,
-                           'nsxv_mgt_net_proxy_ips/value':
+                           '#1_nsxv_mgt_net_moid/value': self.nsxv_mgt_net_moid,
+                           '#1_nsxv_mgt_net_proxy_ips/value':
                            self.nsxv_mgt_net_proxy_ips,
-                           'nsxv_mgt_net_proxy_netmask/value':
+                           '#1_nsxv_mgt_net_proxy_netmask/value':
                            self.nsxv_mgt_net_proxy_netmask,
-                           'nsxv_mgt_net_default_gateway/value':
+                           '#1_nsxv_mgt_net_default_gateway/value':
                            self.nsxv_mgt_net_default_gw,
-                           'nsxv_edge_ha/value': self.nsxv_edge_ha}
+                           '#1_nsxv_floating_ip_range/value':
+                           self.nsxv_floating_ip_range,
+                           '#1_nsxv_floating_net_cidr/value':
+                           self.nsxv_floating_net_cidr,
+                           '#1_nsxv_internal_net_cidr/value':
+                           self.nsxv_internal_net_cidr,
+                           '#1_nsxv_floating_net_gw/value':
+                           self.nsxv_floating_net_gw,
+                           '#1_nsxv_internal_net_dns/value':
+                           self.nsxv_internal_net_dns,
+                           '#1_nsxv_edge_ha/value': self.nsxv_edge_ha}
         self.fuel_web.update_plugin_data(cluster_id, self.plugin_name,
                                          plugin_settings)
 
@@ -130,7 +145,7 @@ class TestNSXvPlugin(TestBasic):
         for image in images_list:
             if image.name == 'TestVM-VMDK':
                 os_conn.nova.servers.create(
-                    flavor=flavors_list[0],
+                    flavor=flavors_list[1],
                     name='test_{0}'.format(image.name),
                     image=image, min_count=vm_count,
                     availability_zone='vcenter',
@@ -247,7 +262,6 @@ class TestNSXvPlugin(TestBasic):
 
     def get_common(self, cluster_id):
         nsxv_ip = self.fuel_web.get_public_vip(cluster_id)
-        #if not self._common:
         self._common = Common(
             controller_ip=nsxv_ip, user=SERVTEST_USERNAME,
             password=SERVTEST_PASSWORD, tenant=SERVTEST_TENANT
@@ -328,12 +342,23 @@ class TestNSXvPlugin(TestBasic):
         private_net = self.create_network(cluster_id, 'net04')
         subnet_private = self.create_subnet(cluster_id, private_net, '10.100.0.0/24')
         public_net = self.create_net_public(cluster_id)
-        router = self.add_router(cluster_id, 'connecting_router', public_net)
+        router = self.add_router(cluster_id, 'router_04', public_net)
         self.add_subnet_to_router(cluster_id, router['id'], subnet_private['id'])
 
+    def install_patch(self):
+        # Installing patch on admin node
+        with self.env.d_env.get_admin_remote() as admin_remote:
+            cmd = "yum install -y patch"
+            logger.info("Install patch")
+            res = admin_remote.execute(cmd)
+            assert_true(
+                res['exit_code'] == 0)
+
+    net1 = {'name': 'net_1', 'cidr': '192.168.112.0/24'}
+    net2 = {'name': 'net_2', 'cidr': '192.168.113.0/24'}
+
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],
-          groups=["nsxv_smoke"])
-    #@log_snapshot_after_test
+          groups=["nsxv_smoke", "nsxv_plugin"])
     def nsxv_smoke(self):
         """Deploy a cluster with NSXv Plugin
 
@@ -348,6 +373,7 @@ class TestNSXvPlugin(TestBasic):
         """
         self.env.revert_snapshot('ready_with_5_slaves', skip_timesync=True)
 
+        self.install_patch()
         self.install_nsxv_plugin()
 
         # Configure cluster
@@ -373,13 +399,93 @@ class TestNSXvPlugin(TestBasic):
 
         self.fuel_web.deploy_cluster_wait(cluster_id)
 
-        self.create_all_necessary_staff(cluster_id)
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id,
+            test_sets=['smoke'], should_fail=1,
+            failed_test_name=['vCenter: Launch instance'])
 
         self.env.make_snapshot("deploy_nsxv", is_make=True)
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_9],
+          groups=["nsxv_bvt", "nsxv_plugin"])
+    def nsxv_bvt(self):
+        """Deploy cluster with plugin and vmware datastore backend
+
+        Scenario:
+            1. Upload plugins to the master node.
+            2. Install plugin.
+            3. Create cluster with vcenter.
+            4. Add 3 node with controller role, compute-vmware, cinder-vmware.
+            5. Remove node cinder-vmware.
+            6. Add node with cinder role.
+            7. Redeploy cluster.
+            8. Run OSTF.
+
+        Duration 3 hours
+
+        """
+        self.env.revert_snapshot("ready_with_9_slaves", skip_timesync=True)
+
+
+        self.install_nsxv_plugin()
+
+        settings = self.get_settings()
+        settings["images_vcenter"] = True
+        # Configure cluster
+        cluster_id = self.fuel_web.create_cluster(
+            name=self.__class__.__name__,
+            mode=DEPLOYMENT_MODE,
+            settings=settings,
+        )
+
+        # Assign role to node
+        self.fuel_web.update_nodes(
+            cluster_id,
+            {'slave-01': ['controller'],
+             'slave-02': ['controller'],
+             'slave-03': ['controller'],
+             'slave-04': ['compute-vmware'],
+             'slave-05': ['cinder-vmware'], })
+
+        target_node_1 = self.node_name('slave-04')
+
+        # Configure VMWare vCenter settings
+        self.fuel_web.vcenter_configure(cluster_id,
+                                        vc_glance=True,
+                                        multiclusters=True,
+                                        target_node_1=target_node_1)
+
+        self.enable_plugin(cluster_id=cluster_id)
+
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id,
+            test_sets=['smoke'], should_fail=1,
+            failed_test_name=['vCenter: Launch instance'])
+
+        # Remove node with cinder-vmware role
+        self.fuel_web.update_nodes(
+            cluster_id,
+            {'slave-05': ['cinder-vmware'], }, False, True)
+
+        # Add 1 node with cinder role and redeploy cluster
+        self.fuel_web.update_nodes(
+            cluster_id,
+            {
+                'slave-06': ['cinder'],
+            }
+        )
+
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id,
+            test_sets=['smoke'], should_fail=1,
+            failed_test_name=['vCenter: Launch instance'])
+
+    @test(depends_on=[SetupEnvironment.prepare_slaves_9],
           groups=["nsxv_add_delete_nodes", "nsxv_plugin"])
-    @log_snapshot_after_test
     def nsxv_add_delete_nodes(self):
         """Deploy cluster with plugin and vmware datastore backend
 
@@ -454,7 +560,6 @@ class TestNSXvPlugin(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_9],
           groups=["nsxv_add_delete_controller", "nsxv_plugin"])
-    @log_snapshot_after_test
     def nsxv_add_delete_controller(self):
         """Deploy cluster with plugin, adding and deletion controler node.
 
@@ -543,7 +648,6 @@ class TestNSXvPlugin(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],
           groups=["nsxv_reset_controller", 'nsxv_plugin'])
-    # @log_snapshot_after_test
     def nsxv_reset_controller(self):
         """Verify that vmclusters should migrate after reset controller.
 
@@ -645,7 +749,6 @@ class TestNSXvPlugin(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],
           groups=["nsxv_shutdown_controller", 'nsxv_plugin'])
-    # @log_snapshot_after_test
     def nsxv_shutdown_controller(self):
         """Verify that vmclusters should be migrate after shutdown controller.
 
@@ -752,7 +855,6 @@ class TestNSXvPlugin(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],
           groups=["nsxv_ceilometer", "nsxv_plugin"])
-    @log_snapshot_after_test
     def nsxv_ceilometer(self):
         """Deploy cluster with plugin and ceilometer
 
@@ -769,7 +871,7 @@ class TestNSXvPlugin(TestBasic):
 
         """
         self.env.revert_snapshot("ready_with_5_slaves")
-
+        self.install_patch()
         self.install_nsxv_plugin()
 
         settings = self.get_settings()
@@ -798,17 +900,16 @@ class TestNSXvPlugin(TestBasic):
              'slave-04': ['compute-vmware']
              }
         )
-        self.fuel_web.deploy_cluster_wait(cluster_id, timeout=180 * 60)
-
-        self.create_all_necessary_staff(cluster_id)
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+        self.fuel_web.verify_network(cluster_id)
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
-            test_sets=['smoke', 'tests_platform'])
+            test_sets=['smoke', 'tests_platform'], should_fail=1,
+            failed_test_name=['vCenter: Launch instance'])
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],
           groups=["nsxv_ha_mode", "nsxv_plugin"])
-    @log_snapshot_after_test
     def nsxv_ha_mode(self):
         """Deploy cluster with plugin in HA mode
 
@@ -864,7 +965,6 @@ class TestNSXvPlugin(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],
           groups=["nsxv_ceph", "nsxv_plugin"])
-    # @log_snapshot_after_test
     def nsxv_ceph(self):
         """Deploy cluster with plugin and ceph backend
 
@@ -920,7 +1020,6 @@ class TestNSXvPlugin(TestBasic):
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],
           groups=["nsxv_ceph_no_vcenter", "nsxv_plugin"])
-    # @log_snapshot_after_test
     def nsxv_ceph_no_vcenter(self):
         """Deploy cluster with plugin and ceph backend
 
@@ -969,3 +1068,133 @@ class TestNSXvPlugin(TestBasic):
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id, test_sets=['smoke'])
+
+    @test(depends_on=[SetupEnvironment.prepare_slaves_3],
+          groups=["nsxv_floating_ip_to_public", 'nsxv_plugin'])
+    def nsxv_floating_ip_to_public(self):
+        """Check connectivity Vms to public network with floating ip.
+
+        Scenario:
+            1. Revert snapshot to nsxv_ha.
+            2. Create private networks net01 with subnet.
+            3. Add one  subnet (net01_subnet01: 192.168.101.0/24
+            4. Create Router_01, set gateway and add interface
+               to external network.
+            5. Launch instances VM_1 and VM_2 in the net01
+               with image TestVM-TCL and flavor m1.tiny in vcenter az.
+            6. Send ping from instances VM_1 and VM_2 to 8.8.8.8
+               or other outside ip.
+
+        Duration 1,5 hours
+
+        """
+
+        self.env.revert_snapshot("ready_with_3_slaves")
+
+        # Installing patch on admin node
+        admin_remote = self.env.d_env.get_admin_remote()
+        cmd = "yum install patch"
+        chan, stdin, stderr, stdout = admin_remote.execute_async(cmd)
+        assert_equal(chan.recv_exit_status(), 0,
+                     'Install script fails with next message {0}'
+                     .format(''.join(stderr)))
+        self.install_nsxv_plugin()
+
+        # Configure cluster with vcenter
+        cluster_id = self.fuel_web.create_cluster(
+            name=self.__class__.__name__,
+            mode=DEPLOYMENT_MODE,
+            settings=self.get_settings(),
+        )
+        cluster_id = self.fuel_web.get_last_created_cluster()
+
+        # Configure VMWare vCenter settings
+        self.fuel_web.vcenter_configure(cluster_id)
+
+        self.enable_plugin(cluster_id=cluster_id)
+
+        # Assign role to node
+        self.fuel_web.update_nodes(
+            cluster_id,
+            {'slave-01': ['controller'], }
+        )
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+
+
+        # # Create non default network with subnet.
+        logger.info('Create network {}'.format(self.net1))
+        private_net = self.create_network(cluster_id, self.net1['name'])
+        subnet_private = self.create_subnet(cluster_id, private_net, self.net1['cidr'])
+
+        # Create os_conn
+        os_ip = self.fuel_web.get_public_vip(cluster_id)
+        os_conn = os_actions.OpenStackActions(
+            os_ip, SERVTEST_USERNAME,
+            SERVTEST_PASSWORD,
+            SERVTEST_TENANT)
+
+        # Check that network are created.
+        # assert_true(
+        #    os_conn.get_network(private_net['name'])['id'] == private_net['id']
+        # )
+
+        # create security group with rules for ssh and ping
+        security_group = {}
+        security_group[os_conn.get_tenant(SERVTEST_TENANT).id] =\
+            os_conn.create_sec_group_for_ssh()
+        security_group = security_group[
+            os_conn.get_tenant(SERVTEST_TENANT).id].id
+
+        # Launch instance VM_1, VM_2 in the tenant network net_01
+        # with image TestVM-VMDK and flavor m1.tiny in the nova az.
+        self.create_instances(
+            os_conn=os_conn, vm_count=1,
+            nics=[{'net-id': network['id']}], security_group=security_group
+        )
+
+        # Add net_1 to default router
+        router = os_conn.get_router(os_conn.get_network('net04_ext'))
+        self.add_subnet_to_router(router['id'], subnet['id'])
+
+        self.create_and_assign_floating_ip(os_conn=os_conn)
+
+        # Send ping from instances VM_1 and VM_2 to 8.8.8.8
+        # or other outside ip.
+        srv_list = os_conn.get_servers()
+        self.check_connection_vms(
+            os_conn=os_conn, srv_list=srv_list,
+            ip=['8.8.8.8']
+        )
+
+    @test(depends_on=[nsxv_smoke],
+          groups=["nsxv_create_and_delete_vms", 'nsxv_plugin'])
+    @log_snapshot_after_test
+    def nsxv_create_and_delete_vms(self):
+        """Check creation instance in the one group simultaneously
+
+        Scenario:
+            1. Revert snapshot to nsxv_bvt
+            2. Upload plugins to the master node
+            3. Install plugin.
+            4. Create cluster with vcenter.
+            5. Deploy the cluster.
+            6. Create 5 instances of vcenter simultaneously.
+
+        Duration 1.8 hours
+
+        """
+        self.env.revert_snapshot("nsxv")
+
+        cluster_id = self.fuel_web.get_last_created_cluster()
+
+        # Create 5 instances of vcenter and 5 of nova simultaneously.
+        os_ip = self.fuel_web.get_public_vip(cluster_id)
+        os_conn = os_actions.OpenStackActions(
+            os_ip, SERVTEST_USERNAME,
+            SERVTEST_PASSWORD,
+            SERVTEST_TENANT)
+
+        network = os_conn.nova.networks.find(label='net04')
+        self.create_instances(
+            os_conn=os_conn, vm_count=5,
+            nics=[{'net-id': network.id}])
