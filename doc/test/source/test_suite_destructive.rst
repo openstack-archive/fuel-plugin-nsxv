@@ -17,7 +17,7 @@ nsxv_ability_to_bind_port
 
 core
 
-**Requre to automate**
+**Require to automate**
 
 Yes
 
@@ -31,13 +31,13 @@ Yes
 
  Launch instance VM_2  with image TestVM-VMDK and flavor m1.tiny.
 
- Verify that VMs  should communicate between each other. Send icmp ping from VM _1 to VM_2  and vice versa.
+ Verify that VMs  should communicate between each other. Send ICMP ping from VM _1 to VM_2  and vice versa.
  Disable NSXv_port of VM_1.
- Verify that VMs  should not communicate between each other. Send icmp ping from VM _2 to VM_1  and vice versa.
+ Verify that VMs  should not communicate between each other. Send ICMP ping from VM _2 to VM_1  and vice versa.
 
  Enable NSXv_port of VM_1.
 
- Verify that VMs  should communicate between each other. Send icmp ping from VM _1 to VM_2  and vice versa.
+ Verify that VMs  should communicate between each other. Send ICMP ping from VM _1 to VM_2  and vice versa.
 
 **Expected result**
 
@@ -59,7 +59,7 @@ nsxv_shutdown_controller
 
 core
 
-**Requre to automate**
+**Require to automate**
 
 No
 
@@ -93,7 +93,7 @@ No
  Floating ip range start '172.16.0.130' end '172.16.0.254'
  Storage: CIDR '192.168.1.0/24'
  Vlan tag is not set
- Managment: CIDR '192.168.0.0/24'
+ Management: CIDR '192.168.0.0/24'
  Vlan tag is not set
  Neutron L2 configuration by default
  Neutron L3 configuration by default
@@ -141,7 +141,7 @@ nsxv_add_delete_nodes
 
 advanced
 
-**Requre to automate**
+**Require to automate**
 
 No
 
@@ -237,7 +237,7 @@ nsxv_add_delete_controller
 
 advanced
 
-**Requre to automate**
+**Require to automate**
 
 No
 
@@ -337,12 +337,12 @@ Yes
  Install plugin
  fuel plugins --install plugin-name-1.0-0.0.1-0.noarch.rpm
 
- Ensure that plugin is installed successfully using cli, run command 'fuel plugins'.
+ Ensure that plugin is installed successfully using CLI, run command 'fuel plugins'.
  Connect to the Fuel web UI.
 
  Create a new environment using the Fuel UI Wizard:
  add name of env and select release version with OS
- as hypervisor type: select vcenter check box and Qemu radio button
+ as hypervisor type: select vcenter check box and QEMU radio button
   network setup : Neutron with tunnel segmentation
   storage backends: default
  additional services: all by default
@@ -410,7 +410,7 @@ nsxv_plugin
 
 core
 
-**Requre to automate**
+**Require to automate**
 
 Yes
 

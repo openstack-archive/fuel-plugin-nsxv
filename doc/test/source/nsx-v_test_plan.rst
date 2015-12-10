@@ -38,7 +38,7 @@ Following test types should be provided:
 * GUI tests
 
 Performance testing will be executed on the scale lab and a custom set of
-rally scenarios must be run with NSXv environment. Configuration, enviroment
+rally scenarios must be run with NSXv environment. Configuration, environment
 and scenarios for performance/scale testing should be determine separately.
 
 Intended Audience
@@ -53,7 +53,7 @@ Limitation
 Plugin (or its components) has the following limitations:
 
 * VMware NSXv plugin can be enabled only with Neutron tunnel segmentation.
-* Enviroment with enabled VMware NSXv plugin can't contains compute nodes.
+* Environment with enabled VMware NSXv plugin can't contains compute nodes.
 * Only VMware NSX Manager Virtual Appliance 6.1.4 or later is supported.
 
 Running OSTF right after plugin installation can cause some of the tests to
@@ -72,7 +72,7 @@ Product compatibility matrix
    * - MOS
      - 7.0 with Kilo
      -
-   * - Operatin System
+   * - Operating System
      - Ubuntu 14.0.4
      - Only Ubuntu is supported in MOS 7.0
    * - vSphere
@@ -89,7 +89,7 @@ Evaluation Mission and Test Motivation
 Project main goal is to build a MOS plugin that integrates a Neutron VMware
 NSX plugin. This will allow to use Neutron for networking in vmware-related
 environments. The plugin must be compatible with  the  version 7.0 of Mirantis
-OpenStack and should be tested with sofware/hardware described in
+OpenStack and should be tested with software/hardware described in
 `product compatibility matrix`_.
 
 See the VMware NSX Plugin specification for more details.
@@ -122,7 +122,7 @@ QA to accept software builds from Development team.
 
 The goal of integration and system testing is to ensure that new or modified
 components of Fuel and MOS work effectively with Fuel VMware NSXv plugin
-without gaps in dataflow.
+without gaps in data flow.
 
 **Regression testing**
 
@@ -205,12 +205,3 @@ Acceptance criteria
 * All required documents are delivered
 * Release notes including a report on the known errors of that release
 
-**********
-Test cases
-**********
-
-.. include:: test_suite_smoke.rst
-.. include:: test_suite_integration.rst
-.. include:: test_suite_system.rst
-.. include:: test_suite_destructive.rst
-.. include:: test_suite_gui.rst

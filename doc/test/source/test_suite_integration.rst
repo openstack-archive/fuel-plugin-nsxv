@@ -17,7 +17,7 @@ nsxv_ha_mode
 
 core
 
-**Requre to automate**
+**Require to automate**
 
 No
 
@@ -87,7 +87,7 @@ nsxv_ceph_no_vcenter
 
 core
 
-**Requre to automate**
+**Require to automate**
 
 No
 
@@ -163,7 +163,7 @@ nsxv_ceilometer
 
 core
 
-**Requre to automate**
+**Require to automate**
 
 No
 
@@ -237,7 +237,7 @@ nsxv_ceph
 
 core
 
-**Requre to automate**
+**Require to automate**
 
 No
 

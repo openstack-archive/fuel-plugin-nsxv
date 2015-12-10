@@ -8,4 +8,9 @@ Testing documents
    :glob:
    :maxdepth: 1
 
-   source/*
+   source/nsx-v_test_plan
+   source/test_suite_destructive
+   source/test_suite_gui
+   source/test_suite_integration
+   source/test_suite_smoke
+   source/test_suite_system

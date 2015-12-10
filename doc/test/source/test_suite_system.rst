@@ -17,7 +17,7 @@ nsxv_setup_system
 
 advanced
 
-**Requre to automate**
+**Require to automate**
 
 Yes
 
@@ -91,7 +91,7 @@ nsxv_create_terminate_networks
 
 core
 
-**Requre to automate**
+**Require to automate**
 
 Yes
 
@@ -131,7 +131,7 @@ nsxv_assign_multiple_vnic
 
 core
 
-**Requre to automate**
+**Require to automate**
 
 Yes
 
@@ -146,7 +146,7 @@ Yes
  Check abilities to assign multiple vNIC net01 and net02 to VM_1 .
 
  Check abilities to assign multiple vNIC net01 and net02 to VM_2.
- Send icmp ping from VM _1 to VM_2  and vice versa.VM_1 and VM_2 should be attached to multiple vNIC net01 and net02.
+ Send ICMP ping from VM _1 to VM_2  and vice versa.VM_1 and VM_2 should be attached to multiple vNIC net01 and net02.
 
 **Expected result**
 
@@ -168,7 +168,7 @@ nsxv_connectivity_in_one_tenant
 
 core
 
-**Requre to automate**
+**Require to automate**
 
 Yes
 
@@ -205,7 +205,7 @@ nsxv_connectivity_between_different_networks
 
 core
 
-**Requre to automate**
+**Require to automate**
 
 Yes
 
@@ -257,7 +257,7 @@ nsxv_connectivity_via_shared_router
 
 core
 
-**Requre to automate**
+**Require to automate**
 
 Yes
 

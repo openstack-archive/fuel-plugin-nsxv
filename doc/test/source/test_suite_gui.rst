@@ -17,7 +17,7 @@ nsxv_plugin
 
 smoke
 
-**Requre to automate**
+**Require to automate**
 
 Yes
 
