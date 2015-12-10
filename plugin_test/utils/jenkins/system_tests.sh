@@ -230,6 +230,16 @@ CheckVariables() {
     exit $NOWORKSPACE_ERR
   fi
 
+  if [ -z "${POOL_PUBLIC}" ]; then
+    export POOL_PUBLIC='172.16.0.0/24:24'
+  fi
+  if [ -z "${POOL_MANAGEMENT}" ]; then
+    export POOL_MANAGEMENT='172.16.1.0/24:24'
+  fi
+  if [ -z "${POOL_PRIVATE}" ]; then
+    export POOL_PRIVATE='192.168.0.0/24:24'
+  fi
+
   # Vcenter variables
   if [ -z "${DISABLE_SSL}" ]; then
     export DISABLE_SSL="true"
@@ -276,7 +286,12 @@ CheckVariables() {
     echo "Error! WORKSTATION_PASSWORD is not set!"
     exit 1
   fi
+
   # NSXv variables
+  if [ -z "${NSXV_PLUGIN_PATH}" ]; then
+    echo "Error! NSXV_PLUGIN_PATH is not set!"
+    exit 1
+  fi
   if [ -z "${NEUTRON_SEGMENT_TYPE}" ]; then
     export NEUTRON_SEGMENT_TYPE="tun"
   fi
@@ -331,9 +346,6 @@ CheckVariables() {
   fi
   if [ -z "${NSXV_INSECURE}" ]; then
     export NSXV_INSECURE='true'
-  fi
-  if [ -z "${JOB_NAME}" ]; then
-    export JOB_NAME="nsxv_system_test"
   fi
 
   # Export settings
