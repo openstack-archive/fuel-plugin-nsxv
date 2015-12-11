@@ -11,3 +11,11 @@ version=$(sed -rn 's/^version:\s*([0-9.])/\1/p' $ROOT/metadata.yaml)
 name=$(sed -rn 's/^name:\s*(.*)/\1/p' $ROOT/metadata.yaml)
 
 sed -i "s/NAME/$name/" $ROOT/deployment_scripts/puppet/manifests/hiera-override.pp
+
+REPO_PATH='https://github.com/openstack/fuel-library/tarball/9dd5dbdf9c8851b268b7e81df525e4332c6d42eb'
+
+MODULES="${ROOT}"/deployment_scripts/puppet/modules
+wget -qO- "${REPO_PATH}" | tar -C "${MODULES}" --strip-components=3 -zxvf - openstack-fuel-library-9dd5dbd/deployment/puppet/openstack
+
+# Download upstream puppet modules that are not in fuel-library/
+./update_modules.sh
