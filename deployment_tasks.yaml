@@ -5,7 +5,7 @@
   requires: [globals]
   parameters:
     puppet_manifest: puppet/manifests/hiera-override.pp
-    puppet_modules: puppet/modules:/etc/puppet/modules
+    puppet_modules: puppet/modules
     timeout: 120
 - id: gem-install
   type: puppet
@@ -23,7 +23,7 @@
   requires: [top-role-compute]
   parameters:
     puppet_manifest: puppet/manifests/compute-vmware-nova-config.pp
-    puppet_modules: puppet/modules:/etc/puppet/modules
+    puppet_modules: puppet/modules
     timeout: 300
 - id: openstack-haproxy-nova-metadata-public_vip
   type: puppet
@@ -32,7 +32,7 @@
   requires: [openstack-haproxy-nova]
   parameters:
     puppet_manifest: puppet/manifests/haproxy-nova-metadata-config.pp
-    puppet_modules: puppet/modules:/etc/puppet/modules
+    puppet_modules: puppet/modules
     timeout: 120
 - id: nsxv-install
   type: puppet
@@ -41,7 +41,7 @@
   requires: [hiera-override,openstack-network-server-config]
   parameters:
     puppet_manifest: puppet/manifests/nsxv-config.pp
-    puppet_modules: puppet/modules:/etc/puppet/modules
+    puppet_modules: puppet/modules
     timeout: 300
 - id: configure_default_route_cinder_vmware
   type: puppet
@@ -105,7 +105,7 @@
   requires: [openstack-network-neutron-policy]
   parameters:
     puppet_manifest: puppet/manifests/neutron-server-start.pp
-    puppet_modules: puppet/modules:/etc/puppet/modules
+    puppet_modules: puppet/modules
     timeout: 1800
 - id: openstack-network-networks-nsxv
   type: puppet
@@ -114,7 +114,7 @@
   requires: [openstack-network-neutron-start]
   parameters:
     puppet_manifest: puppet/manifests/neutron-network-create.pp
-    puppet_modules: puppet/modules:/etc/puppet/modules
+    puppet_modules: puppet/modules
     timeout: 600
 - id: horizon-enable-lbaas
   type: puppet
