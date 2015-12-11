@@ -7,13 +7,19 @@ To build the plugin you first need to install fuel-plugin-build 3.0.0[1_]
 
   $ pip install fuel-plugin-builder==3.0.0
 
-After that you can build plugin:
+After that you can build the plugin:
 
 .. code-block:: bash
 
   $ git clone https://git.openstack.org/openstack/fuel-plugin-nsxv
 
   $ cd fuel-plugin-nsxv/
+
+Now you need to fetch upstream puppet modules that plugin use:
+
+.. code-block:: bash
+
+  $ ./update_modules.sh
 
   $ fpb --build .
 

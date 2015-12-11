@@ -3,7 +3,7 @@
   type: puppet
   parameters:
     puppet_manifest: puppet/manifests/add-public-key-to-controller.pp
-    puppet_modules: puppet/modules:/etc/puppet/modules
+    puppet_modules: puppet/modules
     timeout: 120
 - role: ['compute-vmware']
   stage: post_deployment/6010
