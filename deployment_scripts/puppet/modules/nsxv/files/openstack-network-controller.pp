@@ -5,7 +5,7 @@ $policy_file = '/etc/neutron/policy.d/nsxv.json'
 
 $neutron_config  = hiera_hash('quantum_settings')
 $rabbit_hash     = hiera_hash('rabbit_hash', {})
-$ceilometer_hash = hiera('ceilometer',{})
+$ceilometer_hash = hiera_hash('ceilometer',{})
 $nova_hash       = hiera_hash('nova', {})
 $network_scheme  = hiera('network_scheme', {})
 

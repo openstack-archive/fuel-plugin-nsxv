@@ -4,7 +4,7 @@ class nsxv (
   $neutron_plugin_name = 'python-vmware-nsx',
 ) {
 
-  $quantum_settings = hiera('quantum_settings')
+  $quantum_settings = hiera_hash('quantum_settings')
 
   $settings = hiera('nsxv')
 
