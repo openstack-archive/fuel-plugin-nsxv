@@ -28,6 +28,7 @@ Documentation contents
    source/environment
    source/configuration
    source/usage
+   source/release-notes
 
 
 Pre-built package of the plugin you can find in
