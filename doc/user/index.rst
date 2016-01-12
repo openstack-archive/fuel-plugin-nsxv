@@ -28,3 +28,4 @@ Documentation contents
    source/configuration
    source/usage
    source/known_issues
+   source/release-notes
