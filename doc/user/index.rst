@@ -28,3 +28,7 @@ Documentation contents
    source/configuration
    source/usage
    source/known_issues
+   source/release-notes
+
+Pre-built package of the plugin you can find in
+`Fuel Plugin Catalog <https://www.mirantis.com/products/openstack-drivers-and-plugins/fuel-plugins>`_.
