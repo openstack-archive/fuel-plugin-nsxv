@@ -267,7 +267,7 @@ attributes:
         action: 'hide'
   nsxv_dhcp_lease_time:
     value: ''
-    label: 'DHCP lease time'
+    label: 'DHCP lease time (sec)'
     description: ''
     weight: 180
     type: 'text'
@@ -276,7 +276,7 @@ attributes:
         action: 'hide'
   nsxv_locking_coordinator_url:
     value: ''
-    label: 'Coordinator url'
+    label: 'Coordinator URL'
     description: 'URL for distributed locking coordinator'
     weight: 185
     type: 'text'

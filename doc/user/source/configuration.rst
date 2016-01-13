@@ -8,8 +8,8 @@ tick the plugin checkbox to enable it.
    :scale: 60 %
 
 Several plugins input fields refer to MoRef ID (Managed Object Reference ID),
-these are object IDs can be obtained via Managed Object Browser which is
-located on the vCenter host, e.g. https://hostname.yourdomain.org/mob
+these object IDs can be obtained via Managed Object Browser which is located on
+the vCenter host, e.g. https://hostname.yourdomain.org/mob
 
 Plugin contains the following settings:
 
@@ -89,7 +89,7 @@ Plugin contains the following settings:
    certificate file* setting will appear providing an option to upload
    CA certificate which emitted NSX Manager certificate.
 
-To enable Nova metadata service, set the following settings must be set:
+   To enable Nova metadata service, set the following settings must be set:
 
 #. Metadata portgroup MoRef ID -- portgroup MoRef ID for metadata proxy service
 
@@ -102,8 +102,8 @@ To enable Nova metadata service, set the following settings must be set:
 #. Management network default gateway -- management network gateway for
    metadata proxy service.
 
-If you tick *Additional settings* checkbox following options will become
-available for configuration:
+   If you tick *Additional settings* checkbox following options will become
+   available for configuration:
 
 #. Task status check interval -- asynchronous task status check interval,
    default is 2000 (millisecond).
@@ -111,7 +111,7 @@ available for configuration:
 #. Maximum tunnels per vnic -- specify maximum amount of tunnels per vnic,
    possible range of values 1-110 (20 is used if no other value is provided).
 
-#. API retries -- maximum number of API retries (10 by default)
+#. API retries -- maximum number of API retries (10 by default).
 
 #. Enable SpoofGuard -- option allows to control behaviour of port-security
    feature that prevents traffic flow if IP address of VM that was reported by
@@ -120,3 +120,29 @@ available for configuration:
 
 #. Tenant router types -- ordered list of preferred tenant router types (default
    value is 'shared, distributed, exclusive').
+
+#. Exclusive router type -- size of edge for exclusive router
+   (value must be one of *compact*, *large*, *quadlarge* or *xlarge*).
+
+#. Edge user -- user that will be created on Edge VMs for remote login.
+
+#. Edge password -- password for Edge VMs.  It must match following rules
+
+   * not less 12 characters (max 255 chars)
+   * at least 1 upper case letter
+   * at least 1 lower case letter
+   * at least 1 number
+   * at least 1 special character
+
+   .. warning::
+
+      Plugin cannot verify that password does conforms policy. If you enter
+      password that does not match policy, Neutron server will be not able to
+      create routers and deployment process will stop, because NSX will not
+      permit creating Edge nodes with password that does not match security
+      policy.
+
+#. DHCP lease time -- DHCP lease time in seconds for VMs. Default value is
+   86400 (24 hours).
+
+#. Coordinator URL -- URL for distributed locking coordinator.
