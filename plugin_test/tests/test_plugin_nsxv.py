@@ -91,43 +91,48 @@ class TestNSXvPlugin(TestBasic):
             self.fuel_web.check_plugin_exists(cluster_id, self.plugin_name),
             "Test aborted")
 
-        plugin_settings = {'metadata/enabled': True,
-                           '#1_nsxv_manager_host/value': self.nsxv_manager_ip,
-                           '#1_nsxv_insecure/value': self.nsxv_insecure,
-                           '#1_nsxv_user/value': self.nsxv_user,
-                           '#1_nsxv_password/value': self.nsxv_password,
-                           '#1_nsxv_datacenter_moid/value':
+        plugin_settings = {'nsxv_manager_host': self.nsxv_manager_ip,
+                           'nsxv_insecure': self.nsxv_insecure,
+                           'nsxv_user': self.nsxv_user,
+                           'nsxv_password': self.nsxv_password,
+                           'nsxv_datacenter_moid':
                            self.nsxv_datacenter_moid,
-                           '#1_nsxv_cluster_moid/value': self.nsxv_cluster_moid,
-                           '#1_nsxv_resource_pool_id/value':
+                           'nsxv_cluster_moid': self.nsxv_cluster_moid,
+                           'nsxv_resource_pool_id':
                            self.nsxv_resource_pool_id,
-                           '#1_nsxv_datastore_id/value': self.nsxv_datastore_id,
-                           '#1_nsxv_external_network/value':
+                           'nsxv_datastore_id': self.nsxv_datastore_id,
+                           'nsxv_external_network':
                            self.nsxv_external_network,
-                           '#1_nsxv_vdn_scope_id/value': self.nsxv_vdn_scope_id,
-                           '#1_nsxv_dvs_id/value': self.nsxv_dvs_id,
-                           '#1_nsxv_backup_edge_pool/value':
+                           'nsxv_vdn_scope_id': self.nsxv_vdn_scope_id,
+                           'nsxv_dvs_id': self.nsxv_dvs_id,
+                           'nsxv_backup_edge_pool':
                            self.nsxv_backup_edge_pool,
-                           '#1_nsxv_mgt_net_moid/value': self.nsxv_mgt_net_moid,
-                           '#1_nsxv_mgt_net_proxy_ips/value':
+                           'nsxv_mgt_net_moid': self.nsxv_mgt_net_moid,
+                           'nsxv_mgt_net_proxy_ips':
                            self.nsxv_mgt_net_proxy_ips,
-                           '#1_nsxv_mgt_net_proxy_netmask/value':
+                           'nsxv_mgt_net_proxy_netmask':
                            self.nsxv_mgt_net_proxy_netmask,
-                           '#1_nsxv_mgt_net_default_gateway/value':
+                           'nsxv_mgt_net_default_gateway':
                            self.nsxv_mgt_net_default_gw,
-                           '#1_nsxv_floating_ip_range/value':
+                           'nsxv_floating_ip_range':
                            self.nsxv_floating_ip_range,
-                           '#1_nsxv_floating_net_cidr/value':
+                           'nsxv_floating_net_cidr':
                            self.nsxv_floating_net_cidr,
-                           '#1_nsxv_internal_net_cidr/value':
+                           'nsxv_internal_net_cidr':
                            self.nsxv_internal_net_cidr,
-                           '#1_nsxv_floating_net_gw/value':
+                           'nsxv_floating_net_gw':
                            self.nsxv_floating_net_gw,
-                           '#1_nsxv_internal_net_dns/value':
+                           'nsxv_internal_net_dns':
                            self.nsxv_internal_net_dns,
-                           '#1_nsxv_edge_ha/value': self.nsxv_edge_ha}
-        self.fuel_web.update_plugin_data(cluster_id, self.plugin_name,
-                                         plugin_settings)
+                           'nsxv_edge_ha': self.nsxv_edge_ha}
+
+        attrs = self.fuel_web.client.get_cluster_attributes(cluster_id)
+        plugin_data = attrs['editable'][self.plugin_name]
+        plugin_data['metadata']['enabled'] = True
+        for setting, value in plugin_settings.iteritems():
+            plugin_data['metadata']['versions'][0][setting]['value'] = value
+
+        self.fuel_web.client.update_cluster_attributes(cluster_id, attrs)
 
     def create_instances(self, os_conn=None, vm_count=None, nics=None,
                          security_group=None):
