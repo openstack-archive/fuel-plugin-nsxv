@@ -9,7 +9,6 @@
     - name: "hypervisor:vmware"
       message: "NSXv requires use vCenter."
   incompatible:
-    - name: "hypervisor:libvirt:*"
     - name: "hypervisor:hyperv"
     - name: "hypervisor:xen"
     - name: "network:neutron:core:ml2"
