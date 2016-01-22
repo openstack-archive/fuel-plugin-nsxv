@@ -351,15 +351,6 @@ class TestNSXvPlugin(TestBasic):
         router = self.add_router(cluster_id, 'router_04', public_net)
         self.add_subnet_to_router(cluster_id, router['id'], subnet_private['id'])
 
-    def install_patch(self):
-        # Installing patch on admin node
-        with self.env.d_env.get_admin_remote() as admin_remote:
-            cmd = "yum install -y patch"
-            logger.info("Install patch")
-            res = admin_remote.execute(cmd)
-            assert_true(
-                res['exit_code'] == 0)
-
     net1 = {'name': 'net_1', 'cidr': '192.168.112.0/24'}
     net2 = {'name': 'net_2', 'cidr': '192.168.113.0/24'}
 
@@ -379,7 +370,6 @@ class TestNSXvPlugin(TestBasic):
         """
         self.env.revert_snapshot('ready_with_5_slaves', skip_timesync=True)
 
-        self.install_patch()
         self.install_nsxv_plugin()
 
         # Configure cluster
@@ -407,8 +397,7 @@ class TestNSXvPlugin(TestBasic):
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
-            test_sets=['smoke'], should_fail=1,
-            failed_test_name=['vCenter: Launch instance'])
+            test_sets=['smoke'])
 
         self.env.make_snapshot("deploy_nsxv", is_make=True)
 
@@ -437,6 +426,8 @@ class TestNSXvPlugin(TestBasic):
 
         settings = self.get_settings()
         settings["images_vcenter"] = True
+        settings['volumes_ceph'] = True
+        settings['volumes_lvm'] = False
         # Configure cluster
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
@@ -450,10 +441,13 @@ class TestNSXvPlugin(TestBasic):
             {'slave-01': ['controller'],
              'slave-02': ['controller'],
              'slave-03': ['controller'],
-             'slave-04': ['compute-vmware'],
-             'slave-05': ['cinder-vmware'], })
+             'slave-04': ['ceph-osd'],
+             'slave-05': ['ceph-osd'],
+             'slave-06': ['ceph-osd'],
+             'slave-07': ['compute-vmware'],
+             'slave-08': ['cinder-vmware'], })
 
-        target_node_1 = self.node_name('slave-04')
+        target_node_1 = self.node_name('slave-07')
 
         # Configure VMWare vCenter settings
         self.fuel_web.vcenter_configure(cluster_id,
@@ -527,8 +521,7 @@ class TestNSXvPlugin(TestBasic):
             {'slave-01': ['controller'],
              'slave-02': ['controller'],
              'slave-03': ['controller'],
-             'slave-04': ['compute-vmware'],
-             'slave-05': ['cinder-vmware'], })
+             'slave-04': ['compute-vmware'],})
 
         target_node_1 = self.node_name('slave-04')
 
@@ -539,9 +532,22 @@ class TestNSXvPlugin(TestBasic):
                                         target_node_1=target_node_1)
 
         self.enable_plugin(cluster_id=cluster_id)
-        self.fuel_web.deploy_cluster_wait(cluster_id, timeout=180 * 60)
+        self.fuel_web.verify_network(cluster_id)
+        self.fuel_web.deploy_cluster_wait(cluster_id, timeout=240 * 60)
 
-        self.create_all_necessary_staff(cluster_id)
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id, test_sets=['smoke'])
+
+
+        # Add 1 node with cinder-vmware role and redeploy cluster
+        self.fuel_web.update_nodes(
+            cluster_id,
+            {
+                'slave-05': ['cinder-vmware'],
+            }
+        )
+
+        self.fuel_web.deploy_cluster_wait(cluster_id)
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id, test_sets=['smoke'])
@@ -551,18 +557,13 @@ class TestNSXvPlugin(TestBasic):
             cluster_id,
             {'slave-05': ['cinder-vmware'], }, False, True)
 
-        # Add 1 node with cinder role and redeploy cluster
-        self.fuel_web.update_nodes(
-            cluster_id,
-            {
-                'slave-06': ['cinder'],
-            }
-        )
 
         self.fuel_web.deploy_cluster_wait(cluster_id)
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id, test_sets=['smoke'])
+
+
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_9],
           groups=["nsxv_add_delete_controller", "nsxv_plugin"])
@@ -600,13 +601,6 @@ class TestNSXvPlugin(TestBasic):
             mode=DEPLOYMENT_MODE,
             settings=settings,
         )
-
-        # Configure VMWare vCenter settings
-        self.fuel_web.vcenter_configure(cluster_id,
-                                        vc_glance=True)
-
-        self.enable_plugin(cluster_id=cluster_id)
-
         # Assign role to node
         self.fuel_web.update_nodes(
             cluster_id,
@@ -616,9 +610,19 @@ class TestNSXvPlugin(TestBasic):
              'slave-04': ['controller'],
              'slave-05': ['cinder-vmware'],
              'slave-06': ['compute-vmware'], })
-        self.fuel_web.deploy_cluster_wait(cluster_id, timeout=180 * 60)
-        self._create_net_int(cluster_id)
-        self.create_net_public(cluster_id)
+
+        target_node_1 = self.node_name('slave-06')
+
+        # Configure VMWare vCenter settings
+        self.fuel_web.vcenter_configure(cluster_id,
+                                        vc_glance=True,
+                                        multiclusters=True,
+                                        target_node_1=target_node_1
+        )
+
+        self.enable_plugin(cluster_id=cluster_id)
+        self.fuel_web.verify_network(cluster_id)
+        self.fuel_web.deploy_cluster_wait(cluster_id, timeout=240 * 60)
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id, test_sets=['smoke', 'sanity'])
@@ -630,11 +634,9 @@ class TestNSXvPlugin(TestBasic):
 
         self.fuel_web.deploy_cluster_wait(cluster_id, check_services=False)
 
-        # Fixme #1457515 in 8.0
         self.fuel_web.run_ostf(
             cluster_id=cluster_id, test_sets=['smoke', 'sanity', 'ha'],
-            should_fail=1,
-            failed_test_name=['Check that required services are running'])
+        )
 
         # Add node with controller role
         self.fuel_web.update_nodes(
@@ -646,11 +648,9 @@ class TestNSXvPlugin(TestBasic):
 
         self.fuel_web.deploy_cluster_wait(cluster_id, check_services=False)
 
-        # Fixme #1457515 in 8.0
         self.fuel_web.run_ostf(
             cluster_id=cluster_id, test_sets=['smoke', 'sanity', 'ha'],
-            should_fail=1,
-            failed_test_name=['Check that required services are running'])
+        )
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],
           groups=["nsxv_reset_controller", 'nsxv_plugin'])
@@ -877,7 +877,7 @@ class TestNSXvPlugin(TestBasic):
 
         """
         self.env.revert_snapshot("ready_with_5_slaves", skip_timesync=True)
-        self.install_patch()
+
         self.install_nsxv_plugin()
 
         settings = self.get_settings()
@@ -896,16 +896,16 @@ class TestNSXvPlugin(TestBasic):
             {'slave-01': ['controller', 'mongo'],
              'slave-02': ['controller', 'mongo'],
              'slave-03': ['controller', 'mongo'],
-             #'slave-04': ['compute-vmware']
+             'slave-04': ['compute-vmware']
              }
         )
-        #target_node_1 = self.node_name('slave-04')
+        target_node_1 = self.node_name('slave-04')
 
         # Configure VMWare vCenter settings
         self.fuel_web.vcenter_configure(cluster_id,
                                         vc_glance=True,
                                         multiclusters=True,
-                                        #target_node_1=target_node_1
+                                        target_node_1=target_node_1
         )
 
         self.enable_plugin(cluster_id=cluster_id)
@@ -914,8 +914,8 @@ class TestNSXvPlugin(TestBasic):
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
-            test_sets=['smoke', 'tests_platform'], should_fail=1,
-            failed_test_name=['vCenter: Launch instance'])
+            test_sets=['smoke', 'tests_platform'],
+        )
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],
           groups=["nsxv_ha_mode", "nsxv_plugin"])
@@ -939,6 +939,7 @@ class TestNSXvPlugin(TestBasic):
         self.install_nsxv_plugin()
 
         settings = self.get_settings()
+        settings["images_vcenter"] = True
         # Configure cluster
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
@@ -946,28 +947,26 @@ class TestNSXvPlugin(TestBasic):
             settings=settings,
         )
 
-        # Configure VMWare vCenter settings
-        self.fuel_web.vcenter_configure(cluster_id,
-                                        multiclusters=True)
-
-        self.enable_plugin(cluster_id=cluster_id)
-
         # Assign role to node
         self.fuel_web.update_nodes(
             cluster_id,
             {'slave-01': ['controller'],
              'slave-02': ['controller'],
-             'slave-03': ['controller'], }
+             'slave-03': ['controller'],
+             'slave-04': ['compute-vmware'], }
         )
-        self.fuel_web.deploy_cluster_wait(cluster_id, timeout=80 * 60)
+        target_node_1 = self.node_name('slave-04')
 
-        os_ip = self.fuel_web.get_public_vip(cluster_id)
-        os_conn = os_actions.OpenStackActions(
-            os_ip, SERVTEST_USERNAME,
-            SERVTEST_PASSWORD,
-            SERVTEST_TENANT)
+        # Configure VMWare vCenter settings
+        self.fuel_web.vcenter_configure(cluster_id,
+                                        vc_glance=True,
+                                        multiclusters=True,
+                                        target_node_1=target_node_1
+        )
 
-        self.create_all_necessary_staff(cluster_id)
+        self.enable_plugin(cluster_id=cluster_id)
+        self.fuel_web.verify_network(cluster_id)
+        self.fuel_web.deploy_cluster_wait(cluster_id, timeout=200 * 60)
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id, test_sets=['smoke'])
@@ -996,7 +995,8 @@ class TestNSXvPlugin(TestBasic):
 
         settings = self.get_settings()
         settings["images_vcenter"] = True
-        settings["volumes_lvm"] = True
+        settings['volumes_ceph'] = True
+        settings['volumes_lvm'] = False
         # Configure cluster
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
@@ -1015,8 +1015,8 @@ class TestNSXvPlugin(TestBasic):
         self.fuel_web.update_nodes(
             cluster_id,
             {'slave-01': ['controller'],
-             'slave-02': ['cinder'],
-             'slave-03': ['cinder'],
+             'slave-02': ['ceph-osd'],
+             'slave-03': ['ceph-osd'],
              'slave-04': ['cinder-vmware'],
              'slave-05': ['cinder-vmware']}
         )
@@ -1285,7 +1285,6 @@ class TestNSXvPlugin(TestBasic):
 
         self.env.revert_snapshot('ready_with_3_slaves', skip_timesync=True)
 
-        self.install_patch()
         self.install_nsxv_plugin()
 
         # Check that plugin has been installed

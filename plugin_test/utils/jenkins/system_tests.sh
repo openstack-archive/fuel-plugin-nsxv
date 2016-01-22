@@ -315,13 +315,13 @@ CheckVariables() {
     export NSXV_DATASTORE_ID='datastore-138'
   fi
   if [ -z "${NSXV_EXTERNAL_NETWORK}" ]; then
-    export NSXV_EXTERNAL_NETWORK='network-222'
+    export NSXV_EXTERNAL_NETWORK='dvportgroup-319'
   fi
   if [ -z "${NSXV_VDN_SCOPE_ID}" ]; then
     export NSXV_VDN_SCOPE_ID='vdnscope-1'
   fi
   if [ -z "${NSXV_DVS_ID}" ]; then
-    export NSXV_DVS_ID='dvs-141'
+    export NSXV_DVS_ID='dvs-309'
   fi
   if [ -z "${NSXV_BACKUP_EDGE_POOL}" ]; then
     export NSXV_BACKUP_EDGE_POOL='service:compact:1:2,vdr:compact:1:2'
@@ -330,7 +330,7 @@ CheckVariables() {
     export NSXV_MGT_NET_MOID='network-222'
   fi
   if [ -z "${NSXV_MGT_NET_PROXY_IPS}" ]; then
-    export NSXV_MGT_NET_PROXY_IPS='172.16.0.29'
+    export NSXV_MGT_NET_PROXY_IPS='172.16.0.11'
   fi
   if [ -z "${NSXV_MGT_NET_PROXY_NETMASK}" ]; then
     export NSXV_MGT_NET_PROXY_NETMASK='255.255.255.0'
@@ -346,13 +346,13 @@ CheckVariables() {
   fi
 
   if [ -z "${NSXV_FLOATING_IP_RANGE}" ]; then
-    export NSXV_FLOATING_IP_RANGE='172.16.0.30-172.16.0.40'
+    export NSXV_FLOATING_IP_RANGE='172.16.211.100-172.16.211.150'
   fi
   if [ -z "${NSXV_FLOATING_NET_CIDR}" ]; then
-    export NSXV_FLOATING_NET_CIDR='172.16.0.0/24'
+    export NSXV_FLOATING_NET_CIDR='172.16.211.0/24'
   fi
   if [ -z "${NSXV_FLOATING_NET_GW}" ]; then
-    export NSXV_FLOATING_NET_GW='172.16.0.1'
+    export NSXV_FLOATING_NET_GW='172.16.211.1'
   fi
   if [ -z "${NSXV_INTERNAL_NET_CIDR}" ]; then
     export NSXV_INTERNAL_NET_CIDR='192.168.0.0/24'
