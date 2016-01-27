@@ -1,7 +1,8 @@
 notice('fuel-plugin-nsxv: neutron-network-create.pp')
 
 # NOT enabled by default
-$use_neutron         = hiera('use_neutron', false)
+$plugin_name = 'NAME'
+$use_neutron = hiera('use_neutron', false)
 
 if ($use_neutron) {
   $access_hash     = hiera_hash('access',{})
@@ -10,7 +11,7 @@ if ($use_neutron) {
   $floating_net    = try_get_value($neutron_config, 'default_floating_net', 'net04_ext')
   $internal_net    = try_get_value($neutron_config, 'default_private_net', 'net04')
   $os_tenant_name  = $access_hash['tenant']
-  $settings        = hiera('nsxv')
+  $settings        = hiera($plugin_name)
 
   if !empty($settings['nsxv_floating_ip_range']) and !empty($settings['nsxv_floating_net_cidr']) {
     $floating_ip_range = split($settings['nsxv_floating_ip_range'], '-')
