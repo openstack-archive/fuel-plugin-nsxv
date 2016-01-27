@@ -1,6 +1,6 @@
 - id: hiera-override
   type: puppet
-  groups: ['primary-controller','controller','compute-vmware']
+  groups: [primary-controller,controller,compute-vmware]
   required_for: [netconfig]
   requires: [globals]
   parameters:
@@ -9,7 +9,7 @@
     timeout: 120
 - id: compute-vmware-nova-config
   type: puppet
-  groups: ['compute-vmware']
+  groups: [compute-vmware]
   required_for: [top-role-compute-vmware]
   requires: [top-role-compute]
   parameters:
@@ -18,7 +18,7 @@
     timeout: 300
 - id: openstack-haproxy-nova-metadata-public_vip
   type: puppet
-  groups: ['primary-controller','controller']
+  groups: [primary-controller,controller]
   required_for: [openstack-haproxy]
   requires: [openstack-haproxy-nova]
   parameters:
@@ -27,7 +27,7 @@
     timeout: 120
 - id: nsxv-install
   type: puppet
-  groups: ['primary-controller','controller']
+  groups: [primary-controller,controller]
   required_for: [openstack-network-neutron-start]
   requires: [hiera-override,openstack-network-server-config]
   parameters:
@@ -36,7 +36,7 @@
     timeout: 300
 - id: configure_default_route_cinder_vmware
   type: puppet
-  groups: ['cinder-vmware']
+  groups: [cinder-vmware]
   requires: [openstack-cinder]
   required_for: [top-role-cinder-vmware]
   parameters:
@@ -45,33 +45,39 @@
     timeout: 300
 - id: configure_default_route_compute_vmware
   type: puppet
-  groups: ['compute-vmware']
+  groups: [compute-vmware]
   requires: [top-role-compute]
   required_for: [top-role-compute-vmware]
   parameters:
     puppet_manifest: /etc/puppet/modules/osnailyfacter/modular/netconfig/configure_default_route.pp
     puppet_modules: /etc/puppet/modules
     timeout: 300
-- id: openstack-haproxy-neutron
-  type: skipped
 - id: openstack-haproxy-neutron-nsxv
   type: puppet
   groups: [primary-controller, controller]
   required_for: [openstack-haproxy]
-  requires: [deploy_start, cluster-haproxy]
+  requires: [deploy_start, openstack-haproxy-neutron]
   parameters:
     puppet_manifest: puppet/manifests/neutron-haproxy-config.pp
-    puppet_modules: puppet/modules:/etc/puppet/modules
-    timeout: 300
+    puppet_modules: puppet/modules
+    timeout: 120
 - id: openstack-network-plugins-l2
+  type: skipped
+- id: primary-openstack-network-plugins-l2
   type: skipped
 - id: openstack-network-networks
   type: skipped
 - id: openstack-network-agents-l3
   type: skipped
+- id: primary-openstack-network-agents-l3
+  type: skipped
 - id: openstack-network-agents-dhcp
   type: skipped
+- id: primary-openstack-network-agents-dhcp
+  type: skipped
 - id: openstack-network-agents-metadata
+  type: skipped
+- id: primary-openstack-network-agents-metadata
   type: skipped
 - id: openstack-network-neutron-policy
   type: puppet
@@ -83,6 +89,7 @@
     puppet_modules: puppet/modules
     timeout: 300
 - id: openstack-network-neutron-start
+  refresh_on: [neutron_config]
   type: puppet
   groups: [primary-controller,controller]
   required_for: [openstack-network-server-nova]

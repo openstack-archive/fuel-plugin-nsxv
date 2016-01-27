@@ -10,4 +10,4 @@ ROOT="$(dirname `readlink -f $0`)"
 version=$(sed -rn 's/^version:\s*([0-9.])/\1/p' $ROOT/metadata.yaml)
 name=$(sed -rn 's/^name:\s*(.*)/\1/p' $ROOT/metadata.yaml)
 
-sed -i "s/NAME/$name/" $ROOT/deployment_scripts/puppet/manifests/hiera-override.pp
+sed -i "s/'NAME'/'$name'/" $ROOT/deployment_scripts/puppet/manifests/*.pp

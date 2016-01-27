@@ -2,11 +2,12 @@ class nsxv (
   $nsxv_config_dir = '/etc/neutron/plugins/vmware',
   $neutron_plugin_name = 'python-vmware-nsx',
   $lbaas_plugin_name = 'python-neutron-lbaas',
+  $plugin_name = 'nsxv'
 ) {
 
   $neutron_config = hiera_hash('neutron_config')
 
-  $settings = hiera('nsxv')
+  $settings = hiera($plugin_name)
 
   # Do not remove unused variables: template nsx.ini.erb refers to them
   $nova_metadata_ips = hiera('public_vip')
@@ -45,9 +46,10 @@ class nsxv (
     content => template("${module_name}/nsx.ini.erb"),
     require => File[$nsxv_config_dirs],
   }
-  # temprorary workaround for use nsx.ini
-  file { '/etc/default/neutron-server':
-    ensure  => file,
-    content => "CONF_ARG='--config-file ${nsxv_config_dir}/nsx.ini'",
+  file { '/etc/neutron/plugin.ini':
+    ensure  => link,
+    target  => "${nsxv_config_dir}/nsx.ini",
+    replace => true,
+    require => File[$nsxv_config_dirs]
   }
 }
