@@ -45,9 +45,10 @@ class nsxv (
     content => template("${module_name}/nsx.ini.erb"),
     require => File[$nsxv_config_dirs],
   }
-  # temprorary workaround for use nsx.ini
-  file { '/etc/default/neutron-server':
-    ensure  => file,
-    content => "CONF_ARG='--config-file ${nsxv_config_dir}/nsx.ini'",
+  file { '/etc/neutron/plugin.ini':
+    ensure  => link,
+    target  => "${nsxv_config_dir}/nsx.ini",
+    replace => true,
+    require => File[$nsxv_config_dirs]
   }
 }
