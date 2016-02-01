@@ -11,10 +11,10 @@ Plugin installs Neutron NSX core plugin and allows logical network equipment
 
 Plugin version 1.x.x series is compatible with Fuel 7.0.
 
-Plugin can work with VMware NSX 6.1.3, 6.1.4.
+Plugin can work with VMware NSX 6.1.3, 6.1.4, 6.2.1.
 
 Through documentation we use term "NSX" and "NSXv" interchangeably, both of
-these term refer to `VMware NSX virtualized network platform
+these terms refer to `VMware NSX virtualized network platform
 <https://www.vmware.com/products/nsx>`_.
 
 Documentation contents
