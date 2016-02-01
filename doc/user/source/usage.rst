@@ -56,6 +56,62 @@ NSX Edge nodes.
 
   $ neutron net-create External --router:external --provider:physical_network network-222
 
+Starting from version 2.0.0 plugin enables Neutron load balancing functionality
+and enables it in OpenStack dashboard (Horizon).
+
+.. note::
+
+  Load balancing functionality requires attachment of an **exclusive** or
+  **distributed** router to the subnet prior to provisioning of an load
+  balancer.
+
+Create exclusive or distributed router and connect it to subnet.
+
+.. code-block:: bash
+
+  $ neutron router-create --router_type exclusive r1
+  $ neutron router-interface-add r1 private-subnet
+
+Create servers.
+
+.. code-block:: bash
+
+  $ nova boot --image <image-uuid> --flavor m1.small www1
+  $ nova boot --image <image-uuid> --flavor m1.small www2
+
+Create a load balancer.
+
+.. code-block:: bash
+
+  $ neutron lbaas-loadbalancer-create --name http-lb private-subnet
+
+Create a listener.
+
+.. code-block:: bash
+
+  $ neutron lbaas-listener-create --loadbalancer http-lb --protocol HTTP --protocol-port 80 \
+        --name http-listener
+
+Create a pool.
+
+.. code-block:: bash
+
+  $ neutron lbaas-pool-create --lb-algorithm ROUND_ROBIN --listener http-listener \
+        --protocol HTTP --name http-pool
+
+Create members.
+
+.. code-block:: bash
+
+  $ neutron lbaas-member-create --subnet private-subnet --address <www1-ip> --protocol-port 80 http-pool
+  $ neutron lbaas-member-create --subnet private-subnet --address <www2-ip> --protocol-port 80 http-pool
+
+Create a healthmonitor and associate it with the pool.
+
+.. code-block:: bash
+
+  $ neutron lbaas-heathmonitor-create --delay 3 --type HTTP --max-retries 3
+  --timeout 5 --pool pool1
 
 OpenStack environment reset/deletion
 ------------------------------------
