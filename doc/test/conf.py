@@ -188,7 +188,7 @@ latex_elements = { 'classoptions': ',openany,oneside', 'babel': '\\usepackage[en
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-  ('index', 'FuelNSXvplugin.tex', u'Fuel NSXv plugin testing documentation',
+  ('index', 'nsxv-test-plan-' + version + '.tex', u'Fuel NSXv plugin testing documentation',
    u'Mirantis Inc.', 'manual'),
 ]
 
