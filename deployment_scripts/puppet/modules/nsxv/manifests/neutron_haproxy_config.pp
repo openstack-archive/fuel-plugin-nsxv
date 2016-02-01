@@ -6,7 +6,7 @@ class nsxv::neutron_haproxy_config {
     replace => true,
   }
   exec { 'neutron active/backup mode':
-    command     => "/tmp/neutron-haproxy-config.sh",
+    command     => '/tmp/neutron-haproxy-config.sh',
     logoutput   => on_failure,
     provider    => 'shell',
     require     => File['/tmp/neutron-haproxy-config.sh'],

@@ -1,11 +1,11 @@
 How to build the plugin
 =======================
 
-To build the plugin you first need to install fuel-plugin-build 3.0.0[1_]
+To build the plugin you first need to install fuel-plugin-build 4.0.0[1_]
 
 .. code-block:: bash
 
-  $ pip install fuel-plugin-builder==3.0.0
+  $ pip install fuel-plugin-builder==4.0.0
 
 After that you can build plugin:
 
@@ -24,6 +24,6 @@ to Fuel master node:
 
   $ ls nsxv-*.rpm
 
-  nsxv-1.0-1.0.0-1.noarch.rpm
+  nsxv-2.0-2.0.0-1.noarch.rpm
 
-.. [1] https://pypi.python.org/pypi/fuel-plugin-builder/3.0.0
+.. [1] https://pypi.python.org/pypi/fuel-plugin-builder/4.0.0

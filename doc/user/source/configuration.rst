@@ -31,7 +31,7 @@ Plugin contains the following settings:
 #. Datastore MoRef ID -- datastore for NSX Edge nodes.
 
 #. External portgroup MoRef ID -- portgroup through which NSX Edge nodes get
-   connectivity with physical network
+   connectivity with physical network.
 
 #. Transport zone MoRef ID -- transport zone for VXLAN logical networks.
 
@@ -41,7 +41,7 @@ Plugin contains the following settings:
       https://nsx-manager.yourdomain.org/api/2.0/vdn/scopes
 
 #. Distributed virtual switch MoRef ID -- ID of vswitch connected to Edge
-   cluster
+   cluster.
 
 #. NSX backup Edge pool -- size of NSX Edge nodes and size of Edge pool, value
    must follow format: <edge_type>:[edge_size]:<min_edges>:<max_edges>.
@@ -87,7 +87,7 @@ Plugin contains the following settings:
 
    To enable Nova metadata service, set the following settings must be set:
 
-#. Metadata portgroup MoRef ID -- portgroup MoRef ID for metadata proxy service
+#. Metadata portgroup MoRef ID -- portgroup MoRef ID for metadata proxy service.
 
 #. Metadata proxy IP addresses -- comma separated IP addresses used by Nova
    metadata proxy service.
@@ -133,12 +133,12 @@ Plugin contains the following settings:
 #. Tenant router types -- ordered list of preferred tenant router types (default
    value is 'shared, distributed, exclusive').
 
-#. Exclusive router type -- size of edge for exclusive router
+#. Exclusive router size -- size of edge for exclusive router
    (value must be one of *compact*, *large*, *quadlarge* or *xlarge*).
 
 #. Edge user -- user that will be created on Edge VMs for remote login.
 
-#. Edge password -- password for Edge VMs.  It must match following rules
+#. Edge password -- password for Edge VMs.  It must match following rules:
 
    * not less 12 characters (max 255 chars)
    * at least 1 upper case letter
