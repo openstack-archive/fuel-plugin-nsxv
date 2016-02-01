@@ -9,12 +9,18 @@ pre-existing vSphere infrastructure with NSX network virtualization platform.
 Plugin installs Neutron NSX core plugin and allows logical network equipment
 (routers, networks) to be created as NSX entities.
 
-Plugin version 1.x.x series is compatible with Fuel 7.0.
+Plugin can work with VMware NSX 6.1.3, 6.1.4, 6.2.1.
 
-Plugin can work with VMware NSX 6.1.3, 6.1.4.
+Plugin versions:
+
+* 2.x.x series is compatible with Fuel 8.0. Tests were done on plugin v2.0 with
+  VMware NSX 6.2.
+
+* 1.x.x series is compatible with Fuel 7.0. Tests were done on plugin v1.2 with
+  VMware NSX 6.1.4.
 
 Through documentation we use term "NSX" and "NSXv" interchangeably, both of
-these term refer to `VMware NSX virtualized network platform
+these terms refer to `VMware NSX virtualized network platform
 <https://www.vmware.com/products/nsx>`_.
 
 Documentation contents
