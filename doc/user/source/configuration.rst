@@ -26,15 +26,11 @@ Plugin contains the following settings:
 #. Datacenter MoRef ID -- ID of Datacenter where NSX Edge nodes will be
    deployed.
 
-#. Cluster MoRef IDs for OpenStack VMs -- list of comma separated IDs of
-   cluster where OpenStack VM instances will be launched.  You must obtain IDs
-   for clusters that you specified on VMware tab.
-
 #. Resource pool MoRef ID -- resource pool for NSX Edge nodes deployment.
 
 #. Datastore MoRef ID -- datastore for NSX Edge nodes.
 
-#. External portgroup -- portgroup through which NSX Edge nodes get
+#. External portgroup MoRef ID -- portgroup through which NSX Edge nodes get
    connectivity with physical network
 
 #. Transport zone MoRef ID -- transport zone for VXLAN logical networks.
@@ -101,6 +97,22 @@ Plugin contains the following settings:
 
 #. Management network default gateway -- management network gateway for
    metadata proxy service.
+
+   Plugin automatically create tenant, provider networks and
+   router connected to these networks.
+
+#. Floating IP ranges -- dash separated IP addresses allocation pool from
+   external network, e.g. "start_ip_address-end_ip_address".
+
+#. External network CIDR -- network in CIDR notation that includes floating IP ranges.
+
+#. Gateway -- default gateway for external network, if not defined, first IP address
+   of the network is used.
+
+#. Internal network CIDR -- network in CIDR notation for use as internal.
+
+#. DNS for internal network -- comma separated IP addresses of DNS server for
+   internal network.
 
    If you tick *Additional settings* checkbox following options will become
    available for configuration:
