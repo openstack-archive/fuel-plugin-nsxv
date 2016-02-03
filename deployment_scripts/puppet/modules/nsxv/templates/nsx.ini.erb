@@ -24,7 +24,7 @@ password = <%= settings['nsxv_password'] %>
 datacenter_moid = <%= settings['nsxv_datacenter_moid'] %>
 
 # (Required) Cluster IDs for clusters containing OpenStack hosts, comma separated
-cluster_moid = <%= settings['nsxv_cluster_moid'] %>
+cluster_moid = <%= scope.lookupvar('cluster_moid') %>
 
 # (Optional) Resource pool ID for NSX Edge deployment
 resource_pool_id = <%= settings['nsxv_resource_pool_id'] %>
