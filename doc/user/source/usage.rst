@@ -56,10 +56,75 @@ NSX Edge nodes.
 
   $ neutron net-create External --router:external --provider:physical_network network-222
 
+Starting from version 2.0.0 plugin enables Neutron load balancing functionality
+and enables it in OpenStack dashboard (Horizon).
+
+.. note::
+
+  Load balancing functionality requires attachment of an **exclusive** or
+  **distributed** router to the subnet prior to provisioning of an load
+  balancer.
+
+Create exclusive or distributed router and connect it to subnet.
+
+.. code-block:: bash
+
+  $ neutron router-create --router_type exclusive r1
+  $ neutron router-interface-add r1 private-subnet
+
+Create servers.
+
+.. code-block:: bash
+
+  $ nova boot --image <image-uuid> --flavor m1.small www1
+  $ nova boot --image <image-uuid> --flavor m1.small www2
+
+Create a load balancer pool.
+
+.. code-block:: bash
+
+  $ neutron lb-pool-create --lb-method ROUND_ROBIN --protocol HTTP --name http-pool \
+        --subnet-id <private-subnet-id>
+
+Create members.
+
+.. code-block:: bash
+
+  $ neutron lb-member-create --address <www1-ip> --protocol-port 80 http-pool
+  $ neutron lb-member-create --address <www2-ip> --protocol-port 80 http-pool
+
+Create a virtual IP address.
+
+.. code-block:: bash
+
+  $ neutron lb-vip-create --name lb_vip --subnet-id <private-subnet-id> \
+        --protocol-port 80 --protocol HTTP http-pool
+
+Allocate floating IP and associate it with VIP.
+
+.. code-block:: bash
+
+  $ neutron floatingip-create <public-net> --port-id <vip-port-uuid>
+
+Add rule that will allow HTTP traffic.
+
+.. code-block:: bash
+
+  $ neutron security-group-rule-create --protocol tcp --port-range-min 80 \
+        --port-range-max 80 default
+
+
+Create a healthmonitor and associate it with the pool.
+
+.. code-block:: bash
+
+  $ neutron lb-heathmonitor-create --delay 3 --type HTTP --max-retries 3
+        --timeout 5 --pool http-pool
+  $ neutron lb-healthmonitor-associate <healthmonitor_name> http-pool
 
 OpenStack environment reset/deletion
 ------------------------------------
 
 Fuel NSXv plugin does not provide cleanup functionality when OpenStack
-environment gets reseted or deleted.  All logical switches and edge virtual
+environment gets reset or deleted.  All logical switches and edge virtual
 machines remain intact, it is up to operator to delete them and free resources.
