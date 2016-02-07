@@ -37,8 +37,9 @@ used as default route for packets.
 Is is worth to mention that it is not possible to use compute nodes in this
 type of cluster, because NSX switch is not available for Linux only for ESXi,
 so it is not possible to pass traffic inside compute node that runs Linux and
-KVM.  Also it does not matter on which network interface you assign 'VM fixed'
-traffic, because it does not flow through controllers.
+KVM. Do not select KVM as a hypervisor type. Also it does not matter on which
+network interface you assign 'VM fixed' traffic, because it does not flow
+through controllers.
 
 *Floating IP ranges* are not used, because Neutron L3 agent is not used on
 Controller.
