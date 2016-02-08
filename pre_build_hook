@@ -11,3 +11,4 @@ version=$(sed -rn 's/^version:\s*([0-9.])/\1/p' $ROOT/metadata.yaml)
 name=$(sed -rn 's/^name:\s*(.*)/\1/p' $ROOT/metadata.yaml)
 
 sed -i "s/'NAME'/'$name'/" $ROOT/deployment_scripts/puppet/manifests/*.pp
+sed -i "s/'NAME'/'$name'/" $ROOT/deployment_scripts/puppet/modules/nsxv/files/reconf_neutron_with_new_compute.sh

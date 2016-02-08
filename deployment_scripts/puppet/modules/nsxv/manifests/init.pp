@@ -14,6 +14,7 @@ class nsxv (
   $nova_metadata_port = '8775'
   $metadata_shared_secret = $neutron_config['metadata']['metadata_proxy_shared_secret']
   $nsxv_config_dirs = [ '/etc/neutron', '/etc/neutron/plugins', '/etc/neutron/plugins/vmware' ]
+  $cluster_moid = get_vcenter_cluster_id($settings['nsxv_datacenter_moid'])
 
   if ! $settings['nsxv_insecure'] {
     $ca_certificate_content = $settings['nsxv_ca_file']['content']

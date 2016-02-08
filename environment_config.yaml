@@ -40,15 +40,6 @@ attributes:
     regex:
       source: '^[a-z]+-[a-z0-9]+$'
       error: 'Invalid datacenter MoRef ID'
-  nsxv_cluster_moid:
-    value: ''
-    label: 'Cluster MoRef IDs for OpenStack VMs'
-    description: 'Comma separated cluster MoRef IDs for OpenStack VMs, e.g. domain-c133,domain-c134'
-    weight: 40
-    type: 'text'
-    regex:
-      source: '^(?:[a-z]+-[a-z0-9]+)(?:,[a-z]+-[a-z0-9]+)*'
-      error: 'Invalid cluster MoRef IDs'
   nsxv_resource_pool_id:
     value: ''
     label: 'Resource pool MoRef ID'
@@ -160,7 +151,7 @@ attributes:
   nsxv_floating_net_cidr:
     value: ''
     label: 'External network CIDR'
-    description: 'Network in CIDR notation includes floating IP ranges'
+    description: 'Network in CIDR notation that includes floating IP ranges'
     weight: 115
     type: 'text'
     regex:
@@ -169,7 +160,7 @@ attributes:
   nsxv_floating_net_gw:
     value: ''
     label: 'Gateway'
-    description: 'Default gateway for external network, if not defined use first IP of the network address'
+    description: 'Default gateway for external network, if not defined, first IP address of the network is used'
     weight: 120
     type: 'text'
   nsxv_internal_net_cidr:

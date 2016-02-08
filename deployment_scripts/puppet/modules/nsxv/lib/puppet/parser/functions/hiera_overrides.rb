@@ -1,7 +1,12 @@
 require 'yaml'
 
 module Puppet::Parser::Functions
-  newfunction(:hiera_overrides) do |args|
+  newfunction(:hiera_overrides, :doc => <<-EOS
+Custom function to override hiera parameters, the first argument -
+file name, where write new parameters in yaml format, ex:
+   hiera_overrides('/etc/hiera/test.yaml')
+EOS
+  ) do |args|
     filename = args[0]
     hiera_overrides = {}
 

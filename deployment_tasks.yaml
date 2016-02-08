@@ -7,6 +7,15 @@
     puppet_manifest: puppet/manifests/hiera-override.pp
     puppet_modules: puppet/modules:/etc/puppet/modules
     timeout: 120
+- id: gem-install
+  type: puppet
+  groups: [primary-controller,controller]
+  required_for: [nsxv-install]
+  requires: [globals]
+  parameters:
+    puppet_manifest: puppet/manifests/gem-install.pp
+    puppet_modules: puppet/modules
+    timeout: 300
 - id: compute-vmware-nova-config
   type: puppet
   groups: [compute-vmware]
