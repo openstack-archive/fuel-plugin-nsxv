@@ -401,6 +401,89 @@ class TestNSXvPlugin(TestBasic):
 
         self.env.make_snapshot("deploy_nsxv", is_make=True)
 
+    def get_configured_clusters(self, node):
+        """Get configured vcenter clusters moref id on controller
+        :param node: type string, devops node name with controller role
+        """
+        ssh = self.fuel_web.get_ssh_for_node(node)
+        clusters_id = ssh.execute(r"sed -rn 's/^\s*cluster_moid\s*=\s*([^ ]+)\s*$/\1/p' /etc/neutron/plugin.ini")[
+            'stdout']
+        return clusters_id.split(',')
+
+    @test(depends_on=[SetupEnvironment.prepare_slaves_5],
+          groups=["nsxv_smoke_add_compute"])
+    def nsxv_smoke_add_compute(self):
+        """Deploy a cluster with NSXv Plugin, after add compute-vmware role
+
+        Scenario:
+            1. Upload the plugin to master node
+            2. Create cluster and configure NSXv for that cluster
+            3. Provision three controller node
+            4. Deploy cluster with plugin
+            5. Get configured clusters modrefid from neutron config
+            6. Add compute-vmware role
+            7. Redeploy cluster with new node
+            8. Get new configured clusters modrefid from neutron config
+            9. Check new cluster added in neutron config
+
+        Duration 90 min
+
+        """
+        self.env.revert_snapshot('ready_with_5_slaves', skip_timesync=True)
+
+        self.install_nsxv_plugin()
+
+        # Configure cluster
+        settings = self.get_settings()
+        settings["images_vcenter"] = True
+        # Configure cluster
+        cluster_id = self.fuel_web.create_cluster(
+            name=self.__class__.__name__,
+            mode=DEPLOYMENT_MODE,
+            settings=settings,
+        )
+
+        # Configure VMWare vCenter settings
+        self.fuel_web.vcenter_configure(cluster_id, vc_glance=True)
+
+        self.enable_plugin(cluster_id=cluster_id)
+
+        controllers = ['slave-01', 'slave-02', 'slave-03']
+
+        # Assign roles to nodes
+        for node in controllers:
+            self.fuel_web.update_nodes(cluster_id, {node: ['controller'], })
+
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+
+        old_configured_clusters = {}
+        for node in controllers:
+            old_configured_clusters[node] = self.get_configured_clusters(node)
+            logger.info("Old configured clusters on {0} is {1}".format(node, old_configured_clusters[node]))
+
+        # Add 1 node with compute-vmware role and redeploy cluster
+        self.fuel_web.update_nodes(cluster_id, {'slave-04': ['compute-vmware'], })
+
+        target_node_2 = self.node_name('slave-04')
+
+        # Configure VMWare vCenter settings
+        self.fuel_web.vcenter_configure(cluster_id,
+                                        vc_glance=True,
+                                        multiclusters=True,
+                                        target_node_2=target_node_2
+        )
+
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+
+        new_configured_clusters = {}
+        for node in controllers:
+            new_configured_clusters[node] = self.get_configured_clusters(node)
+            logger.info("New configured clusters on {0} is {1}".format(node, new_configured_clusters[node]))
+
+        for node in controllers:
+            assert_true(set(new_configured_clusters[node]) - set(old_configured_clusters[node]),
+                        "Clusters on node {0} not reconfigured".format(node))
+
     @test(depends_on=[SetupEnvironment.prepare_slaves_9],
           groups=["nsxv_bvt", "nsxv_plugin"])
     def nsxv_bvt(self):
