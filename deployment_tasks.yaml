@@ -43,24 +43,6 @@
     puppet_manifest: puppet/manifests/nsxv-config.pp
     puppet_modules: puppet/modules:/etc/puppet/modules
     timeout: 300
-- id: configure_default_route_cinder_vmware
-  type: puppet
-  groups: [cinder-vmware]
-  requires: [openstack-cinder]
-  required_for: [top-role-cinder-vmware]
-  parameters:
-    puppet_manifest: /etc/puppet/modules/osnailyfacter/modular/netconfig/configure_default_route.pp
-    puppet_modules: /etc/puppet/modules
-    timeout: 300
-- id: configure_default_route_compute_vmware
-  type: puppet
-  groups: [compute-vmware]
-  requires: [top-role-compute]
-  required_for: [top-role-compute-vmware]
-  parameters:
-    puppet_manifest: /etc/puppet/modules/osnailyfacter/modular/netconfig/configure_default_route.pp
-    puppet_modules: /etc/puppet/modules
-    timeout: 300
 - id: openstack-haproxy-neutron-nsxv
   type: puppet
   groups: [primary-controller, controller]
