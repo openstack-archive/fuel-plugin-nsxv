@@ -1,3 +1,4 @@
+======
 System
 ======
 
@@ -15,9 +16,7 @@ nsxv_setup_system
 Description
 ###########
 
-Deploy environment in DualHypervisors mode with 3 controllers and 1
-compute-vmware nodes. Nova Compute instances are running on controllers and
-compute-vmware nodes. It is a config for all system tests.
+Deploy environment with 3 controlers and 1 compute-vmware nodes. Nova Compute instances are running on controllers and compute-vmware nodes. It is a config for all system tests.
 
 
 Complexity
@@ -29,7 +28,7 @@ core
 Steps
 #####
 
-    1. Log into Fuel with preinstalled plugin.
+    1. Log into Fuel web UI with preinstalled plugin.
     2. Create a new environment with following parameters:
         * Compute: KVM/QEMU with vCenter
         * Networking: Neutron with tunnel segmentation
@@ -43,10 +42,12 @@ Steps
     4. Configure interfaces on nodes.
     5. Configure network settings.
     6. Enable and configure NSXv plugin.
-    7. Configure VMware vCenter Settings. Add 2 vSphere clusters and configure Nova Compute instances on controllers and compute-vmware.
+    7. Configure VMware vCenter Settings. Add 2 vSphere clusters and configure Nova Compute instances on conrollers and compute-vmware.
     8. Verify networks.
     9. Deploy cluster.
-    10. Run OSTF. Launch instances from "Test-VMDK" image which is included in plugin package and is available under Horizon. Use m1.tiny flavor.
+    10. Split availability zone to vcenter1 and vcenter2 with one nova compute cluster in each zone.
+    11. Run OSTF.
+    12. Launch instances from "Test-VMDK" image which is included in plugin package and is available under Horizon. Use m1.tiny flavor.
 
 
 Expected result
@@ -83,21 +84,18 @@ Steps
     1. Setup for system tests.
     2. Log in to Horizon Dashboard.
     3. Add private networks net_01 and net_02.
-    4. Check that networks are present in the vSphere.
-    5. Remove private network net_01.
-    6. Check that network net_01 is not present in the vSphere.
-    7. Add private network net_01.
-    8. Check that networks is  present in the vSphere.
+    4. Remove private network net_01.
+    5. Add private network net_01.
 
 
 Expected result
 ###############
 
-Networks  net_01 and  net_02 should be added.
+Check that networks are present in the vcenter. Check that network net_01 has been removed from the vcenter on appropriate step.
 
 
-Check abilities to bind port on NSX-v to VM, disable and enable this port.
---------------------------------------------------------------------------
+Check abilities to bind port on NSXv to VM, disable and enable this port.
+-------------------------------------------------------------------------
 
 
 ID
@@ -122,20 +120,20 @@ Steps
 #####
 
     1. Log in to Horizon Dashboard.
-    2. Navigate to Project ->  Compute -> Instances
+    2. Navigate to Project -> Compute -> Instances
     3. Launch instance VM_1 with image TestVM-VMDK and flavor m1.tiny.
     4. Launch instance VM_2  with image TestVM-VMDK and flavor m1.tiny.
-    5. Verify that VMs  should communicate between each other. Send icmp ping from VM _1 to VM_2  and vice versa.
+    5. Verify that VMs should communicate between each other. Send icmp ping from VM_1 to VM_2  and vice versa.
     6. Disable NSX-v_port of VM_1.
-    7. Verify that VMs  should not communicate between each other. Send icmp ping from VM _2 to VM_1  and vice versa.
+    7. Verify that VMs should not communicate between each other. Send icmp ping from VM_2 to VM_1 and vice versa.
     8. Enable NSX-v_port of VM_1.
-    9. Verify that VMs  should communicate between each other. Send icmp ping from VM _1 to VM_2  and vice versa.
+    9. Verify that VMs  should communicate between each other. Send icmp ping from VM_1 to VM_2  and vice versa.
 
 
 Expected result
 ###############
 
-Pings should get a response
+Pings should get a response.
 
 
 Check abilities to assign multiple vNIC to a single VM.
@@ -165,58 +163,20 @@ Steps
 
     1. Setup for system tests.
     2. Log in to Horizon Dashboard.
-    3. Add two private networks (net01, and net02).
-    4. Add one  subnet (net01_subnet01: 192.168.101.0/24, net02_subnet01, 192.168.102.0/24) to each network.
+    3. Add two private networks (net01 and net02).
+    4. Add one subnet (net01_subnet01: 192.168.101.0/24, net02_subnet01, 192.168.102.0/24) to each network.
+       NOTE: We have a constraint about network interfaces. One of subnets should have gateway and another should not. So disable gateway on that subnet.
     5. Launch instance VM_1 with image TestVM-VMDK and flavor m1.tiny in vcenter1 az.
-    6. Launch instance VM_2  with image TestVM-VMDK and flavor m1.tiny vcenter2 az.
+    6. Launch instance VM_2  with image TestVM-VMDK and flavor m1.tiny in vcenter2 az.
     7. Check abilities to assign multiple vNIC net01 and net02 to VM_1.
     8. Check abilities to assign multiple vNIC net01 and net02 to VM_2.
-    9. Send icmp ping from VM _1 to VM_2  and vice versa.
+    9. Send icmp ping from VM_1 to VM_2  and vice versa.
 
 
 Expected result
 ###############
 
 VM_1 and VM_2 should be attached to multiple vNIC net01 and net02.  Pings should get a response.
-
-
-Check connection between VMs in one tenant.
--------------------------------------------
-
-
-ID
-##
-
-nsxv_connectivity_default_tenant
-
-
-Description
-###########
-
-Checks connections between VMs inside a tenant.
-
-
-Complexity
-##########
-
-core
-
-
-Steps
-#####
-
-    1. Setup for system tests.
-    2. Log in to Horizon Dashboard.
-    3. Navigate to Project ->  Compute -> Instances
-    4. Launch instance VM_1 with image TestVM-VMDK and flavor m1.tiny in vcenter1 az.
-    5. Launch instance VM_2 with image TestVM-VMDK and flavor m1.tiny in vcenter2 az.
-    6. Verify that VMs on same tenants should communicate between each other. Send icmp ping from VM _1 to VM_2  and vice versa.
-
-
-Expected result
-###############
-
-Pings should get a response.
 
 
 Check connectivity between VMs attached to different networks with a router between them.
@@ -247,21 +207,21 @@ Steps
     1. Setup for system tests.
     2. Log in to Horizon Dashboard.
     3. Add two private networks (net01, and net02).
-    4. Add one  subnet (net01_subnet01: 192.168.101.0/24, net02_subnet01, 192.168.102.0/24) to each network.
+    4. Add one  subnet (net01_subnet01: 192.168.101.0/24, net02_subnet01, 192.168.102.0/24) to each network. Disable gateway for all subnets.
     5. Navigate to Project ->  Compute -> Instances
-    6. Launch instances VM_1 and VM_2 in the network192.168.101.0/24 with image TestVM-VMDK and flavor m1.tiny in vcenter1 az.
-    7. Launch instances VM_3 and VM_4 in the 192.168.102.0/24 with image TestVM-VMDK and flavor m1.tiny in vcenter2 az.
+    6. Launch instances VM_1 and VM_2 in the network 192.168.101.0/24 with image TestVM-VMDK and flavor m1.tiny in vcenter1 az. Attach default private net as a NIC 1.
+    7. Launch instances VM_3 and VM_4 in the network 192.168.102.0/24 with image TestVM-VMDK and flavor m1.tiny in vcenter2 az. Attach default private net as a NIC 1.
     8. Verify that VMs of same networks should communicate
-       between each other. Send icmp ping from VM 1 to VM2, VM 3 to VM4 and vice versa.
+       between each other. Send icmp ping from VM_1 to VM_2, VM_3 to VM_4 and vice versa.
     9. Verify that VMs of different networks should not communicate
-       between each other. Send icmp ping from VM 1 to VM3, VM_4 to VM_2 and vice versa.
+       between each other. Send icmp ping from VM_1 to VM_3, VM_4 to VM_2 and vice versa.
     10. Create Router_01, set gateway and add interface to external network.
-    11. Attach private networks to router.
-    12. Verify that VMs of different networks should communicate between each other. Send icmp ping from VM 1 to VM3, VM_4 to VM_2 and vice versa.
+    11. Enable gateway on subnets. Attach private networks to router.
+    12. Verify that VMs of different networks should communicate between each other. Send icmp ping from VM_1 to VM_3, VM_4 to VM_2 and vice versa.
     13. Add new Router_02, set gateway and add interface to external network.
     14. Detach net_02 from Router_01 and attach to Router_02
     15. Assign floating IPs for all created VMs.
-    16. Verify that VMs of different networks should communicate between each other. Send icmp ping from VM 1 to VM3, VM_4 to VM_2 and vice versa
+    16. Verify that VMs of different networks should communicate between each other. Send icmp ping from VM_1 to VM_3, VM_4 to VM_2 and vice versa.
 
 
 Expected result
@@ -296,13 +256,12 @@ Steps
 #####
 
     1. Setup for system tests.
-    2. Add provider network via cli.
-    3. Log in to Horizon Dashboard.
-    4. Create shared router(default type) and use it for routing between instances.
-    5. Navigate to Project ->  compute -> Instances
-    6. Launch instance VM_1 in the provider network with image TestVM-VMDK and flavor m1.tiny in the vcenter1 az.
-    7. Launch instance VM_2  in the provider network  with image TestVM-VMDK and flavor m1.tiny in the vcenter2 az.
-    8. Verify that VMs of  same provider network should communicate between each other. Send icmp ping from VM _1 to VM_2  and vice versa.
+    2. Log in to Horizon Dashboard.
+    3. Create shared router(default type) and use it for routing between instances.
+    4. Navigate to Project ->  Compute -> Instances
+    5. Launch instance VM_1 in the provider network with image TestVM-VMDK and flavor m1.tiny in the vcenter1 az.
+    6. Launch instance VM_2  in the provider network  with image TestVM-VMDK and flavor m1.tiny in the vcenter2 az.
+    7. Verify that VMs of  same provider network should communicate between each other. Send icmp ping from VM_1 to VM_2  and vice versa.
 
 
 Expected result
@@ -337,14 +296,14 @@ Steps
 #####
 
     1. Setup for system tests.
-    2. Add provider network via cli.
-    3. Log in to Horizon Dashboard.
-    4. Create distributed router and use it for routing between instances. Only available via CLI:
-       neutron router-create rdistributed --distributed True
-    5. Navigate to Project ->  compute -> Instances
-    6. Launch instance VM_1 in the provider network with image TestVM-VMDK and flavor m1.tiny in the vcenter1 az.
-    7. Launch instance VM_2  in the provider network  with image TestVM-VMDK and flavor m1.tiny in the vcenter2 az.
-    8. Verify that VMs of  same provider network should communicate between each other. Send icmp ping from VM _1 to VM_2  and vice versa.
+    2. Log in to Horizon Dashboard.
+    3. Create distributed router and use it for routing between instances. Only available via CLI::
+
+          neutron router-create rdistributed --distributed True
+    4. Navigate to Project ->  Compute -> Instances
+    5. Launch instance VM_1 in the provider network with image TestVM-VMDK and flavor m1.tiny in the vcenter1 az.
+    6. Launch instance VM_2  in the provider network  with image TestVM-VMDK and flavor m1.tiny in the vcenter2 az.
+    7. Verify that VMs of  same provider network should communicate between each other. Send icmp ping from VM_1 to VM_2  and vice versa.
 
 
 Expected result
@@ -379,14 +338,14 @@ Steps
 #####
 
     1. Setup for system tests.
-    2. Add provider network via cli.
-    3. Log in to Horizon Dashboard.
-    4. Create exclusive router and use it for routing between instances. Only available via CLI:
-       neutron router-create rexclusive --router_type exclusive
-    5. Navigate to Project ->  compute -> Instances
-    6. Launch instance VM_1 in the provider network with image TestVM-VMDK and flavor m1.tiny in the vcenter1 az.
-    7. Launch instance VM_2  in the provider network  with image TestVM-VMDK and flavor m1.tiny in the vcenter2 az.
-    8. Verify that VMs of  same provider network should communicate between each other. Send icmp ping from VM _1 to VM_2  and vice versa.
+    2. Log in to Horizon Dashboard.
+    3. Create exclusive router and use it for routing between instances. Only available via CLI::
+
+          neutron router-create rexclusive --router_type exclusive
+    4. Navigate to Project -> Compute -> Instances
+    5. Launch instance VM_1 in the provider network with image TestVM-VMDK and flavor m1.tiny in the vcenter1 az.
+    6. Launch instance VM_2  in the provider network with image TestVM-VMDK and flavor m1.tiny in the vcenter2 az.
+    7. Verify that VMs of same provider network should communicate between each other. Send icmp ping from VM _1 to VM_2  and vice versa.
 
 
 Expected result
@@ -438,9 +397,8 @@ Steps
     14. Create network  with subnet.
         Create Router, set gateway and add interface.
     15. Navigate to Project ->  Compute -> Instances
-    16. Launch instance VM_2
-    17. Verify that VMs on different tenants should not communicate between each other.
-        Send icmp ping from VM _1 of admin tenant to VM_2  of test_tenant and vice versa.
+    16. Launch instance VM_2.
+    17. Verify that VMs on different tenants should not communicate between each other. Send icmp ping from VM_1 of admin tenant to VM_2  of test_tenant and vice versa.
 
 
 Expected result
@@ -463,6 +421,8 @@ Description
 ###########
 
 Verifies connectivity with same IP in different tenants.
+IMPORTANT:
+Use exclusive router. For proper work routers should be placed on different edges.
 
 
 Complexity
@@ -490,12 +450,11 @@ Steps
     14. In tenant 'test_1' add  VM_1 of vcenter1  in net1 with ip 10.0.0.4 and 'SG_1' as security group.
     15. In tenant 'test_1' add VM_2 of vcenter2 in net1 with ip 10.0.0.5 and 'SG_1' as security group.
     16. In tenant 'test_2' create net1 and subnet1 with CIDR 10.0.0.0/24
-    17. n tenant 'test_2' create security group 'SG_1' and add rule that allows ingress icmp traffic
+    17. In tenant 'test_2' create security group 'SG_1' and add rule that allows ingress icmp traffic
     18. In tenant 'test_2' add VM_3 of vcenter1 in net1 with ip 10.0.0.4 and 'SG_1' as security group.
     19. In tenant 'test_2' add VM_4 of vcenter2 in net1 with ip 10.0.0.5 and 'SG_1' as security group.
     20. Assign floating IPs for all created VMs.
-    21. Verify that VMs with same ip on different tenants should communicate between each other.
-        Send icmp ping from VM _1 to VM_3,  VM_2 to Vm_4 and vice versa.
+    21. Verify that VMs with same ip on different tenants should communicate between each other. Send icmp ping from VM_1 to VM_3,  VM_2 to Vm_4 and vice versa.
 
 
 Expected result
@@ -504,7 +463,7 @@ Expected result
 Pings should  get a response.
 
 
-Check connectivity VMs to public network.
+Check connectivity Vms to public network.
 -----------------------------------------
 
 
@@ -540,10 +499,10 @@ Steps
 Expected result
 ###############
 
-Pings should  get a response
+Pings should  get a response.
 
 
-Check connectivity VMs to public network with floating ip.
+Check connectivity Vms to public network with floating ip.
 ----------------------------------------------------------
 
 
@@ -595,7 +554,7 @@ nsxv_create_and_delete_secgroups
 Description
 ###########
 
-Verifies that creation and deletion security group works fine.
+Verifies that creation and removing security group works fine.
 
 
 Complexity
@@ -610,7 +569,7 @@ Steps
     1. Setup for system tests.
     2. Log in to Horizon Dashboard.
     3. Launch instance VM_1 in the tenant network net_02 with image TestVM-VMDK and flavor m1.tiny in the vcenter1 az.
-    4. Launch instance VM_2  in the tenant net_02  with image TestVM-VMDK and flavor m1.tiny in the vcenter2 az.
+    4. Launch instance VM_2  in the tenant network net_02  with image TestVM-VMDK and flavor m1.tiny in the vcenter2 az.
     5. Create security groups SG_1 to allow ICMP traffic.
     6. Add Ingress rule for ICMP protocol to SG_1
     7. Attach SG_1 to VMs
@@ -620,7 +579,7 @@ Steps
     10. Attach SG_2 to VMs.
     11. ssh from VM_1 to VM_2 and vice verse.
     12. Delete custom rules from SG_1 and SG_2.
-    13. Check ping and ssh arent available from VM_1 to VM_2  and vice versa.
+    13. Check ping and ssh aren't available from VM_1 to VM_2  and vice verse.
     14. Add Ingress rule for ICMP protocol to SG_1.
     15. Add Ingress rule for SSH protocol to SG_2.
     16. Check ping between VM_1 and VM_2 and vice verse.
@@ -671,7 +630,7 @@ Steps
         * ifconfig eth0 192.168.99.14 netmask 255.255.255.0
         * ifconfig eth0 up
     6. Confirm that the instance cannot communicate with that IP address.
-    7. Configure a new MAC address on the instance associated with the logical port.
+    7. Revert IP address. Configure a new MAC address on the instance associated with the logical port.
         * ifconfig eth0 down
         * ifconfig eth0 hw ether 00:80:48:BA:d1:30
         * ifconfig eth0 up
@@ -722,7 +681,7 @@ Steps
 Expected result
 ###############
 
-All instance should be created without any error.
+All instance should be created and deleted without any error.
 
 
 Check that environment support assigning public network to all nodes
@@ -780,9 +739,7 @@ nsxv_lbaas
 Description
 ###########
 
-Setup LBaaS before test. Plugin requires attaching of an exclusive router to
-the subnet prior to provisioning of a load balancer. You can not use 22 port as
-port for VIP if you enable ssh access on edge.
+Setup LBaaS before test. Plugin requires attaching of an exclusive router to the subnet prior to provisioning of a load balancer. You can not use 22 port as port for VIP if you enable ssh access on edge.
 
 
 Complexity
@@ -840,9 +797,10 @@ Steps
        Make on instances: while true; do { echo -e 'HTTP/1.1 200 OK\\r\\n'; cat index.html; } | sudo nc -l -p 80; done
        Generate HTTP traffic on VIP floating IP.
 
-       Script to send HTTP GET requests in parallel::
+       Script to send http GET requests in parallel::
 
         #!/bin/bash
+
         LIMIT=100
         for ((a=1; a <= LIMIT ; a++)) ;do
           curl http://172.16.211.127/ &
@@ -874,7 +832,7 @@ nsxv_spoofguard
 Description
 ###########
 
-NSXv spoofguard component is used to implement port-security feature.
+Nsxv spoofguard component is used to implement port-security feature.
 If a virtual machine has been compromised,
 the IP address can be spoofed and malicious transmissions can bypass firewall policies.
 http://pubs.vmware.com/NSX-62/topic/com.vmware.ICbase/PDF/nsx_62_admin.pdf p.137
@@ -892,22 +850,20 @@ Steps
     1. Deploy cluster with enabled SpoofGuard.
     2. Run OSTF.
     3. Setup spoofguard:
-       * In the vSphere Web Client, navigate to Networking & Security > SpoofGuard.
-       * Click the Add icon.
-       * Type a name for the policy.
-       * Select Enabled or Disabled to indicate whether the policy is enabled.
-       * For Operation Mode, select
-       Automatically Trust IP Assignments
-       on Their First Use
-       * Click Allow local address as valid address in this namespace to allow local IP addresses in your setup.
-       When you power on a virtual machine and it is unable to connect to the DHCP server, a local IP address
-       is assigned to it. This local IP address is considered valid only if the SpoofGuard mode is set to
-       Allow local address as valid address in this namespace. Otherwise, the local IP address is ignored.
-       * Click Next.
-       * To specify the scope for the policy, click Add and select the networks, distributed port groups, or
-       logical switches that this policy should apply to.
-       A port group or logical switch can belong to only one SpoofGuard policy.
-       * Click OK and then click Finish.
+      * In the vSphere Web Client, navigate to Networking & Security > SpoofGuard.
+      * Click the Add icon.
+      * Type a name for the policy.
+      * Select Enabled or Disabled to indicate whether the policy is enabled.
+      * For Operation Mode, select Automatically Trust IP Assignments on Their First Use
+      * Click Allow local address as valid address in this namespace to allow local IP addresses in your setup.
+        When you power on a virtual machine and it is unable to connect to the DHCP server, a local IP address
+        is assigned to it. This local IP address is considered valid only if the SpoofGuard mode is set to
+        Allow local address as valid address in this namespace. Otherwise, the local IP address is ignored.
+      * Click Next.
+      * To specify the scope for the policy, click Add and select the networks, distributed port groups, or
+        logical switches that this policy should apply to.
+        A port group or logical switch can belong to only one SpoofGuard policy.
+      * Click OK and then click Finish.
     4. Run OSTF
 
 
@@ -916,3 +872,41 @@ Expected result
 
 All OSTF test cases should be passed besides
 exceptions that are described in Limitation section of Test plan.
+
+
+
+Deploy cluster with KVM virtualization
+--------------------------------------
+
+
+ID
+##
+
+nsxv_kvm_deploy
+
+
+Description
+###########
+
+Verify that nodes with compute-vmware role could be deployed in KVM.
+
+
+Complexity
+##########
+
+core
+
+
+Steps
+#####
+
+    1. Create cluster based on KVM.
+    2. Add controller and  compute-vmware nodes.
+    3. Deploy environment.
+
+
+Expected result
+###############
+
+Environment has been deployed successfully.
+

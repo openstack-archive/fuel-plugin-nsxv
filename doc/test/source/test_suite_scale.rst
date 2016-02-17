@@ -1,3 +1,4 @@
+=====
 Scale
 =====
 
@@ -32,7 +33,6 @@ Steps
         * Compute: KVM/QEMU with vCenter
         * Networking: Neutron with tunnel segmentation
         * Storage: default
-        * Additional services: ceilometer
     3. Add nodes with following roles:
         * Controller
         * Controller
@@ -43,14 +43,16 @@ Steps
     4. Configure interfaces on nodes.
     5. Configure network settings.
     6. Enable and configure NSXv plugin.
-    7. Configure VMware vCenter Settings. Add 2 vSphere clusters and configure Nova Compute instances on controllers and compute-vmware.
+    7. Configure VMware vCenter Settings. Add 2 vSphere clusters and configure Nova Compute instances on conrollers and compute-vmware.
     8. Deploy cluster.
     9. Run OSTF.
     10. Remove node with controller role.
     11. Redeploy cluster.
+        Check that all instances are in place.
     12. Run OSTF.
     13. Add controller.
     14. Redeploy cluster.
+        Check that all instances are in place.
     15. Run OSTF.
 
 
@@ -60,7 +62,7 @@ Expected result
 Cluster should be deployed and all OSTF test cases should be passed.
 
 
-Deployment with 3 Controllers, ComputeVMware, CinderVMware and check adding/deleting of nodes
+Deployment with 3 Controlers, ComputeVMware, CinderVMware and check adding/deleting of nodes.
 ---------------------------------------------------------------------------------------------
 
 
@@ -79,7 +81,7 @@ Verify that system functionality is ok after redeploy.
 Complexity
 ##########
 
-core
+advanced
 
 
 Steps
@@ -89,7 +91,7 @@ Steps
     2. Create a new environment with following parameters:
         * Compute: KVM/QEMU with vCenter
         * Networking: Neutron with VLAN segmentation
-        * Storage: Ceph
+        * Storage: default
         * Additional services: default
     3. Add nodes with following roles:
         * Controller
@@ -99,14 +101,17 @@ Steps
     4. Configure interfaces on nodes.
     5. Configure network settings.
     6. Enable and configure NSXv plugin.
-    7. Configure VMware vCenter Settings. Add 2 vSphere clusters and configure Nova Compute instances on controllers and compute-vmware.
+    7. Configure VMware vCenter Settings. Add 2 vSphere clusters and configure Nova Compute instances on conrollers and compute-vmware.
     8. Deploy cluster.
     9. Run OSTF.
     10. Add node with CinderVMware role.
-    11. Redeploy cluster.
-    12. Run OSTF
-    13. Remove node with CinderVMware role.
-    14. Redeploy cluster.
+        Redeploy cluster.
+    11. Run OSTF.
+    12. Remove node with CinderVMware role.
+        Redeploy cluster.
+    13. Run OSTF.
+    14. Remove node with ComputeVMware role.
+        Redeploy cluster.
     15. Run OSTF.
 
 

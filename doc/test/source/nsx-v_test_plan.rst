@@ -2,9 +2,6 @@
 Test Plan for NSXv plugin v2.0.0
 ================================
 
-.. contents:: Table of contents
-   :depth: 3
-
 ************
 Introduction
 ************
@@ -73,14 +70,14 @@ Product compatibility matrix
      - 8.0
      -
    * - OpenStack release
-     - Kilo with Ubuntu 14.04
+     - Liberty with Ubuntu 14.04
      -
    * - vSphere
      - 5.5 and 6.0
      -
    * - NSXv
-     - 6.1.4 and 6.2.0
-     -
+     - 6.1.4 (not tested)
+     - 6.2.0
 
 **************************************
 Evaluation Mission and Test Motivation
