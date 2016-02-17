@@ -2,9 +2,6 @@
 Test Plan for NSXv plugin v2.0.0
 ================================
 
-.. contents:: Table of contents
-   :depth: 3
-
 ************
 Introduction
 ************
@@ -12,8 +9,8 @@ Introduction
 Purpose
 =======
 
-Main purpose of this document is  intended to describe Quality Assurance
-activities, required to insure that  Fuel plugin for VMware NSXv driver is
+Main purpose of this document is intended to describe Quality Assurance
+activities, required to insure that Fuel plugin for VMware NSXv driver is
 ready for production. The project will be able to offer VMware NSXv
 integration functionality with MOS. The scope of this plan defines the
 following objectives:
@@ -62,7 +59,7 @@ Plugin (or its components) has the following limitations:
 Product compatibility matrix
 ============================
 
-.. list-table:: product  compatibility matrix
+.. list-table:: product compatibility matrix
    :widths: 15 10 30
    :header-rows: 1
 
@@ -73,14 +70,14 @@ Product compatibility matrix
      - 8.0
      -
    * - OpenStack release
-     - Kilo with Ubuntu 14.04
+     - Liberty with Ubuntu 14.04
      -
    * - vSphere
      - 5.5 and 6.0
      -
    * - NSXv
-     - 6.1.4 and 6.2.0
-     -
+     - 6.2.0 and 6.1.4 (not tested)
+     - 
 
 **************************************
 Evaluation Mission and Test Motivation
@@ -88,7 +85,7 @@ Evaluation Mission and Test Motivation
 
 Project main goal is to build a MOS plugin that integrates a Neutron VMware
 NSX plugin. This will allow to use Neutron for networking in vmware-related
-environments. The plugin must be compatible with  the  version 8.0 of Mirantis
+environments. The plugin must be compatible with the version 8.0 of Mirantis
 OpenStack and should be tested with software/hardware described in
 `product compatibility matrix`_.
 
@@ -109,13 +106,13 @@ Evaluation mission
 Test approach
 *************
 
-The project test approach consists of Smoke,  Integration, System, Regression
-Failover and Acceptance  test levels.
+The project test approach consists of Smoke, Integration, System, Regression
+Failover and Acceptance test levels.
 
 **Smoke testing**
 
 The goal of smoke testing is to ensure that the most critical features of Fuel
-VMware NSXv plugin work  after new build delivery. Smoke tests will be used by
+VMware NSXv plugin work after new build delivery. Smoke tests will be used by
 QA to accept software builds from Development team.
 
 **Integration and System testing**
@@ -126,8 +123,8 @@ without gaps in data flow.
 
 **Regression testing**
 
-The goal of regression testing is to verify that key features of  Fuel VMware
-NSXv plugin  are not affected by any changes performed during preparation to
+The goal of regression testing is to verify that key features of Fuel VMware
+NSXv plugin are not affected by any changes performed during preparation to
 release (includes defects fixing, new features introduction and possible
 updates).
 
@@ -140,7 +137,7 @@ malfunctions with undue loss of data or data integrity.
 **Acceptance testing**
 
 The goal of acceptance testing is to ensure that Fuel VMware NSXv plugin has
-reached a level of stability that meets requirements  and acceptance criteria.
+reached a level of stability that meets requirements and acceptance criteria.
 
 
 ***********************
@@ -204,4 +201,3 @@ Acceptance criteria
 * Critical and high issues are fixed
 * All required documents are delivered
 * Release notes including a report on the known errors of that release
-
