@@ -1,7 +1,7 @@
 Configuration
 =============
 
-Switch to Settings tab of the Fuel web UI and click on NSXv plugin section,
+Switch to Settings tab of the Fuel web UI and click on *Other* section,
 tick the plugin checkbox to enable it.
 
 .. image:: /image/nsxv-settings-filled.png
@@ -40,7 +40,7 @@ Plugin contains the following settings:
       This ID can be fetched using NSX Manager API
       https://nsx-manager.yourdomain.org/api/2.0/vdn/scopes
 
-#. Distributed virtual switch MoRef ID -- ID of vswitch connected to Edge
+#. Distributed virtual switch MoRef ID -- ID of vSwitch connected to Edge
    cluster.
 
 #. NSX backup Edge pool -- size of NSX Edge nodes and size of Edge pool, value
@@ -98,9 +98,6 @@ Plugin contains the following settings:
 #. Management network default gateway -- management network gateway for
    metadata proxy service.
 
-   Plugin automatically create tenant, provider networks and
-   router connected to these networks.
-
 #. Floating IP ranges -- dash separated IP addresses allocation pool from
    external network, e.g. "start_ip_address-end_ip_address".
 
@@ -131,14 +128,20 @@ Plugin contains the following settings:
    VM traffic (consider the case when VM was compromised).
 
 #. Tenant router types -- ordered list of preferred tenant router types (default
-   value is 'shared, distributed, exclusive').
+   value is ``shared, distributed, exclusive``).
+
+   * shared -- multiple shared routers may own one edge VM.
+   * exclusive -- each router own one edge VM.
+   * distributed -- same as exclusive, but edge is created as distributed
+     logical router.  VM traffic get routed via DLR kernel modules on each
+     ESXi host.
 
 #. Exclusive router size -- size of edge for exclusive router
    (value must be one of *compact*, *large*, *quadlarge* or *xlarge*).
 
-#. Edge user -- user that will be created on Edge VMs for remote login.
+#. Edge user -- user that will be created on edge VMs for remote login.
 
-#. Edge password -- password for Edge VMs.  It must match following rules:
+#. Edge password -- password for edge VMs.  It must match following rules:
 
    * not less 12 characters (max 255 chars)
    * at least 1 upper case letter
@@ -148,10 +151,10 @@ Plugin contains the following settings:
 
    .. warning::
 
-      Plugin cannot verify that password does conforms policy. If you enter
+      Plugin cannot verify that password conforms security policy. If you enter
       password that does not match policy, Neutron server will be not able to
       create routers and deployment process will stop, because NSX will not
-      permit creating Edge nodes with password that does not match security
+      permit creating edge nodes with password that does not match security
       policy.
 
 #. DHCP lease time -- DHCP lease time in seconds for VMs. Default value is

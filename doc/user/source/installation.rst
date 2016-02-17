@@ -1,7 +1,7 @@
 Installation
 ============
 
-#. Download plugin .rpm package from the Fuel Plugin Catalog.
+#. Download plugin .rpm package from the `Fuel plugin catalog`_.
 
 #. Upload package to Fuel master node.
 
@@ -11,10 +11,6 @@ Installation
 
     [root@nailgun ~] fuel plugins --install nsxv-2.0-2.0.0-1.noarch.rpm
 
-
-   Installation process may take up to 1-2 minutes depending on hardware
-   specification of your Fuel Master node, because plugin has to update database
-   and restart docker containers.
 
 #. Verify that the plugin is installed successfully:
 
@@ -39,3 +35,5 @@ To uninstall plugin run following:
 .. code-block:: bash
 
    [root@nailgun ~] fuel plugins --remove nsxv==2.0.0
+
+.. _Fuel plugin catalog: https://www.mirantis.com/products/openstack-drivers-and-plugins/fuel-plugins

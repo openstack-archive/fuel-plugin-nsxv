@@ -33,7 +33,7 @@ groups functionality.
 Neutron usage notes
 -------------------
 
-The only way to create Distributed Router is to use neutron CLI tool:
+The only way to create distributed router is to use neutron CLI tool:
 
 .. code-block:: bash
 
@@ -49,15 +49,15 @@ Creation of exclusive tenant router is not supported in OpenStack dashboard
 During creation of external network for tenants you must specify physical
 network (``--provider:physical_network`` parameter) that will be used to carry
 VM traffic into physical network segment.  For Neutron with NSX plugin this
-parameter must be set to MoRef ID of portgroup which provides connectivity to
-NSX Edge nodes.
+parameter must be set to MoRef ID of portgroup which provides connectivity with
+physical network to NSX edge nodes.
 
 .. code-block:: bash
 
   $ neutron net-create External --router:external --provider:physical_network network-222
 
 Starting from version 2.0.0 plugin enables Neutron load balancing functionality
-and enables it in OpenStack dashboard (Horizon).
+and enables it in OpenStack dashboard.
 
 .. note::
 
@@ -125,6 +125,6 @@ Create a healthmonitor and associate it with the pool.
 OpenStack environment reset/deletion
 ------------------------------------
 
-Fuel NSXv plugin does not provide cleanup functionality when OpenStack
-environment gets reset or deleted.  All logical switches and edge virtual
-machines remain intact, it is up to operator to delete them and free resources.
+Fuel NSXv plugin does not provide cleanup mechanism when OpenStack environment
+gets reset or deleted.  All logical switches and edge virtual machines remain
+intact, it is up to operator to delete them and free resources.

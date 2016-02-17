@@ -19,7 +19,7 @@ Plugin versions:
 * 1.x.x series is compatible with Fuel 7.0. Tests were done on plugin v1.2 with
   VMware NSX 6.1.4.
 
-Through documentation we use term "NSX" and "NSXv" interchangeably, both of
+Through documentation we use terms "NSX" and "NSXv" interchangeably, both of
 these terms refer to `VMware NSX virtualized network platform
 <https://www.vmware.com/products/nsx>`_.
 
