@@ -2,9 +2,6 @@
 Test Plan for NSXv plugin v2.0.0
 ================================
 
-.. contents:: Table of contents
-   :depth: 3
-
 ************
 Introduction
 ************

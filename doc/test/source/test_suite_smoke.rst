@@ -1,3 +1,4 @@
+=====
 Smoke
 =====
 
@@ -35,7 +36,7 @@ Steps
 Expected result
 ###############
 
-Ensure that plugin is installed successfully using CLI, run command 'fuel plugins'. Check name, version and package version of plugin.
+Ensure that plugin is installed successfully using cli, run command 'fuel plugins'. Check name, version and package version of plugin.
 
 
 Uninstall Fuel VMware NSX-v plugin.
@@ -100,17 +101,17 @@ Steps
 
     1. Login to the Fuel web UI.
     2. Click on the Settings tab.
-    3. Verify that section of NSXv plugin is present on the Settings tab.
-    4. Verify that check box 'NSXv  plugin' is disabled by default.
-    5. Verify that user can enabled. Enable NSX-v plugin by click on check box 'NSXv  plugin'.
-    6. Verify that all labels of NSX-v plugin section have same font style and color.
-    7. Verify that all elements of NSX-v plugin section are vertical aligned.
+    3. Verify that section of NSXv plugin is present under the Other menu option.
+    4. Verify that check box 'NSXv plugin' is disabled by default.
+    5. Enable NSXv plugin by setting check box 'NSXv plugin' checked.
+    6. Verify that all labels of 'NSXv plugin' section have the same font style and colour.
+    7. Verify that all elements of NSXv plugin section are vertical aligned.
 
 
 Expected result
 ###############
 
-All elements of NSX-v plugin section are required GUI regiments.
+All elements of NSXv plugin section are regimented.
 
 
 Deployment with plugin, controller and vmware datastore backend.
@@ -151,10 +152,9 @@ Steps
     6. Enable and configure NSXv plugin.
     7. Configure settings:
         * Enable VMWare vCenter/ESXi datastore for images (Glance).
-    8. Configure VMware vCenter Settings. Add 1 vSphere cluster and configure Nova Compute instances on controllers.
-    9. Verify networks.
-    10. Deploy cluster.
-    11. Run OSTF.
+    8. Configure VMware vCenter Settings. Add 1 vSphere cluster and configure Nova Compute instances on conrollers.
+    9. Deploy cluster.
+    10. Run OSTF.
 
 
 Expected result
@@ -192,7 +192,7 @@ Steps
     2. Create a new environment with following parameters:
         * Compute: KVM/QEMU with vCenter
         * Networking: Neutron with tunnel segmentation
-        * Storage: Ceph
+        * Storage: Ceph RBD for volumes (Cinder)
         * Additional services: default
     3. Add nodes with following roles:
         * Controller
@@ -205,7 +205,7 @@ Steps
     4. Configure interfaces on nodes.
     5. Configure network settings.
     6. Enable and configure NSXv plugin.
-    7. Configure VMware vCenter Settings. Add 2 vSphere clusters and configure Nova Compute instances on controllers and compute-vmware.
+    7. Configure VMware vCenter Settings. Add 2 vSphere clusters and configure Nova Compute instances on conrollers and compute-vmware.
     8. Verify networks.
     9. Deploy cluster.
     10. Run OSTF.
@@ -230,16 +230,13 @@ nsxv_config_ok
 Description
 ###########
 
-Need to check that all parameters of nsxv driver config files have been filled
-up with values entered from GUI. Applicable values that are typically used are
-described in plugin docs. Root and intermediate certificate are signed, in
-attachment.
+Need to check that all parameters of nsxv driver config files have been filled up with values entered from GUI. Applicable values that are typically used are described in plugin docs. Root & intermediate certificate are signed, in attachment.
 
 
 Complexity
 ##########
 
-smoke
+advanced
 
 
 Steps
