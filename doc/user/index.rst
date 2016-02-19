@@ -17,6 +17,9 @@ Through documentation we use term "NSX" and "NSXv" interchangeably, both of
 these term refer to `VMware NSX virtualized network platform
 <https://www.vmware.com/products/nsx>`_.
 
+Pre-built package of the plugin you can find in
+`Fuel Plugin Catalog <https://www.mirantis.com/products/openstack-drivers-and-plugins/fuel-plugins>`_.
+
 Documentation contents
 ======================
 
@@ -29,3 +32,4 @@ Documentation contents
    source/usage
    source/known_issues
    source/release-notes
+   source/troubleshooting
