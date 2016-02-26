@@ -5,6 +5,14 @@
     - "cluster:net_segment_type": "tun"
   compatible:
     - name: "hypervisor:vmware"
+  incompatible:
+    - name: "storage:block:lvm"
+    - name: "storage:block:ceph"
+    - name: "storage:image:ceph"
+    - name: "storage:ephemeral:ceph"
+    - name: "additional_service:sahara"
+    - name: "additional_service:murano"
+    - name: "additional_service:ironic"
   requires:
     - name: "hypervisor:vmware"
       message: "NSXv requires use vCenter."
