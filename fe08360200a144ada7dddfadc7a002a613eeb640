@@ -1,0 +1,9 @@
+Code-Review+1: Andrey Setyaev <asetyaev@mirantis.com>
+Code-Review+2: Igor Zinovik <izinovik@mirantis.com>
+Workflow+1: Igor Zinovik <izinovik@mirantis.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Fri, 26 Feb 2016 13:34:57 +0000
+Reviewed-on: https://review.openstack.org/284783
+Project: openstack/fuel-plugin-nsxv
+Branch: refs/heads/7.0
