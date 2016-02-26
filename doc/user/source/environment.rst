@@ -23,12 +23,6 @@ these steps:
    .. image:: /image/wizard-step2.png
       :scale: 70 %
 
-   .. warning::
-
-      After plugin gets installed it is possible to enable Sahara and Murano
-      support for cloud with NSX, but work of these services was not tested
-      with NSX.
-
 #. Once you get environment created add one or more controller node.
 
 Pay attention on which interface you assign *Public* network, OpenStack
