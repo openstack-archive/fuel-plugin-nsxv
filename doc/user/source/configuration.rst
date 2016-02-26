@@ -1,8 +1,8 @@
 Configuration
 =============
 
-Switch to Settings tab of the Fuel web UI and click on *Other* section,
-tick the plugin checkbox to enable it.
+Switch to Networks tab of the Fuel web UI and click on *Settings*/*Other* section,
+the plugin checkbox enabled by default.
 
 .. image:: /image/nsxv-settings-filled.png
    :scale: 60 %
