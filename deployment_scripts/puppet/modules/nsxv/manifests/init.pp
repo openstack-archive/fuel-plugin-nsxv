@@ -9,7 +9,21 @@ class nsxv (
   $settings = hiera('nsxv')
 
   # Do not remove unused variables: template nsx.ini.erb refers to them
-  $nova_metadata_ips = hiera('public_vip')
+  if $settings['nsxv_mgt_via_mgmt'] {
+    $nova_metadata_ips = hiera('management_vip')
+  } else {
+    $nova_metadata_ips = hiera('public_vip')
+  }
+  if $settings['nsxv_mgt_reserve_ip'] {
+    $network_metadata = hiera('network_metadata')
+    $mgt_ip = $network_metadata['vips']['nsxv_metadataproxy_ip']['ipaddr']
+    $mgt_netmask = hiera('internal_netmask')
+    $mgt_gateway = hiera('management_vrouter_vip')
+  } else {
+    $mgt_ip = $settings['nsxv_mgt_net_proxy_ips']
+    $mgt_netmask = $settings['nsxv_mgt_net_proxy_netmask']
+    $mgt_gateway = $settings['nsxv_mgt_net_default_gateway']
+  }
   $nova_metadata_port = '8775'
   $metadata_shared_secret = $quantum_settings['metadata']['metadata_proxy_shared_secret']
 

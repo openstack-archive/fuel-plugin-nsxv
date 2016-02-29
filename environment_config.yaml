@@ -118,6 +118,22 @@ attributes:
     restrictions:
       - condition: 'settings:nsxv.nsxv_insecure.value == true'
         action: 'hide'
+  nsxv_mgt_via_mgmt:
+    value: true
+    label: 'Use mgmt network to access the metadata server'
+    description: 'Route to metadata server via openstack management network'
+    weight: 76
+    type: 'checkbox'
+  nsxv_mgt_reserve_ip:
+    value: true
+    label: 'Reservation ip address in management network for use with NSXv metadata proxy'
+    description: 'If you tick this checkbox, then ip address for NSXv metadata proxy will be allocated in the managment network openstack. In the parameter "Metadata portgroup MoRef ID", you must specify the portgroup id, which looks at managmnet network openstack.'
+    weight: 77
+    type: 'checkbox'
+    restrictions:
+      - condition: 'settings:nsxv.nsxv_mgt_via_mgmt.value == false'
+        message: '"Use mgmt network to access the metadata server" not selected'
+        action: 'disable'
   nsxv_mgt_net_moid:
     value: ''
     label: 'Metadata portgroup MoRef ID'
@@ -130,18 +146,27 @@ attributes:
     description: 'Management network IP address for metadata proxy, comma separated'
     weight: 85
     type: 'text'
+    restrictions:
+      - condition: 'settings:nsxv.nsxv_mgt_reserve_ip.value == true'
+        action: 'hide'
   nsxv_mgt_net_proxy_netmask:
     value: ''
     label: 'Management network netmask'
     description: 'Management network netmask for metadata proxy'
     weight: 90
     type: 'text'
+    restrictions:
+      - condition: 'settings:nsxv.nsxv_mgt_reserve_ip.value == true'
+        action: 'hide'
   nsxv_mgt_net_default_gateway:
     value: ''
     label: 'Management network default gateway'
     description: 'Management network default gateway for metadata proxy'
     weight: 95
     type: 'text'
+    restrictions:
+      - condition: 'settings:nsxv.nsxv_mgt_reserve_ip.value == true'
+        action: 'hide'
   nsxv_additional:
     value: false
     label: 'Additional settings'

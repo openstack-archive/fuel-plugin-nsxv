@@ -94,22 +94,22 @@ mgt_net_moid = <%= settings['nsxv_mgt_net_moid'] %>
 <% end -%>
 
 # (Optional) Management network IP address for metadata proxy
-<% if not (settings['nsxv_mgt_net_proxy_ips']).to_s.strip.empty? -%>
-mgt_net_proxy_ips = <%= settings['nsxv_mgt_net_proxy_ips'] %>
+<% if not (scope.lookupvar('mgt_ip')).to_s.strip.empty? -%>
+mgt_net_proxy_ips = <%= scope.lookupvar('mgt_ip') %>
 <% else -%>
 # mgt_net_proxy_ips =
 <% end -%>
 
 # (Optional) Management network netmask for metadata proxy
-<% if not (settings['nsxv_mgt_net_proxy_netmask']).to_s.strip.empty? -%>
-mgt_net_proxy_netmask = <%= settings['nsxv_mgt_net_proxy_netmask'] %>
+<% if not (scope.lookupvar('mgt_netmask')).to_s.strip.empty? -%>
+mgt_net_proxy_netmask = <%= scope.lookupvar('mgt_netmask') %>
 <% else -%>
 # mgt_net_proxy_netmask =
 <% end -%>
 
 # (Optional) Management network default gateway for metadata proxy
-<% if not (settings['nsxv_mgt_net_default_gateway']).to_s.strip.empty? -%>
-mgt_net_default_gateway = <%= settings['nsxv_mgt_net_default_gateway'] %>
+<% if not (scope.lookupvar('mgt_gateway')).to_s.strip.empty? -%>
+mgt_net_default_gateway = <%= scope.lookupvar('mgt_gateway') %>
 <% else -%>
 # mgt_net_default_gateway =
 <% end -%>
