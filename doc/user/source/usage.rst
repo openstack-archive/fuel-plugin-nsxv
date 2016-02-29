@@ -1,6 +1,21 @@
 Usage
 =====
 
+Easiest way to check that plugin works as expected would be trying to create
+network or router using ``neutron`` command line client:
+
+::
+
+  [root@nailgun ~]# ssh node-4    # node-4 is a controller node
+  root@node-4:~# . openrc
+  root@node-4:~# neutron router-create r1
+
+You can monitor plugin actions in ``/var/log/neutron/server.log`` and see how
+edges appear in list of ``Networking & Security -> NSX Edges`` pane in vSphere
+Web Client. If you see error messages check :ref:`Troubleshooting
+<troubleshooting>` section.
+
+
 VXLAN MTU considerations
 ------------------------
 
@@ -121,10 +136,3 @@ Create a healthmonitor and associate it with the pool.
   $ neutron lb-heathmonitor-create --delay 3 --type HTTP --max-retries 3
         --timeout 5 --pool http-pool
   $ neutron lb-healthmonitor-associate <healthmonitor_name> http-pool
-
-OpenStack environment reset/deletion
-------------------------------------
-
-Fuel NSXv plugin does not provide cleanup mechanism when OpenStack environment
-gets reset or deleted.  All logical switches and edge virtual machines remain
-intact, it is up to operator to delete them and free resources.
