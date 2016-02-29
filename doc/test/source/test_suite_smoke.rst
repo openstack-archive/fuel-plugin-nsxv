@@ -35,6 +35,43 @@ Steps
 
 Expected result
 ###############
+Output::
+
+ [root@nailgun ~]# fuel plugins --install nsxv-2.0-2.0.0-1.noarch.rpm
+ Loaded plugins: fastestmirror, priorities
+ Examining nsxv-2.0-2.0.0-1.noarch.rpm: nsxv-2.0-2.0.0-1.noarch
+ Marking nsxv-2.0-2.0.0-1.noarch.rpm to be installed
+ Resolving Dependencies
+ --> Running transaction check
+ ---> Package nsxv-2.0.noarch 0:2.0.0-1 will be installed
+ --> Finished Dependency Resolution
+
+ Dependencies Resolved
+
+
+  Package Arch Version Repository Size
+ Installing:
+  nsxv-2.0 noarch 2.0.0-1 /nsxv-2.0-2.0.0-1.noarch 20 M
+
+ Transaction Summary
+ Install  1 Package
+
+ Total size: 20 M
+ Installed size: 20 M
+ Downloading packages:
+ Running transaction check
+ Running transaction test
+ Transaction test succeeded
+ Running transaction
+   Installing : nsxv-2.0-2.0.0-1.noarch 1/1
+   Ssh key file exists, skip generation
+   Verifying  : nsxv-2.0-2.0.0-1.noarch 1/1
+
+ Installed:
+   nsxv-2.0.noarch 0:2.0.0-1
+
+ Complete!
+ Plugin nsxv-2.0-2.0.0-1.noarch.rpm was successfully installed.
 
 Ensure that plugin is installed successfully using cli, run command 'fuel plugins'. Check name, version and package version of plugin.
 
@@ -70,6 +107,38 @@ Steps
 
 Expected result
 ###############
+Output::
+
+ [root@nailgun ~]# fuel plugins --remove nsxv==2.0.0
+ Loaded plugins: fastestmirror, priorities
+ Resolving Dependencies
+ --> Running transaction check
+ ---> Package nsxv-2.0.noarch 0:2.0.0-1 will be erased
+ --> Finished Dependency Resolution
+
+ Dependencies Resolved
+
+  Package  Arch  Version Repository Size
+ Removing:
+  nsxv-2.0 noarch 2.0.0-1 @/nsxv-2.0-2.0.0-1.noarch 20 M
+
+ Transaction Summary
+ Remove  1 Package
+
+ Installed size: 20 M
+ Downloading packages:
+ Running transaction check
+ Running transaction test
+ Transaction test succeeded
+ Running transaction
+   Erasing    : nsxv-2.0-2.0.0-1.noarch 1/1
+   Verifying  : nsxv-2.0-2.0.0-1.noarch 1/1
+
+ Removed:
+   nsxv-2.0.noarch 0:2.0.0-1
+
+ Complete!
+ Plugin nsxv==2.0.0 was successfully removed.
 
 Verify that plugin is removed, run command 'fuel plugins'.
 
@@ -100,12 +169,11 @@ Steps
 #####
 
     1. Login to the Fuel web UI.
-    2. Click on the Settings tab.
+    2. Click on the Networks tab.
     3. Verify that section of NSXv plugin is present under the Other menu option.
-    4. Verify that check box 'NSXv plugin' is disabled by default.
-    5. Enable NSXv plugin by setting check box 'NSXv plugin' checked.
-    6. Verify that all labels of 'NSXv plugin' section have the same font style and colour.
-    7. Verify that all elements of NSXv plugin section are vertical aligned.
+    4. Verify that check box 'NSXv plugin' is enabled by default.
+    5. Verify that all labels of 'NSXv plugin' section have the same font style and colour.
+    6. Verify that all elements of NSXv plugin section are vertical aligned.
 
 
 Expected result
@@ -192,7 +260,7 @@ Steps
     2. Create a new environment with following parameters:
         * Compute: KVM/QEMU with vCenter
         * Networking: Neutron with tunnel segmentation
-        * Storage: Ceph RBD for volumes (Cinder)
+        * Storage: Ceph RBD for images (Glance)
         * Additional services: default
     3. Add nodes with following roles:
         * Controller

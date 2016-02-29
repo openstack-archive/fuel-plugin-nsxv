@@ -300,10 +300,11 @@ Steps
     3. Create distributed router and use it for routing between instances. Only available via CLI::
 
           neutron router-create rdistributed --distributed True
-    4. Navigate to Project -> Compute -> Instances
-    5. Launch instance VM_1 in the provider network with image TestVM-VMDK and flavor m1.tiny in the vcenter1 az.
-    6. Launch instance VM_2 in the provider network with image TestVM-VMDK and flavor m1.tiny in the vcenter2 az.
-    7. Verify that VMs of same provider network should communicate between each other. Send icmp ping from VM_1 to VM_2 and vice versa.
+    4. Disconnect default networks private and floating from default router and connect to distributed router.
+    5. Navigate to Project -> Compute -> Instances
+    6. Launch instance VM_1 in the provider network with image TestVM-VMDK and flavor m1.tiny in the vcenter1 az.
+    7. Launch instance VM_2 in the provider network with image TestVM-VMDK and flavor m1.tiny in the vcenter2 az.
+    8. Verify that VMs of same provider network should communicate between each other. Send icmp ping from VM_1 to VM_2 and vice versa.
 
 
 Expected result
@@ -342,10 +343,11 @@ Steps
     3. Create exclusive router and use it for routing between instances. Only available via CLI::
 
           neutron router-create rexclusive --router_type exclusive
-    4. Navigate to Project -> Compute -> Instances
-    5. Launch instance VM_1 in the provider network with image TestVM-VMDK and flavor m1.tiny in the vcenter1 az.
-    6. Launch instance VM_2 in the provider network with image TestVM-VMDK and flavor m1.tiny in the vcenter2 az.
-    7. Verify that VMs of same provider network should communicate between each other. Send icmp ping from VM _1 to VM_2 and vice versa.
+    4. Disconnect default networks private and floating from default router and connect to distributed router.
+    5. Navigate to Project -> Compute -> Instances
+    6. Launch instance VM_1 in the provider network with image TestVM-VMDK and flavor m1.tiny in the vcenter1 az.
+    7. Launch instance VM_2 in the provider network with image TestVM-VMDK and flavor m1.tiny in the vcenter2 az.
+    8. Verify that VMs of same provider network should communicate between each other. Send icmp ping from VM _1 to VM_2 and vice versa.
 
 
 Expected result
