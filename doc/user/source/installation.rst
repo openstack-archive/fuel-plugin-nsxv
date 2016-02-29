@@ -5,7 +5,7 @@ Installation
 
 #. Upload package to Fuel master node.
 
-#. Install the plugin with *fuel* command line tool:
+#. Install the plugin with ``fuel`` command line tool:
 
    .. code-block:: bash
 
