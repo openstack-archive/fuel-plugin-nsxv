@@ -1,7 +1,7 @@
 How to build the plugin
 =======================
 
-To build the plugin you first need to install fuel-plugin-build 4.0.0[1_]
+To build the plugin you first need to install fuel-plugin-builder_ 4.0.0
 
 .. code-block:: bash
 
@@ -15,13 +15,13 @@ After that you can build the plugin:
 
   $ cd fuel-plugin-nsxv/
 
-puppet-librarian_ ruby package is required to installed. It is used to fetch
+librarian-puppet_ ruby package is required to be installed. It is used to fetch
 upstream fuel-library_ puppet modules that plugin use. It can be installed via
-gem package manager:
+*gem* package manager:
 
 .. code-block:: bash
 
-  $ gem install puppet-librarian
+  $ gem install librarian-puppet
 
 .. code-block:: bash
 
@@ -36,6 +36,6 @@ upload to Fuel master node:
 
   nsxv-2.0-2.0.0-1.noarch.rpm
 
-.. [1] https://pypi.python.org/pypi/fuel-plugin-builder/4.0.0
-.. _puppet-librarian: https://librarian-puppet.com
+.. _fuel-plugin-builder: https://pypi.python.org/pypi/fuel-plugin-builder/4.0.0
+.. _librarian-puppet: http://librarian-puppet.com
 .. _fuel-library: https://github.com/openstack/fuel-library
