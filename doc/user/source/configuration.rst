@@ -99,7 +99,7 @@ Plugin contains the following settings:
    metadata proxy service.
 
 #. Floating IP ranges -- dash separated IP addresses allocation pool from
-   external network, e.g. "start_ip_address-end_ip_address".
+   external network, e.g. "192.168.30.1-192.168.30.200".
 
 #. External network CIDR -- network in CIDR notation that includes floating IP ranges.
 
