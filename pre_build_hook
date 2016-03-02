@@ -14,12 +14,12 @@ name=$(sed -rn 's/^name:\s*(.*)/\1/p' $ROOT/metadata.yaml)
 sed -i "s/'NAME'/'$name'/" $ROOT/deployment_scripts/puppet/manifests/*.pp
 sed -i "s/'NAME'/'$name'/" $ROOT/deployment_scripts/puppet/modules/nsxv/files/reconf_neutron_with_new_compute.sh
 
-# Download upstream puppet modules that are not in fuel-library/
-$ROOT/remove_modules.sh
-$ROOT/update_modules.sh -d $PLUGIN_MOD_DIR
-
-# Remove .git directory
-rm -fr $(find $PLUGIN_MOD_DIR -name '.git' )
-
-mv $PLUGIN_MOD_DIR/* $(dirname $PLUGIN_MOD_DIR)
-rmdir $PLUGIN_MOD_DIR
+## Download upstream puppet modules that are not in fuel-library/
+#$ROOT/remove_modules.sh
+#$ROOT/update_modules.sh -d $PLUGIN_MOD_DIR
+#
+## Remove .git directory
+#rm -fr $(find $PLUGIN_MOD_DIR -name '.git' )
+#
+#mv $PLUGIN_MOD_DIR/* $(dirname $PLUGIN_MOD_DIR)
+#rmdir $PLUGIN_MOD_DIR
