@@ -11,10 +11,11 @@ EOS
     hiera_overrides = {}
 
     # override neutron_advanced_configuration
-    neutron_advanced_configuration = function_hiera(['neutron_advanced_configuration'])
+    neutron_advanced_configuration = {}
     neutron_advanced_configuration['neutron_dvr'] = false
     neutron_advanced_configuration['neutron_l2_pop'] = false
     neutron_advanced_configuration['neutron_l3_ha'] = false
+    neutron_advanced_configuration['neutron_qos'] = false
     hiera_overrides['neutron_advanced_configuration'] = neutron_advanced_configuration
 
     # override testvm image
