@@ -1,4 +1,5 @@
 class nsxv::compute_vmware_nova_config (
+  $neutron_url_timeout = '600',
 ) {
   include ::nova::params
 
@@ -20,13 +21,14 @@ class nsxv::compute_vmware_nova_config (
   $region                    = hiera('region', 'RegionOne')
 
   class {'nova::network::neutron':
-    neutron_admin_password    => $neutron_admin_password,
-    neutron_admin_tenant_name => $neutron_admin_tenant_name,
-    neutron_region_name       => $region,
-    neutron_admin_username    => $neutron_admin_username,
-    neutron_admin_auth_url    => $neutron_admin_auth_url,
-    neutron_url               => $neutron_url,
-    neutron_ovs_bridge        => '',
+    neutron_password     => $neutron_admin_password,
+    neutron_project_name => $neutron_admin_tenant_name,
+    neutron_region_name  => $region,
+    neutron_username     => $neutron_admin_username,
+    neutron_auth_url     => $neutron_admin_auth_url,
+    neutron_url          => $neutron_url,
+    neutron_ovs_bridge   => '',
+    neutron_url_timeout       => $neutron_url_timeout,
   }
 
   create_resources(nova_config, $nova_parameters)
