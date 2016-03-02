@@ -2,8 +2,6 @@ notice('fuel-plugin-nsxv: neutron-server-start.pp')
 
 include ::neutron::params
 
-$nsxv_config_file = '/etc/neutron/plugins/vmware/nsx.ini'
-
 service { 'neutron-server':
   ensure     => 'running',
   name       => $::neutron::params::server_service,
@@ -20,28 +18,25 @@ neutron_config {
 Neutron_config<||> ~> Service['neutron-server']
 
 if 'primary-controller' in hiera('role') {
+  include ::neutron::db::sync
+
   Exec['neutron-db-sync'] ~> Service['neutron-server']
   Neutron_config<||> ~> Exec['neutron-db-sync']
 
-  $neutron_config = hiera_hash('neutron_config')
-  $management_vip     = hiera('management_vip')
-  $service_endpoint   = hiera('service_endpoint', $management_vip)
-  $auth_api_version   = 'v2.0'
-  $identity_uri       = "http://${service_endpoint}:5000"
-  $auth_url           = "${identity_uri}/${auth_api_version}"
-  $auth_password      = $neutron_config['keystone']['admin_password']
-  $auth_user          = pick($neutron_config['keystone']['admin_user'], 'neutron')
-  $auth_tenant        = pick($neutron_config['keystone']['admin_tenant'], 'services')
-  $auth_region        = hiera('region', 'RegionOne')
-  $auth_endpoint_type = 'internalURL'
-
-  exec { 'neutron-db-sync':
-    command     => "neutron-db-manage --config-file /etc/neutron/neutron.conf --config-file ${nsxv_config_file} upgrade head",
-    path        => '/usr/bin',
-    refreshonly => true,
-    logoutput   => on_failure,
-    provider    => 'shell',
-  }
+  $neutron_config         = hiera_hash('neutron_config')
+  $management_vip         = hiera('management_vip')
+  $service_endpoint       = hiera('service_endpoint', $management_vip)
+  $ssl_hash               = hiera_hash('use_ssl', {})
+  $internal_auth_protocol = get_ssl_property($ssl_hash, {}, 'keystone', 'internal', 'protocol', 'http')
+  $internal_auth_address  = get_ssl_property($ssl_hash, {}, 'keystone', 'internal', 'hostname', [$service_endpoint])
+  $identity_uri           = "${internal_auth_protocol}://${internal_auth_address}:5000"
+  $auth_api_version       = 'v2.0'
+  $auth_url               = "${identity_uri}/${auth_api_version}"
+  $auth_password          = $neutron_config['keystone']['admin_password']
+  $auth_user              = pick($neutron_config['keystone']['admin_user'], 'neutron')
+  $auth_tenant            = pick($neutron_config['keystone']['admin_tenant'], 'services')
+  $auth_region            = hiera('region', 'RegionOne')
+  $auth_endpoint_type     = 'internalURL'
 
   exec { 'waiting-for-neutron-api':
     environment => [
@@ -52,11 +47,12 @@ if 'primary-controller' in hiera('role') {
       "OS_REGION_NAME=${auth_region}",
       "OS_ENDPOINT_TYPE=${auth_endpoint_type}",
     ],
-    path      => '/usr/sbin:/usr/bin:/sbin:/bin',
-    tries     => '30',
-    try_sleep => '4',
-    command   => 'neutron net-list --http-timeout=4 2>&1 > /dev/null',
-    provider  => 'shell',
-    require   => Service['neutron-server'],
+    path        => '/usr/sbin:/usr/bin:/sbin:/bin',
+    tries       => '30',
+    try_sleep   => '4',
+    command     => 'neutron net-list --http-timeout=4 2>&1 > /dev/null',
+    provider    => 'shell',
+    subscribe   => Service['neutron-server'],
+    refreshonly => true,
   }
 }

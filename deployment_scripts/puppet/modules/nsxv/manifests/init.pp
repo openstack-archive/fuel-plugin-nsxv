@@ -2,11 +2,11 @@ class nsxv (
   $nsxv_config_dir = '/etc/neutron/plugins/vmware',
   $neutron_plugin_name = 'python-vmware-nsx',
   $lbaas_plugin_name = 'python-neutron-lbaas',
-  $plugin_name = 'nsxv'
+  $plugin_name = 'nsxv',
+  $neutron_url_timeout = '600',
 ) {
 
   $neutron_config = hiera_hash('neutron_config')
-
   $settings = hiera($plugin_name)
 
   # Do not remove unused variables: template nsx.ini.erb refers to them
@@ -53,4 +53,7 @@ class nsxv (
     replace => true,
     require => File[$nsxv_config_dirs]
   }
+
+  # fix [neutron]/timeout in nova.conf
+  nova_config { 'neutron/timeout': value => $neutron_url_timeout }
 }
