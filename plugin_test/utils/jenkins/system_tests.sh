@@ -22,6 +22,18 @@ INVALIDTASK_ERR=112
 export REBOOT_TIMEOUT=${REBOOT_TIMEOUT:-5000}
 export ALWAYS_CREATE_DIAGNOSTIC_SNAPSHOT=${ALWAYS_CREATE_DIAGNOSTIC_SNAPSHOT:-true}
 
+# Export specified settings
+if [ -z $NODE_VOLUME_SIZE ]; then export NODE_VOLUME_SIZE=350; fi
+if [ -z $OPENSTACK_RELEASE ]; then export OPENSTACK_RELEASE=Ubuntu; fi
+if [ -z $ENV_NAME ]; then export ENV_NAME="nsxv"; fi
+if [ -z $ADMIN_NODE_MEMORY ]; then export ADMIN_NODE_MEMORY=4096; fi
+if [ -z $ADMIN_NODE_CPU ]; then export ADMIN_NODE_CPU=4; fi
+if [ -z $SLAVE_NODE_MEMORY ]; then export SLAVE_NODE_MEMORY=4096; fi
+if [ -z $SLAVE_NODE_CPU ]; then export SLAVE_NODE_CPU=4; fi
+
+# Init and update submodule
+git submodule init && git submodule update
+
 ShowHelp() {
 cat << EOF
 System Tests Script
@@ -264,7 +276,7 @@ CheckVariables() {
     export VCENTER_IMAGE_DIR="/openstack_glance"
   fi
   if [ -z "${WORKSTATION_NODES}" ]; then
-    export WORKSTATION_NODES="esxi1 esxi2 esxi3 vcenter trusty"
+    export WORKSTATION_NODES="vcenter esxi1 esxi2 esxi3 trusty"
   fi
   if [ -z "${WORKSTATION_IFS}" ]; then
     export WORKSTATION_IFS="vmnet1 vmnet2"
@@ -304,9 +316,6 @@ CheckVariables() {
   fi
   if [ -z "${NSXV_DATACENTER_MOID}" ]; then
     export NSXV_DATACENTER_MOID='datacenter-126'
-  fi
-  if [ -z "${NSXV_CLUSTER_MOID}" ]; then
-    export NSXV_CLUSTER_MOID='domain-c131,domain-c133'
   fi
   if [ -z "${NSXV_RESOURCE_POOL_ID}" ]; then
     export NSXV_RESOURCE_POOL_ID='resgroup-134'
