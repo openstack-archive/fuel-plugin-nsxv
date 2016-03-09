@@ -95,6 +95,9 @@ EOF
 }
 
 GlobalVariables() {
+  # Init and update submodule
+  git submodule init && git submodule update
+
   # where built iso's should be placed
   # use hardcoded default if not set before by export
   ISO_DIR="${ISO_DIR:=/var/www/fuelweb-iso}"
@@ -264,7 +267,7 @@ CheckVariables() {
     export VCENTER_IMAGE_DIR="/openstack_glance"
   fi
   if [ -z "${WORKSTATION_NODES}" ]; then
-    export WORKSTATION_NODES="esxi1 esxi2 esxi3 vcenter trusty"
+    export WORKSTATION_NODES="vcenter esxi1 esxi2 esxi3 trusty"
   fi
   if [ -z "${WORKSTATION_IFS}" ]; then
     export WORKSTATION_IFS="vmnet1 vmnet2"
@@ -304,9 +307,6 @@ CheckVariables() {
   fi
   if [ -z "${NSXV_DATACENTER_MOID}" ]; then
     export NSXV_DATACENTER_MOID='datacenter-126'
-  fi
-  if [ -z "${NSXV_CLUSTER_MOID}" ]; then
-    export NSXV_CLUSTER_MOID='domain-c131,domain-c133'
   fi
   if [ -z "${NSXV_RESOURCE_POOL_ID}" ]; then
     export NSXV_RESOURCE_POOL_ID='resgroup-134'
