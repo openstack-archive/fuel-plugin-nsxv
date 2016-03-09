@@ -132,8 +132,20 @@ class TestNSXvPlugin(TestBasic):
 
         self.fuel_web.client.update_cluster_attributes(cluster_id, attrs)
 
-    def create_instances(self, os_conn=None, vm_count=None, nics=None,
-                         security_group=None):
+    def patch_haproxy(self):
+        """To avoid 504 error we need to patch haproxy config
+        """
+        cmd1 = "sed -i 's/timeout  client-fin.*/timeout  client-fin 800s/' /etc/haproxy/conf.d/*neutron.cfg"
+        cmd2 = "sed -i 's/timeout  server-fin.*/timeout  server-fin 800s/' /etc/haproxy/conf.d/*neutron.cfg"
+        for slave in self.env.d_env.nodes().slaves[0:4]:
+            with self.fuel_web.get_ssh_for_node(slave.name) as remote:
+                remote.execute(cmd1)
+                remote.execute(cmd2)
+                remote.execute("service haproxy stop")
+                remote.execute("service haproxy start")
+
+    def create_instances(self, os_conn=None, vm_count=1, nics=None,
+                         security_group=None, key_name=None):
         """Create Vms on available hypervisors
         :param os_conn: type object, openstack
         :param vm_count: type interger, count of VMs to create
@@ -153,6 +165,7 @@ class TestNSXvPlugin(TestBasic):
                     name='test_{0}'.format(image.name),
                     image=image, min_count=vm_count,
                     availability_zone='vcenter',
+                    key_name=key_name,
                     nics=nics
                 )
 
@@ -175,56 +188,63 @@ class TestNSXvPlugin(TestBasic):
             if security_group:
                 srv.add_security_group(security_group)
 
-    def check_connection_vms(self, os_conn=None, srv_list=None,
-                             packets=3, remote=None, ip=None):
-        """Check network connectivity between VMs with ping
+
+    def check_connection_vms(self, os_conn, srv_list, remote=None, command='pingv4',
+                             result_of_command=0,
+                             destination_ip=None):
+        """Check network connectivity between instancea and destination ip
+           with ping
         :param os_conn: type object, openstack
         :param srv_list: type list, instances
         :param packets: type int, packets count of icmp reply
-        :param remote: SSHClient
-        :param ip: type list, remote ip to check by ping
+        :param remote: SSHClient to primary controller
+        :param destination_ip: type list, remote destination ip to
+                               check by ping
         """
 
-        for srv in srv_list:
-            # VMs on different hypervisors should communicate between
-            # each other
-            if not remote:
-                primary_controller = self.fuel_web.get_nailgun_primary_node(
-                    self.env.d_env.nodes().slaves[0]
-                )
-                remote = self.fuel_web.get_ssh_for_node(
-                    primary_controller.name)
+        commands = {
+            "pingv4": "ping -c 5 {}",
+            "pingv6": "ping6 -c 5 {}",
+            "arping": "sudo arping -I eth0 {}"}
 
-            addresses = srv.addresses[srv.addresses.keys()[0]]
-            fip = [add['addr'] for add in addresses
-                   if add['OS-EXT-IPS:type'] == 'floating'][0]
-            logger.info("Connect to VM {0}".format(fip))
-
-            res = -1
-            if not ip:
-                for s in srv_list:
-                    if s != srv:
-                        ip_2 = s.networks[s.networks.keys()[0]][0]
-                        res = os_conn.execute_through_host(
-                            remote, fip,
-                            "ping -q -c3 {}"
-                            "| grep -o '[0-9] packets received' | cut"
-                            " -f1 -d ' '".format(ip_2))
-
-            else:
-                for ip_2 in ip:
-                    if ip_2 != srv.networks[srv.networks.keys()[0]][0]:
-                        res = os_conn.execute_through_host(
-                            remote, fip,
-                            "ping -q -c3 {}"
-                            "| grep -o '[0-9] packets received' | cut"
-                            " -f1 -d ' '".format(ip_2))
-
-            assert_true(
-                int(res) == packets,
-                "Ping VM{0} from Vm {1},"
-                " received {2} icmp".formasettingst(ip_2, fip, res)
+        if not remote:
+            primary_controller = self.fuel_web.get_nailgun_primary_node(
+                self.env.d_env.nodes().slaves[0]
             )
+            remote = self.fuel_web.get_ssh_for_node(
+                primary_controller.name)
+
+        for srv in srv_list:
+            addresses = srv.addresses[srv.addresses.keys()[0]]
+            fip = [
+                add['addr']
+                for add in addresses
+                if add['OS-EXT-IPS:type'] == 'floating'][0]
+
+            if not destination_ip:
+                destination_ip = [s.networks[s.networks.keys()[0]][0]
+                                  for s in srv_list if s != srv]
+
+            for ip in destination_ip:
+                if ip != srv.networks[srv.networks.keys()[0]][0]:
+                    logger.info("Connect to VM {0}".format(fip))
+                    command_result = os_conn.execute_through_host(
+                        remote, fip,
+                        commands[command].format(ip))
+                    logger.info("Command result: \n"
+                                "{0}\n"
+                                "{1}\n"
+                                "exit_code={2}"
+                                .format(command_result['stdout'],
+                                        command_result['stderr'],
+                                        command_result['exit_code']))
+                    assert_true(
+                        result_of_command == command_result['exit_code'],
+                        " Command {0} from Vm {1},"
+                        " executed with code {2}".format(
+                            commands[command].format(ip),
+                            fip, command_result)
+                    )
 
     def check_service(self, ssh=None, commands=None):
         """Check that required nova services are running on controller
@@ -249,16 +269,13 @@ class TestNSXvPlugin(TestBasic):
                        if net['name'] == "net04_ext"][0]
         if not tenant_id:
             tenant_id = os_conn.get_tenant(SERVTEST_TENANT).id
-        ext_net = [net for net
-                   in os_conn.neutron.list_networks()["networks"]
-                   if net['name'] == "net04_ext"][0]
         tenant_id = os_conn.get_tenant(SERVTEST_TENANT).id
         if not srv_list:
             srv_list = os_conn.get_servers()
         for srv in srv_list:
             fip = os_conn.neutron.create_floatingip(
                 {'floatingip': {
-                    'floating_network_id': ext_net['id'],
+                    'floating_network_id': ext_net.id,
                     'tenant_id': tenant_id}})
             os_conn.nova.servers.add_floating_ip(
                 srv, fip['floatingip']['floating_ip_address']
@@ -313,13 +330,19 @@ class TestNSXvPlugin(TestBasic):
     def add_router(self, cluster_id, router_name, ext_net, distributed=False,
                    router_type='shared'):
         common = self.get_common(cluster_id)
-        gateway = {"network_id": ext_net["id"],
+        gateway = {"network_id": ext_net.id,
                    "enable_snat": True}
-        router_param = {'router': {'name': router_name,
-                                   'admin_state_up': True,
-                                   'router_type': router_type,
-                                   'distributed': distributed,
-                                   'external_gateway_info': gateway}}
+        if distributed:
+            router_param = {'router': {'name': router_name,
+                                       'admin_state_up': True,
+                                       'distributed': distributed,
+                                       'external_gateway_info': gateway}}
+        else:
+            router_param = {'router': {'name': router_name,
+                                       'admin_state_up': True,
+                                       'router_type': router_type,
+                                       'distributed': distributed,
+                                       'external_gateway_info': gateway}}
         router = common.neutron.create_router(body=router_param)['router']
         return router
 
@@ -352,7 +375,7 @@ class TestNSXvPlugin(TestBasic):
     net1 = {'name': 'net_1', 'cidr': '192.168.112.0/24'}
     net2 = {'name': 'net_2', 'cidr': '192.168.113.0/24'}
 
-    @test(depends_on=[SetupEnvironment.prepare_slaves_5],
+    @test(depends_on=[SetupEnvironment.prepare_slaves_1],
           groups=["nsxv_smoke", "nsxv_plugin"])
     def nsxv_smoke(self):
         """Deploy a cluster with NSXv Plugin
@@ -366,7 +389,7 @@ class TestNSXvPlugin(TestBasic):
         Duration 90 min
 
         """
-        self.env.revert_snapshot('ready_with_5_slaves', skip_timesync=True)
+        self.env.revert_snapshot('ready_with_9_slaves', skip_timesync=True)
 
         self.install_nsxv_plugin()
 
@@ -378,7 +401,13 @@ class TestNSXvPlugin(TestBasic):
             name=self.__class__.__name__,
             mode=DEPLOYMENT_MODE,
             settings=settings,
+            configure_ssl=False
         )
+
+        # Assign roles to nodes
+        self.fuel_web.update_nodes(
+            cluster_id,
+            {'slave-01': ['controller'], })
 
         # Configure VMWare vCenter settings
         self.fuel_web.vcenter_configure(cluster_id,
@@ -386,18 +415,13 @@ class TestNSXvPlugin(TestBasic):
 
         self.enable_plugin(cluster_id=cluster_id)
 
-        # Assign roles to nodes
-        self.fuel_web.update_nodes(
-            cluster_id,
-            {'slave-01': ['controller'], })
-
         self.fuel_web.deploy_cluster_wait(cluster_id)
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
             test_sets=['smoke'])
 
-        self.env.make_snapshot("deploy_nsxv", is_make=True)
+        #self.env.make_snapshot("deploy_nsxv", is_make=True)
 
     def get_configured_clusters(self, node):
         """Get configured vcenter clusters moref id on controller
@@ -439,7 +463,7 @@ class TestNSXvPlugin(TestBasic):
             name=self.__class__.__name__,
             mode=DEPLOYMENT_MODE,
             settings=settings,
-            configure_ssl=False,
+            configure_ssl=False
         )
 
         # Configure VMWare vCenter settings
@@ -509,14 +533,13 @@ class TestNSXvPlugin(TestBasic):
         self.install_nsxv_plugin()
 
         settings = self.get_settings()
-        settings["images_vcenter"] = True
-        settings['volumes_ceph'] = True
-        settings['volumes_lvm'] = False
+        settings["images_ceph"] = True
         # Configure cluster
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
             mode=DEPLOYMENT_MODE,
             settings=settings,
+            configure_ssl=False
         )
 
         # Assign role to node
@@ -535,7 +558,6 @@ class TestNSXvPlugin(TestBasic):
 
         # Configure VMWare vCenter settings
         self.fuel_web.vcenter_configure(cluster_id,
-                                        vc_glance=True,
                                         multiclusters=True,
                                         target_node_1=target_node_1)
 
@@ -545,8 +567,8 @@ class TestNSXvPlugin(TestBasic):
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
-            test_sets=['smoke'], should_fail=1,
-            failed_test_name=['vCenter: Launch instance'])
+            test_sets=['smoke'],
+        )
 
         # Remove node with cinder-vmware role
         self.fuel_web.update_nodes(
@@ -565,8 +587,8 @@ class TestNSXvPlugin(TestBasic):
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
-            test_sets=['smoke'], should_fail=1,
-            failed_test_name=['vCenter: Launch instance'])
+            test_sets=['smoke']
+        )
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_9],
           groups=["nsxv_add_delete_nodes", "nsxv_plugin"])
@@ -597,6 +619,7 @@ class TestNSXvPlugin(TestBasic):
             name=self.__class__.__name__,
             mode=DEPLOYMENT_MODE,
             settings=settings,
+            configure_ssl=False
         )
 
         # Assign role to node
@@ -648,7 +671,6 @@ class TestNSXvPlugin(TestBasic):
             cluster_id=cluster_id, test_sets=['smoke'])
 
 
-
     @test(depends_on=[SetupEnvironment.prepare_slaves_9],
           groups=["nsxv_add_delete_controller", "nsxv_plugin"])
     def nsxv_add_delete_controller(self):
@@ -684,6 +706,7 @@ class TestNSXvPlugin(TestBasic):
             name=self.__class__.__name__,
             mode=DEPLOYMENT_MODE,
             settings=settings,
+            configure_ssl=False
         )
         # Assign role to node
         self.fuel_web.update_nodes(
@@ -772,7 +795,6 @@ class TestNSXvPlugin(TestBasic):
             settings=settings
         )
 
-        # cluster_id = self.fuel_web.get_last_created_cluster()
         # Configure cluster with 2 vcenter clusters and vcenter glance
         self.fuel_web.vcenter_configure(cluster_id,
                                         vc_glance=True)
@@ -787,8 +809,6 @@ class TestNSXvPlugin(TestBasic):
              'slave-03': ['controller'], })
 
         self.fuel_web.deploy_cluster_wait(cluster_id, timeout=180 * 60)
-
-        self.create_all_necessary_staff(cluster_id)
 
         os_ip = self.fuel_web.get_public_vip(cluster_id)
         os_conn = os_actions.OpenStackActions(
@@ -871,6 +891,7 @@ class TestNSXvPlugin(TestBasic):
             name=self.__class__.__name__,
             mode=DEPLOYMENT_MODE,
             settings=settings,
+            configure_ssl=False
         )
 
         # Configure VMWare vCenter settings
@@ -896,8 +917,6 @@ class TestNSXvPlugin(TestBasic):
             os_ip, SERVTEST_USERNAME,
             SERVTEST_PASSWORD,
             SERVTEST_TENANT)
-
-        self.create_all_necessary_staff(cluster_id)
 
         # create security group with rules for ssh and ping
         security_group = {}
@@ -971,7 +990,8 @@ class TestNSXvPlugin(TestBasic):
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
             mode=DEPLOYMENT_MODE,
-            settings=settings
+            settings=settings,
+            configure_ssl=False
         )
 
         # Assign role to node
@@ -1029,6 +1049,7 @@ class TestNSXvPlugin(TestBasic):
             name=self.__class__.__name__,
             mode=DEPLOYMENT_MODE,
             settings=settings,
+            configure_ssl=False
         )
 
         # Assign role to node
@@ -1085,7 +1106,8 @@ class TestNSXvPlugin(TestBasic):
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
             mode=DEPLOYMENT_MODE,
-            settings=settings
+            settings=settings,
+            configure_ssl=False
         )
 
         # Configure VMWare vCenter settings
@@ -1105,8 +1127,6 @@ class TestNSXvPlugin(TestBasic):
              'slave-05': ['cinder-vmware']}
         )
         self.fuel_web.deploy_cluster_wait(cluster_id, timeout=180 * 60)
-
-        self.create_all_necessary_staff(cluster_id)
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id, test_sets=['smoke'])
@@ -1139,7 +1159,8 @@ class TestNSXvPlugin(TestBasic):
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
             mode=DEPLOYMENT_MODE,
-            settings=settings
+            settings=settings,
+            configure_ssl=False
         )
 
         # Configure VMWare vCenter settings
@@ -1156,8 +1177,6 @@ class TestNSXvPlugin(TestBasic):
              'slave-03': ['controller', 'ceph-osd'], }
         )
         self.fuel_web.deploy_cluster_wait(cluster_id, timeout=180 * 60)
-
-        self.create_all_necessary_staff(cluster_id)
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id, test_sets=['smoke'])
@@ -1198,6 +1217,7 @@ class TestNSXvPlugin(TestBasic):
             name=self.__class__.__name__,
             mode=DEPLOYMENT_MODE,
             settings=self.get_settings(),
+            configure_ssl=False
         )
         cluster_id = self.fuel_web.get_last_created_cluster()
 
@@ -1265,7 +1285,7 @@ class TestNSXvPlugin(TestBasic):
         """Check creation instance in the one group simultaneously
 
         Scenario:
-            1. Revert snapshot to nsxv_bvt
+            1. Revert snapshot to nsxv_smoke
             2. Upload plugins to the master node
             3. Install plugin.
             4. Create cluster with vcenter.
@@ -1378,4 +1398,144 @@ class TestNSXvPlugin(TestBasic):
         assert_true(
             self.plugin_name in output[-1].split(' '),
             "{} plugin has not been installed".format(self.plugin_name)
+        )
+
+    @test(depends_on=[nsxv_ha_mode],
+          groups=["nsxv_connectivity_via_shared_router", "nsxv_plugin"])
+    def nsxv_connectivity_via_shared_router(self):
+        """Test connectivity via shared router
+
+        Scenario:
+            1. Upload the plugin to master node
+            2. Create cluster and configure NSXv for that cluster
+            3. Deploy cluster with plugin
+            4. Create shared router, create internal network.
+            5. Attach created network to router.
+            6. Launch instance VM_1, VM_2 on created network
+            7. Send ICMP packets from VM_1 to VM_2 and vice versa
+
+        Duration 90 min
+
+        """
+        cluster_id = self.fuel_web.get_last_created_cluster()
+        common = self.get_common(cluster_id)
+        os_ip = self.fuel_web.get_public_vip(cluster_id)
+        os_conn = os_actions.OpenStackActions(
+            os_ip, SERVTEST_USERNAME,
+            SERVTEST_PASSWORD,
+            SERVTEST_TENANT
+        )
+        ext = common.nova.networks.find(label="admin_floating_net")
+
+        common.create_key('tmp_key1')
+        router = self.add_router(cluster_id, "shared_1", ext)
+        # Create non default network with subnet.
+        logger.info('Create network {}'.format(self.net1))
+        private_net = self.create_network(cluster_id, self.net1['name'])
+        subnet_private = self.create_subnet(cluster_id, private_net, self.net1['cidr'])
+        self.add_subnet_to_router(cluster_id, router['id'], subnet_private['id'])
+        sec_grp = os_conn.create_sec_group_for_ssh()
+        self.create_instances(os_conn, vm_count=2, nics=[{'net-id': private_net['id']}],
+                              security_group=sec_grp.name, key_name='tmp_key1')
+        self.create_and_assign_floating_ip(os_conn=os_conn, ext_net=ext)
+
+        # Send ping from instances VM_1 and VM_2 to 8.8.8.8
+        # or other outside ip.
+        srv_list = os_conn.get_servers()
+        self.check_connection_vms(
+            os_conn, srv_list, destination_ip=['8.8.8.8']
+        )
+
+    @test(depends_on=[nsxv_ha_mode],
+          groups=["nsxv_connectivity_via_distributed_router", "nsxv_plugin"])
+    def nsxv_connectivity_via_distributed_router(self):
+        """Test connectivity via shared router
+
+        Scenario:
+            1. Upload the plugin to master node
+            2. Create cluster and configure NSXv for that cluster
+            3. Deploy cluster with plugin
+            4. Create distributed router, create internal network.
+            5. Attach created network to router.
+            6. Launch instance VM_1, VM_2 on created network
+            7. Send ICMP packets from VM_1 to VM_2 and vice versa
+
+        Duration 90 min
+
+        """
+        cluster_id = self.fuel_web.get_last_created_cluster()
+        self.patch_haproxy()
+        common = self.get_common(cluster_id)
+        os_ip = self.fuel_web.get_public_vip(cluster_id)
+        os_conn = os_actions.OpenStackActions(
+            os_ip, SERVTEST_USERNAME,
+            SERVTEST_PASSWORD,
+            SERVTEST_TENANT
+        )
+        ext = common.nova.networks.find(label="admin_floating_net")
+
+        common.create_key('tmp_key2')
+        router = self.add_router(cluster_id, "shared_2", ext, distributed=True)
+        # Create non default network with subnet.
+        logger.info('Create network {}'.format(self.net1))
+        private_net = self.create_network(cluster_id, self.net1['name'])
+        subnet_private = self.create_subnet(cluster_id, private_net, self.net1['cidr'])
+        self.add_subnet_to_router(cluster_id, router['id'], subnet_private['id'])
+        sec_grp = os_conn.create_sec_group_for_ssh()
+        self.create_instances(os_conn, vm_count=2, nics=[{'net-id': private_net['id']}],
+                              security_group=sec_grp.name, key_name='tmp_key2')
+        self.create_and_assign_floating_ip(os_conn=os_conn, ext_net=ext)
+
+        # Send ping from instances VM_1 and VM_2 to 8.8.8.8
+        # or other outside ip.
+        srv_list = os_conn.get_servers()
+        self.check_connection_vms(
+            os_conn, srv_list, destination_ip=['8.8.8.8']
+        )
+
+    @test(depends_on=[nsxv_ha_mode],
+          groups=["nsxv_connectivity_via_exclusive_router", "nsxv_plugin"])
+    def nsxv_connectivity_via_exclusive_router(self):
+        """Test connectivity via shared router
+
+        Scenario:
+            1. Upload the plugin to master node
+            2. Create cluster and configure NSXv for that cluster
+            3. Deploy cluster with plugin
+            4. Create exclusive router, create internal network.
+            5. Attach created network to router.
+            6. Launch instance VM_1, VM_2 on created network
+            7. Send ICMP packets from VM_1 to VM_2 and vice versa
+
+        Duration 90 min
+
+        """
+        cluster_id = self.fuel_web.get_last_created_cluster()
+        self.patch_haproxy()
+        common = self.get_common(cluster_id)
+        os_ip = self.fuel_web.get_public_vip(cluster_id)
+        os_conn = os_actions.OpenStackActions(
+            os_ip, SERVTEST_USERNAME,
+            SERVTEST_PASSWORD,
+            SERVTEST_TENANT
+        )
+        ext = common.nova.networks.find(label="admin_floating_net")
+
+        common.create_key('tmp_key3')
+        router = self.add_router(cluster_id, "shared_3", ext, router_type='exclusive')
+        # Create non default network with subnet.
+        logger.info('Create network {}'.format(self.net1))
+        private_net = self.create_network(cluster_id, self.net1['name'])
+        subnet_private = self.create_subnet(cluster_id, private_net, self.net1['cidr'])
+        self.add_subnet_to_router(cluster_id, router['id'], subnet_private['id'])
+        sec_grp = os_conn.create_sec_group_for_ssh()
+        self.create_instances(os_conn, vm_count=2, nics=[{'net-id': private_net['id']}],
+                              security_group=sec_grp.name, key_name='tmp_key3')
+        self.create_and_assign_floating_ip(os_conn=os_conn, ext_net=ext)
+
+        # Send ping from instances VM_1 and VM_2 to 8.8.8.8
+        # or other outside ip.
+        srv_list = os_conn.get_servers()
+        self.check_connection_vms(
+            os_conn, srv_list, destination_ip=['8.8.8.8']
         )
