@@ -273,7 +273,8 @@ CheckVariables() {
     export VCENTER_CLUSTERS="Cluster1,Cluster2"
   fi
   if [ -z "${WORKSTATION_SNAPSHOT}" ]; then
-    export WORKSTATION_SNAPSHOT="nsxv"
+    echo "Error! WORKSTATION_SNAPSHOT is not set!"
+    exit 1
   fi
   if [ -z "${WORKSTATION_USERNAME}" ]; then
     echo "Error! WORKSTATION_USERNAME is not set!"
@@ -304,9 +305,6 @@ CheckVariables() {
   fi
   if [ -z "${NSXV_DATACENTER_MOID}" ]; then
     export NSXV_DATACENTER_MOID='datacenter-126'
-  fi
-  if [ -z "${NSXV_CLUSTER_MOID}" ]; then
-    export NSXV_CLUSTER_MOID='domain-c131,domain-c133'
   fi
   if [ -z "${NSXV_RESOURCE_POOL_ID}" ]; then
     export NSXV_RESOURCE_POOL_ID='resgroup-134'
@@ -362,6 +360,9 @@ CheckVariables() {
   fi
 
   # Export settings
+  if [ -z "${NODE_VOLUME_SIZE}" ]; then
+    export NODE_VOLUME_SIZE=350
+  fi
   if [ -z "${ADMIN_NODE_MEMORY}" ]; then
     export ADMIN_NODE_MEMORY=4096
   fi
@@ -544,7 +545,7 @@ RunTest() {
       if [ "${DRY_RUN}" = "yes" ]; then
         echo dos.py erase "${ENV_NAME}"
       else
-        if [ $(dos.py list | grep "^${ENV_NAME}\$") ]; then
+        if [ "$(dos.py list | grep "^${ENV_NAME}\$")" ]; then
           dos.py erase "${ENV_NAME}"
         fi
       fi
@@ -583,7 +584,7 @@ RunTest() {
 	exit 1
     fi
 
-    while [ $(virsh net-list | grep $ENV_NAME | wc -l) -ne 5 ];do sleep 10
+    while [ "$(virsh net-list | grep $ENV_NAME | wc -l)" -ne 5 ];do sleep 10
 	if ! ps -p $SYSTEST_PID > /dev/null
 	then
 	    echo System tests exited prematurely, aborting
@@ -707,7 +708,7 @@ setup_net() {
 # MAIN
 
 # first we want to get variable from command line options
-GetoptsVariables ${@}
+GetoptsVariables "${@}"
 
 # then we define global variables and there defaults when needed
 GlobalVariables
