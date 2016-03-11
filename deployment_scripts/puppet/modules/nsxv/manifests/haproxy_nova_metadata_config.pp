@@ -1,5 +1,5 @@
 class nsxv::haproxy_nova_metadata_config (
-  $metadata_ha_conf = '/etc/haproxy/conf.d/060-nova-metadata-api.cfg',
+  $metadata_ha_conf = '/etc/haproxy/conf.d/050-nova-metadata-api.cfg',
 ) {
   $public_vip = hiera('public_vip')
 
