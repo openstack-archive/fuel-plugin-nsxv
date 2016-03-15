@@ -10,31 +10,6 @@ EOS
     filename = args[0]
     hiera_overrides = {}
 
-    # override network_metadata
-    delete_roles = ['neutron/floating','neutron/mesh','neutron/private']
-    network_metadata = function_hiera_hash(['network_metadata'])
-    nodes = network_metadata['nodes']
-    nodes.each do |node, meta|
-      (nodes[node]['network_roles']).delete_if { | key, value | delete_roles.include?(key) }
-    end
-    hiera_overrides['network_metadata'] = network_metadata
-
-    # override network_scheme
-    delete_bridges = ['br-mesh','br-floating']
-    network_scheme = function_hiera_hash(['network_scheme'])
-
-    transformations = network_scheme['transformations']
-    transformations.delete_if { |action| action['action'] == 'add-br' and delete_bridges.include?(action['name']) }
-    transformations.delete_if { |action| action['action'] == 'add-patch' and not (action['bridges'] & delete_bridges).empty? }
-    transformations.delete_if { |action| action['action'] == 'add-port' and delete_bridges.include?(action['bridge']) }
-
-    roles = network_scheme['roles']
-    roles.delete_if { |role, bridge| delete_bridges.include?(bridge) }
-
-    endpoints = network_scheme['endpoints']
-    endpoints.delete_if { |bridge, value| delete_bridges.include?(bridge) }
-    hiera_overrides['network_scheme'] = network_scheme
-
     # override neutron_advanced_configuration
     neutron_advanced_configuration = function_hiera(['neutron_advanced_configuration'])
     neutron_advanced_configuration['neutron_dvr'] = false
