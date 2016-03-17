@@ -21,8 +21,8 @@ from devops.error import TimeoutError
 from devops.helpers.helpers import wait
 
 from fuelweb_test import logger
-from fuelweb_test.helpers import checkers
 from fuelweb_test.helpers import os_actions
+from fuelweb_test.helpers import utils
 from fuelweb_test.helpers.common import Common
 from fuelweb_test.settings import DEPLOYMENT_MODE
 from fuelweb_test.settings import NEUTRON_SEGMENT_TYPE
@@ -43,9 +43,9 @@ class TestNSXvPlugin(TestBasic):
 
     _common = None
     plugin_name = 'nsxv'
-    plugin_version = '2.0.0'
+    plugin_version = '3.0.0'
 
-    NSXV_PLUGIN_PATH = os.environ.get('NSXV_PLUGIN_PATH')
+    plugin_path = os.environ.get('NSXV_PLUGIN_PATH')
     nsxv_manager_ip = os.environ.get('NSXV_MANAGER_IP')
     nsxv_insecure = True if os.environ.get(
         'NSXV_INSECURE') == 'true' else False
@@ -82,13 +82,14 @@ class TestNSXvPlugin(TestBasic):
 
     def install_nsxv_plugin(self):
         """Install plugin on fuel node."""
-        admin_remote = self.env.d_env.get_admin_remote()
+        utils.upload_tarball(
+            ip=self.ssh_manager.admin_ip,
+            tar_path=self.plugin_path,
+            tar_target='/var')
 
-        checkers.upload_tarball(admin_remote, self.NSXV_PLUGIN_PATH, "/var")
-
-        checkers.install_plugin_check_code(admin_remote,
-                                           plugin=os.path.
-                                           basename(self.NSXV_PLUGIN_PATH))
+        utils.install_plugin_check_code(
+            ip=self.ssh_manager.admin_ip,
+            plugin=os.path.basename(self.plugin_path))
 
     def enable_plugin(self, cluster_id):
         """Fill the necessary fields with required values.
@@ -489,6 +490,11 @@ class TestNSXvPlugin(TestBasic):
                                         vc_glance=True)
 
         self.enable_plugin(cluster_id=cluster_id)
+
+        # Assign roles to nodes
+        self.fuel_web.update_nodes(
+            cluster_id,
+            {'slave-01': ['controller'], })
 
         self.fuel_web.deploy_cluster_wait(cluster_id)
 
