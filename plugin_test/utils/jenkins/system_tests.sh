@@ -693,6 +693,10 @@ revert_ws() {
     vmrun -T ws-shared -h https://localhost:443/sdk -u $WORKSTATION_USERNAME -p $WORKSTATION_PASSWORD listRegisteredVM | grep -q $i || { echo "VM $i does not exist"; continue; }
     echo vmrun: reverting $i to $WORKSTATION_SNAPSHOT
     vmrun -T ws-shared -h https://localhost:443/sdk -u $WORKSTATION_USERNAME -p $WORKSTATION_PASSWORD revertToSnapshot "[standard] $i/$i.vmx" $WORKSTATION_SNAPSHOT || { echo "Error: revert of $i failed";  return 1; }
+  done
+
+  for i in $1
+  do
     echo vmrun: starting $i
     vmrun -T ws-shared -h https://localhost:443/sdk -u $WORKSTATION_USERNAME -p $WORKSTATION_PASSWORD start "[standard] $i/$i.vmx" || { echo "Error: $i failed to start";  return 1; }
   done
