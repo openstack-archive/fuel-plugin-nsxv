@@ -645,12 +645,12 @@ class TestNSXvPlugin(TestBasic):
         # Remove node with cinder-vmware role
         self.fuel_web.update_nodes(
             cluster_id,
-            {'slave-05': ['cinder-vmware'], }, False, True)
+            {'slave-08': ['cinder-vmware'], }, False, True)
 
         # Add 1 node with cinder role and redeploy cluster
         self.fuel_web.update_nodes(
             cluster_id,
-            {'slave-06': ['cinder'], })
+            {'slave-09': ['cinder'], })
 
         self.fuel_web.deploy_cluster_wait(cluster_id)
 
