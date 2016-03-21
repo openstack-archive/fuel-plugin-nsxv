@@ -598,6 +598,10 @@ class TestNSXvPlugin(TestBasic):
             6. Add node with cinder role.
             7. Redeploy cluster.
             8. Run OSTF.
+            9. Remove node with cinder-vmware role.
+           10. Add 1 node with cinder role.
+           11. Redeploy cluster.
+           12. Run OSTF.
 
         Duration 3 hours
 
@@ -640,7 +644,7 @@ class TestNSXvPlugin(TestBasic):
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
-            test_sets=['smoke'],)
+            test_sets=['smoke', 'sanity', 'ha'],)
 
         # Remove node with cinder-vmware role
         self.fuel_web.update_nodes(
@@ -656,7 +660,7 @@ class TestNSXvPlugin(TestBasic):
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
-            test_sets=['smoke'])
+            test_sets=['smoke', 'sanity', 'ha'])
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_9],
           groups=["nsxv_add_delete_nodes", "nsxv_plugin"])
@@ -1593,3 +1597,106 @@ class TestNSXvPlugin(TestBasic):
         logger.info('Create network again {}'.format(self.net1))
         private_net1 = self.create_network(self.net1['name'])
         self.create_subnet(private_net1, self.net1['cidr'])
+
+    @test(depends_on=[nsxv_ha_mode],
+          groups=["nsxv_public_network_to_all_nodes", "nsxv_plugin"])
+    def nsxv_public_network_to_all_nodes(self):
+        """Test the feature "Assign public network to all nodes" works.
+
+        Scenario:
+            1. Deploy cluster with plugin
+            2. Connect through ssh to Controller node. Run 'ifconfig'
+            3. Connect through ssh to compute-vmware node. Run 'ifconfig'.
+            4. Deploy environment with Assign public network to all nodes.
+            5. Connect through ssh to Controller node. Run 'ifconfig'.
+            6. Connect through ssh to compute-vmware node. Run 'ifconfig'.
+
+        Duration 60 min
+
+        """
+        cluster_id = self.fuel_web.get_last_created_cluster()
+        check_interface = 'ifconfig | grep br-ex'
+        controller = 'slave-01'
+        compute_vmware = 'slave-04'
+
+        with self.fuel_web.get_ssh_for_node(controller) as remote:
+            res = remote.execute(check_interface)
+            assert_true(res['exit_code'] == 0,
+                        "br-ex was not found on node {}".format(controller))
+        with self.fuel_web.get_ssh_for_node(compute_vmware) as remote:
+            res = remote.execute(check_interface)
+            assert_false(res['exit_code'] == 0,
+                         "br-ex was found on node {}".format(compute_vmware))
+
+        # Reset cluster, reconfigure, deploy
+        self.fuel_web.stop_reset_env_wait(cluster_id)
+        self.fuel_web.wait_nodes_get_online_state(
+            self.env.d_env.nodes().slaves[:5],
+            timeout=10 * 60)
+
+        attributes = self.fuel_web.client.get_cluster_attributes(cluster_id)
+        attributes['editable']['public_network_assignment'][
+            'assign_to_all_nodes']['value'] = True
+
+        self.fuel_web.client.update_cluster_attributes(cluster_id, attributes)
+
+        self.fuel_web.deploy_cluster_wait(
+            cluster_id, timeout=WAIT_FOR_LONG_DEPLOY)
+
+        with self.fuel_web.get_ssh_for_node(controller) as remote:
+            res = remote.execute(check_interface)
+            assert_true(res['exit_code'] == 0,
+                        "br-ex was not found on node {}".format(controller))
+        with self.fuel_web.get_ssh_for_node(compute_vmware) as remote:
+            res = remote.execute(check_interface)
+            assert_true(res['exit_code'] == 0,
+                        "br-ex wasn't found on node {}".format(compute_vmware))
+
+    @test(depends_on=[SetupEnvironment.prepare_slaves_3],
+          groups=["nsxv_kvm_deploy", "nsxv_plugin"])
+    def nsxv_kvm_deploy(self):
+        """Test deploy with KVM.
+
+        Scenario:
+            1. Create cluster based on KVM.
+            2. Add controller and compute-vmware nodes.
+            3. Deploy environment.
+
+        Duration 30 min
+
+        """
+        self.env.revert_snapshot("ready_with_3_slaves", skip_timesync=True)
+
+        self.install_nsxv_plugin()
+
+        # Configure cluster with vcenter
+        cluster_id = self.fuel_web.create_cluster(
+            name=self.__class__.__name__,
+            mode=DEPLOYMENT_MODE,
+            settings=self.get_settings(),
+            configure_ssl=False)
+
+        # Change hypervisor type to KVM
+        attributes = self.fuel_web.client.get_cluster_attributes(cluster_id)
+        attributes['editable']['common']['libvirt_type']['value'] = "kvm"
+        self.fuel_web.client.update_cluster_attributes(cluster_id, attributes)
+
+        # Assign role to node
+        self.fuel_web.update_nodes(
+            cluster_id,
+            {'slave-01': ['controller'],
+             'slave-02': ['compute-vmware'], })
+
+        target_node_1 = self.node_name('slave-02')
+
+        # Configure VMware vCenter settings
+        self.fuel_web.vcenter_configure(cluster_id,
+                                        multiclusters=True,
+                                        target_node_1=target_node_1)
+
+        self.enable_plugin(cluster_id=cluster_id)
+
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id, test_sets=['smoke'])
