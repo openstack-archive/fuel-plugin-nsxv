@@ -594,10 +594,8 @@ class TestNSXvPlugin(TestBasic):
             2. Install plugin.
             3. Create cluster with vcenter.
             4. Add 3 node with controller role, compute-vmware, cinder-vmware.
-            5. Remove node cinder-vmware.
-            6. Add node with cinder role.
-            7. Redeploy cluster.
-            8. Run OSTF.
+            5. Deploy cluster.
+            6. Run OSTF.
 
         Duration 3 hours
 
@@ -640,23 +638,7 @@ class TestNSXvPlugin(TestBasic):
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
-            test_sets=['smoke'],)
-
-        # Remove node with cinder-vmware role
-        self.fuel_web.update_nodes(
-            cluster_id,
-            {'slave-08': ['cinder-vmware'], }, False, True)
-
-        # Add 1 node with cinder role and redeploy cluster
-        self.fuel_web.update_nodes(
-            cluster_id,
-            {'slave-09': ['cinder'], })
-
-        self.fuel_web.deploy_cluster_wait(cluster_id)
-
-        self.fuel_web.run_ostf(
-            cluster_id=cluster_id,
-            test_sets=['smoke'])
+            test_sets=['smoke', 'sanity', 'ha'],)
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_9],
           groups=["nsxv_add_delete_nodes", "nsxv_plugin"])
@@ -804,7 +786,9 @@ class TestNSXvPlugin(TestBasic):
         self.fuel_web.deploy_cluster_wait(cluster_id, check_services=False)
 
         self.fuel_web.run_ostf(
-            cluster_id=cluster_id, test_sets=['smoke', 'sanity', 'ha'],)
+            cluster_id=cluster_id, test_sets=['smoke', 'sanity', 'ha'],
+            should_fail=1,
+            failed_test_name=['Check that required services are running'])
 
         # Add node with controller role
         self.fuel_web.update_nodes(
@@ -814,207 +798,9 @@ class TestNSXvPlugin(TestBasic):
         self.fuel_web.deploy_cluster_wait(cluster_id, check_services=False)
 
         self.fuel_web.run_ostf(
-            cluster_id=cluster_id, test_sets=['smoke', 'sanity', 'ha'],)
-
-    @test(depends_on=[SetupEnvironment.prepare_slaves_5],
-          groups=["nsxv_reset_controller", 'nsxv_plugin'])
-    def nsxv_reset_controller(self):
-        """Verify that vmclusters should migrate after reset controller.
-
-        Scenario:
-            1. Upload plugins to the master node
-            2. Install plugin.
-            3. Create cluster with vcenter.
-            4. Add 3 node with controller role.
-            5. Add 2 node with compute role.
-            6. Deploy the cluster.
-            7. Launch instances.
-            8. Verify connection between VMs. Send ping
-               Check that ping get reply
-            9. Reset controller.
-            10. Check that vmclusters should be migrate to another controller.
-            11. Verify connection between VMs.
-                Send ping, check that ping get reply
-
-        Duration 1.8 hours
-
-        """
-        self.env.revert_snapshot("ready_with_5_slaves", skip_timesync=True)
-
-        self.install_nsxv_plugin()
-
-        settings = self.get_settings()
-        settings["images_vcenter"] = True
-        # Configure cluster with 2 vcenter cluster
-        cluster_id = self.fuel_web.create_cluster(
-            name=self.__class__.__name__,
-            mode=DEPLOYMENT_MODE,
-            settings=settings)
-
-        # Configure cluster with 2 vcenter clusters and vcenter glance
-        self.fuel_web.vcenter_configure(cluster_id,
-                                        vc_glance=True)
-
-        self.enable_plugin(cluster_id)
-
-        # Assign role to node
-        self.fuel_web.update_nodes(
-            cluster_id,
-            {'slave-01': ['controller'],
-             'slave-02': ['controller'],
-             'slave-03': ['controller'], })
-
-        self.fuel_web.deploy_cluster_wait(
-            cluster_id, timeout=WAIT_FOR_LONG_DEPLOY)
-
-        os_ip = self.fuel_web.get_public_vip(cluster_id)
-        os_conn = os_actions.OpenStackActions(
-            os_ip, SERVTEST_USERNAME,
-            SERVTEST_PASSWORD,
-            SERVTEST_TENANT)
-
-        # create security group with rules for ssh and ping
-        security_group = {}
-        security_group[os_conn.get_tenant(SERVTEST_TENANT).id] =\
-            os_conn.create_sec_group_for_ssh()
-        sec_group = security_group[
-            os_conn.get_tenant(SERVTEST_TENANT).id].id
-
-        private_net = self.create_network(self.net1['name'])
-
-        self.create_instances(
-            os_conn=os_conn, vm_count=1,
-            nics=[{'net-id': private_net['id']}], security_group=sec_group)
-
-        # Verify connection between VMs. Send ping Check that ping get reply
-        self.create_and_assign_floating_ip(os_conn=os_conn)
-        srv_list = os_conn.get_servers()
-        self.check_connection_vms(os_conn=os_conn, srv_list=srv_list)
-
-        primary_controller = self.fuel_web.get_nailgun_primary_node(
-            self.env.d_env.nodes().slaves[0])
-
-        ssh = self.fuel_web.get_ssh_for_node(primary_controller.name)
-
-        cmds = ['nova-manage service list | grep vcenter-vmcluster1',
-                'nova-manage service list | grep vcenter-vmcluster2']
-
-        self.check_service(ssh=ssh, commands=cmds)
-
-        self.fuel_web.warm_restart_nodes(
-            [self.fuel_web.environment.d_env.get_node(
-                name=primary_controller.name)])
-        primary_controller = self.fuel_web.get_nailgun_primary_node(
-            self.env.d_env.nodes().slaves[1])
-
-        ssh = self.fuel_web.get_ssh_for_node(primary_controller.name)
-        self.check_service(ssh=ssh, commands=cmds)
-
-        # Verify connection between VMs. Send ping Check that ping get reply
-        srv_list = os_conn.get_servers()
-        self.check_connection_vms(os_conn=os_conn, srv_list=srv_list)
-
-    @test(depends_on=[SetupEnvironment.prepare_slaves_5],
-          groups=["nsxv_shutdown_controller", 'nsxv_plugin'])
-    def nsxv_shutdown_controller(self):
-        """Verify that vmclusters should be migrate after shutdown controller.
-
-        Scenario:
-            1. Upload plugins to the master node
-            2. Install plugin.
-            3. Create cluster with vcenter.
-            4. Add 3 node with controller role.
-            5. Add 2 node with compute role.
-            6. Deploy the cluster.
-            7. Launch instances.
-            8. Verify connection between VMs. Send ping
-               Check that ping get reply
-            9. Shutdown controller.
-            10. Check that vmclusters should be migrate to another controller.
-            11. Verify connection between VMs.
-                Send ping, check that ping get reply
-
-        Duration 1.8 hours
-
-        """
-        self.env.revert_snapshot("ready_with_5_slaves", skip_timesync=True)
-
-        self.install_nsxv_plugin()
-
-        settings = self.get_settings()
-        settings["images_vcenter"] = True
-        # Configure cluster
-        cluster_id = self.fuel_web.create_cluster(
-            name=self.__class__.__name__,
-            mode=DEPLOYMENT_MODE,
-            settings=settings,
-            configure_ssl=False)
-
-        # Configure VMWare vCenter settings
-        self.fuel_web.vcenter_configure(cluster_id,
-                                        vc_glance=True,
-                                        multiclusters=True)
-
-        self.enable_plugin(cluster_id)
-
-        # Assign role to node
-        self.fuel_web.update_nodes(
-            cluster_id,
-            {'slave-01': ['controller'],
-             'slave-02': ['controller'],
-             'slave-03': ['controller'],
-             'slave-04': ['compute-vmware'],
-             'slave-05': ['compute-vmware']})
-
-        self.fuel_web.deploy_cluster_wait(
-            cluster_id, timeout=WAIT_FOR_LONG_DEPLOY)
-
-        os_ip = self.fuel_web.get_public_vip(cluster_id)
-        os_conn = os_actions.OpenStackActions(
-            os_ip, SERVTEST_USERNAME,
-            SERVTEST_PASSWORD,
-            SERVTEST_TENANT)
-
-        # create security group with rules for ssh and ping
-        security_group = {}
-        security_group[os_conn.get_tenant(SERVTEST_TENANT).id] =\
-            os_conn.create_sec_group_for_ssh()
-        security_group = security_group[
-            os_conn.get_tenant(SERVTEST_TENANT).id].id
-
-        network = os_conn.nova.networks.find(label='net04')
-        self.create_instances(
-            os_conn=os_conn, vm_count=1,
-            nics=[{'net-id': network.id}], security_group=security_group)
-
-        # Verify connection between VMs. Send ping Check that ping get reply
-        self.create_and_assign_floating_ip(os_conn=os_conn)
-        srv_list = os_conn.get_servers()
-        self.check_connection_vms(os_conn=os_conn, srv_list=srv_list)
-
-        primary_controller = self.fuel_web.get_nailgun_primary_node(
-            self.env.d_env.nodes().slaves[0])
-
-        ssh = self.fuel_web.get_ssh_for_node(primary_controller.name)
-
-        cmds = ['nova-manage service list | grep vcenter-vmcluster1',
-                'nova-manage service list | grep vcenter-vmcluster2']
-
-        self.check_service(ssh=ssh, commands=cmds)
-
-        self.fuel_web.warm_shutdown_nodes(
-            [self.fuel_web.environment.d_env.get_node(
-                name=primary_controller.name)])
-        primary_controller = self.fuel_web.get_nailgun_primary_node(
-            self.env.d_env.nodes().slaves[1])
-
-        ssh = self.fuel_web.get_ssh_for_node(primary_controller.name)
-        self.check_service(ssh=ssh, commands=cmds)
-        # Verify connection between VMs. Send ping Check that ping get reply
-        srv_list = os_conn.get_servers()
-        self.check_connection_vms(
-            os_conn=os_conn, srv_list=srv_list,
-            remote=ssh)
+            cluster_id=cluster_id, test_sets=['smoke', 'sanity', 'ha'],
+            should_fail=1,
+            failed_test_name=['Check that required services are running'])
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],
           groups=["nsxv_ceilometer", "nsxv_plugin"])
@@ -1429,7 +1215,7 @@ class TestNSXvPlugin(TestBasic):
         """Test connectivity via shared router.
 
         Scenario:
-            1. Upload the plugin to master node
+            1. Setup nsxv_ha_mode
             2. Create cluster and configure NSXv for that cluster
             3. Deploy cluster with plugin
             4. Create shared router, create internal network.
@@ -1474,7 +1260,7 @@ class TestNSXvPlugin(TestBasic):
         """Test connectivity via distributed router.
 
         Scenario:
-            1. Upload the plugin to master node
+            1. Setup nsxv_ha_mode
             2. Create cluster and configure NSXv for that cluster
             3. Deploy cluster with plugin
             4. Create distributed router, create internal network.
@@ -1522,7 +1308,7 @@ class TestNSXvPlugin(TestBasic):
         """Test connectivity via exclusive router.
 
         Scenario:
-            1. Upload the plugin to master node
+            1. Setup nsxv_ha_mode
             2. Create cluster and configure NSXv for that cluster
             3. Deploy cluster with plugin
             4. Create exclusive router, create internal network.
@@ -1570,7 +1356,7 @@ class TestNSXvPlugin(TestBasic):
         """Test creating and deleting networks.
 
         Scenario:
-            1. Upload the plugin to master node
+            1. Setup nsxv_ha_mode
             2. Create cluster and configure NSXv for that cluster
             3. Deploy cluster with plugin
             4. Create 2 private networks net_1, net_2
@@ -1593,3 +1379,106 @@ class TestNSXvPlugin(TestBasic):
         logger.info('Create network again {}'.format(self.net1))
         private_net1 = self.create_network(self.net1['name'])
         self.create_subnet(private_net1, self.net1['cidr'])
+
+    @test(depends_on=[nsxv_ha_mode],
+          groups=["nsxv_public_network_to_all_nodes", "nsxv_plugin"])
+    def nsxv_public_network_to_all_nodes(self):
+        """Test the feature "Assign public network to all nodes" works.
+
+        Scenario:
+            1. Setup nsxv_ha_mode
+            2. Connect through ssh to Controller node. Run 'ifconfig'
+            3. Connect through ssh to compute-vmware node. Run 'ifconfig'.
+            4. Deploy environment with Assign public network to all nodes.
+            5. Connect through ssh to Controller node. Run 'ifconfig'.
+            6. Connect through ssh to compute-vmware node. Run 'ifconfig'.
+
+        Duration 60 min
+
+        """
+        cluster_id = self.fuel_web.get_last_created_cluster()
+        check_interface = 'ifconfig | grep br-ex'
+        controller = 'slave-01'
+        compute_vmware = 'slave-04'
+
+        with self.fuel_web.get_ssh_for_node(controller) as remote:
+            res = remote.execute(check_interface)
+            assert_true(res['exit_code'] == 0,
+                        "br-ex was not found on node {}".format(controller))
+        with self.fuel_web.get_ssh_for_node(compute_vmware) as remote:
+            res = remote.execute(check_interface)
+            assert_false(res['exit_code'] == 0,
+                         "br-ex was found on node {}".format(compute_vmware))
+
+        # Reset cluster, reconfigure, deploy
+        self.fuel_web.stop_reset_env_wait(cluster_id)
+        self.fuel_web.wait_nodes_get_online_state(
+            self.env.d_env.nodes().slaves[:5],
+            timeout=10 * 60)
+
+        attributes = self.fuel_web.client.get_cluster_attributes(cluster_id)
+        attributes['editable']['public_network_assignment'][
+            'assign_to_all_nodes']['value'] = True
+
+        self.fuel_web.client.update_cluster_attributes(cluster_id, attributes)
+
+        self.fuel_web.deploy_cluster_wait(
+            cluster_id, timeout=WAIT_FOR_LONG_DEPLOY)
+
+        with self.fuel_web.get_ssh_for_node(controller) as remote:
+            res = remote.execute(check_interface)
+            assert_true(res['exit_code'] == 0,
+                        "br-ex was not found on node {}".format(controller))
+        with self.fuel_web.get_ssh_for_node(compute_vmware) as remote:
+            res = remote.execute(check_interface)
+            assert_true(res['exit_code'] == 0,
+                        "br-ex wasn't found on node {}".format(compute_vmware))
+
+    @test(depends_on=[SetupEnvironment.prepare_slaves_3],
+          groups=["nsxv_kvm_deploy", "nsxv_plugin"])
+    def nsxv_kvm_deploy(self):
+        """Test deploy with KVM.
+
+        Scenario:
+            1. Create cluster based on KVM.
+            2. Add controller and compute-vmware nodes.
+            3. Deploy environment.
+
+        Duration 30 min
+
+        """
+        self.env.revert_snapshot("ready_with_3_slaves", skip_timesync=True)
+
+        self.install_nsxv_plugin()
+
+        # Configure cluster with vcenter
+        cluster_id = self.fuel_web.create_cluster(
+            name=self.__class__.__name__,
+            mode=DEPLOYMENT_MODE,
+            settings=self.get_settings(),
+            configure_ssl=False)
+
+        # Change hypervisor type to KVM
+        attributes = self.fuel_web.client.get_cluster_attributes(cluster_id)
+        attributes['editable']['common']['libvirt_type']['value'] = "kvm"
+        self.fuel_web.client.update_cluster_attributes(cluster_id, attributes)
+
+        # Assign role to node
+        self.fuel_web.update_nodes(
+            cluster_id,
+            {'slave-01': ['controller'],
+             'slave-02': ['compute-vmware'], })
+
+        target_node_1 = self.node_name('slave-02')
+
+        # Configure VMware vCenter settings
+        self.fuel_web.vcenter_configure(cluster_id,
+                                        multiclusters=True,
+                                        target_node_1=target_node_1)
+
+        self.enable_plugin(cluster_id=cluster_id)
+
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id, test_sets=['smoke'])
