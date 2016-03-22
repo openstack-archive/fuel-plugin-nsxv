@@ -1,4 +1,5 @@
 class nsxv::compute_vmware_nova_config (
+  $neutron_url_timeout = '600',
 ) {
   include ::nova::params
 
@@ -27,6 +28,7 @@ class nsxv::compute_vmware_nova_config (
     neutron_admin_auth_url    => $neutron_admin_auth_url,
     neutron_url               => $neutron_url,
     neutron_ovs_bridge        => '',
+    neutron_url_timeout       => $neutron_url_timeout,
   }
 
   create_resources(nova_config, $nova_parameters)
