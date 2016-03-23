@@ -912,3 +912,126 @@ Expected result
 
 Environment has been deployed successfully.
 
+
+Check availability metadata server with disabled nsxv_mgt_via_mgmt
+------------------------------------------------------------------
+
+
+ID
+##
+
+nsxv_metadata_mgt_disabled
+
+
+Description
+###########
+
+Test case verifies option nsxv_mgt_via_mgmt in disabled state.
+
+Complexity
+##########
+
+core
+
+
+Steps
+#####
+
+    1. Configure cluster.
+    2. Install fuel and nsxv plugin.
+    3. Configure nsxv plugin and uncheck option 'Use mgmt network to access the metadata server' (nsxv_mgt_via_mgmt).
+       Manually specify the IP address, network mask and default route for the proxy metadata router.
+    4. Run on controller node::
+
+	wget http://169.254.169.254/
+
+
+Expected result
+###############
+
+Option nsxv_mgt_via_mgmt was enabled by default.
+Request should return 'OK' answer.
+
+
+Check availability metadata server with nsxv_mgt_via_mgmt enabled and nsxv_mgt_reserve_ip disabled
+--------------------------------------------------------------------------------------------------
+
+
+ID
+##
+
+nsxv_metadata_mgt_enabled
+
+
+Description
+###########
+
+Test case verifies option nsxv_mgt_via_mgmt in enabled state, nsxv_mgt_reserve_ip is disabled. This is default state.
+
+Complexity
+##########
+
+core
+
+
+Steps
+#####
+
+    1. Configure cluster.
+    2. Install fuel and nsxv plugin.
+    3. Configure nsxv plugin.
+    4. Run on controller node::
+
+	wget http://169.254.169.254/
+
+
+Expected result
+###############
+
+Option 'Use mgmt network to access the metadata server' is enabled by default.
+Option 'Reservation ip address in management network for use with NSXv metadata proxy' is disabled by default.
+Request should return 'OK' answer.
+
+
+Check availability metadata server with nsxv_mgt_via_mgmt enabled and nsxv_mgt_reserve_ip enabled
+-------------------------------------------------------------------------------------------------
+
+
+ID
+##
+
+nsxv_metadata_mgt_reserve_enabled
+
+
+Description
+###########
+
+Test case verifies options:
+nsxv_mgt_via_mgmt enabled
+nsxv_mgt_reserve_ip enabled.
+
+Complexity
+##########
+
+core
+
+
+Steps
+#####
+
+    1. Configure cluster.
+    2. Install fuel and nsxv plugin.
+    3. Configure nsxv plugin and check option 'Reservation ip address in management network for use with NSXv metadata proxy' (nsxv_mgt_reserve_ip).
+       You must specify the portgroup id as "Metadata portgroup MoRef ID" which looks at management network openstack.
+    4. Run on controller node::
+
+	wget http://169.254.169.254/
+
+
+Expected result
+###############
+
+Option 'Use mgmt network to access the metadata server' is enabled by default.
+Option 'Reservation ip address in management network for use with NSXv metadata proxy' is disabled by default.
+Request should return 'OK' answer.
+
