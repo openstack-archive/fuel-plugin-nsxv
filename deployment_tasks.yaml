@@ -18,6 +18,7 @@
     timeout: 300
 - id: compute-vmware-nova-config
   type: puppet
+  refresh_on: [nova_config]
   groups: [compute-vmware]
   required_for: [top-role-compute-vmware]
   requires: [top-role-compute]
@@ -36,9 +37,10 @@
     timeout: 120
 - id: nsxv-install
   type: puppet
+  refresh_on: [neutron_config]
   groups: [primary-controller,controller]
   required_for: [openstack-network-neutron-start]
-  requires: [hiera-override,openstack-network-server-config]
+  requires: [openstack-network-server-config]
   parameters:
     puppet_manifest: puppet/manifests/nsxv-config.pp
     puppet_modules: puppet/modules
@@ -98,6 +100,16 @@
     puppet_manifest: puppet/manifests/neutron-network-create.pp
     puppet_modules: puppet/modules
     timeout: 600
+- id: nova-neutron-timeout-fix
+  type: puppet
+  refresh_on: [nova_config]
+  groups: [primary-controller, controller]
+  required_for: [vmware-vcenter]
+  requires: [openstack-network-server-nova]
+  parameters:
+    puppet_manifest: puppet/manifests/nova-neutron-timeout-fix.pp
+    puppet_modules: puppet/modules
+    timeout: 300
 - id: horizon-enable-lbaas
   type: puppet
   groups: [primary-controller,controller]
