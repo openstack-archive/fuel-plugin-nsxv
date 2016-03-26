@@ -1,10 +1,16 @@
 - role: ['primary-controller','controller','compute-vmware']
   stage: pre_deployment/4010
+  type: shell
+  parameters:
+    cmd: rm -f /etc/hiera/override/nsxv.yaml
+    timeout: 60
+- role: ['primary-controller','controller','compute-vmware']
+  stage: pre_deployment/4010
   type: puppet
   parameters:
     puppet_manifest: puppet/manifests/repo-priority.pp
     puppet_modules: puppet/modules:/etc/puppet/modules
-    timeout: 120
+    timeout: 300
 - role: ['primary-controller','controller']
   stage: pre_deployment/4010
   type: puppet
