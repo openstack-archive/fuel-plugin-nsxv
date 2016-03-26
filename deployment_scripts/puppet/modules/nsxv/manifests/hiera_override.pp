@@ -12,35 +12,6 @@ class nsxv::hiera_override (
   -%>
 <%= quantum_settings.to_yaml %>")
 
-  $network_metadata = inline_template("<%-
-    require 'yaml'
-    delete_roles = ['neutron/floating','neutron/mesh','neutron/private']
-    network_metadata = { 'network_metadata' => scope.function_hiera(['network_metadata']) }
-    nodes = network_metadata['network_metadata']['nodes']
-    nodes.each do |node, meta|
-      (nodes[node]['network_roles']).delete_if { | key, value | delete_roles.include?(key) }
-    end
-  -%>
-<%= network_metadata.to_yaml %>")
-
-  $network_scheme = inline_template("<%-
-    require 'yaml'
-    delete_bridges = ['br-mesh','br-floating']
-    network_scheme = { 'network_scheme' => scope.function_hiera(['network_scheme']) }
-
-    transformations = network_scheme['network_scheme']['transformations']
-    transformations.delete_if { |action| action['action'] == 'add-br' and delete_bridges.include?(action['name']) }
-    transformations.delete_if { |action| action['action'] == 'add-patch' and not (action['bridges'] & delete_bridges).empty? }
-    transformations.delete_if { |action| action['action'] == 'add-port' and delete_bridges.include?(action['bridge']) }
-
-    roles = network_scheme['network_scheme']['roles']
-    roles.delete_if { |role, bridge| delete_bridges.include?(bridge) }
-
-    endpoints = network_scheme['network_scheme']['endpoints']
-    endpoints.delete_if { |bridge, value| delete_bridges.include?(bridge) }
-  -%>
-<%= network_scheme.to_yaml %>")
-
   $neutron_advanced_configuration = inline_template("<%-
     neutron_advanced_configuration = { 'neutron_advanced_configuration' => scope.function_hiera(['neutron_advanced_configuration']) }
     neutron_advanced_configuration['neutron_advanced_configuration']['neutron_dvr'] = false
@@ -62,18 +33,6 @@ class nsxv::hiera_override (
     target  => $override_file,
     content => $quantum_settings,
     order   => '01'
-  }
-  concat::fragment{ 'network_metadata':
-    ensure  => present,
-    target  => $override_file,
-    content => regsubst($network_metadata,'---',''),
-    order   => '10'
-  }
-  concat::fragment{ 'network_scheme':
-    ensure  => present,
-    target  => $override_file,
-    content => regsubst($network_scheme,'---',''),
-    order   => '20'
   }
   concat::fragment{ 'neutron_advanced_configuration':
     ensure  => present,
