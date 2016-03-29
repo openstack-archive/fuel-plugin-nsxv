@@ -92,10 +92,11 @@ class TestNSXvPlugin(TestBasic):
                                            plugin=os.path.
                                            basename(self.NSXV_PLUGIN_PATH))
 
-    def enable_plugin(self, cluster_id):
+    def enable_plugin(self, cluster_id, settings=None):
         """Fill the necessary fields with required values.
 
         :param cluster_id: cluster id to use with Common
+        :param settings: dict that will be merged with default settings
         """
         assert_true(
             self.fuel_web.check_plugin_exists(cluster_id, self.plugin_name),
@@ -134,6 +135,12 @@ class TestNSXvPlugin(TestBasic):
                            'nsxv_internal_net_dns/value':
                            self.nsxv_internal_net_dns,
                            'nsxv_edge_ha/value': self.nsxv_edge_ha}
+
+        if settings is not None:
+            self.fuel_web.update_plugin_settings(
+                cluster_id, self.plugin_name, self.plugin_version,
+                {'nsxv_additional/value': True})
+            plugin_settings.update(settings)
 
         self.fuel_web.update_plugin_settings(
             cluster_id, self.plugin_name, self.plugin_version, plugin_settings)
@@ -1517,3 +1524,49 @@ class TestNSXvPlugin(TestBasic):
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id, test_sets=['smoke'])
+
+    @test(depends_on=[SetupEnvironment.prepare_slaves_1],
+          groups=["nsxv_specified_router_type", "nsxv_plugin"])
+    def nsxv_specified_router_type(self):
+        """Deploy a cluster with NSXv Plugin.
+
+        Scenario:
+            1. Upload the plugin to master node
+            2. Create cluster and configure NSXv for that cluster
+            3. Provision one controller node
+            4. Deploy cluster with plugin
+
+        Duration 90 min
+
+        """
+        self.env.revert_snapshot('ready_with_1_slaves', skip_timesync=True)
+
+        self.install_nsxv_plugin()
+
+        # Configure cluster
+        settings = self.get_settings()
+        settings["images_vcenter"] = True
+        # Configure cluster
+        cluster_id = self.fuel_web.create_cluster(
+            name=self.__class__.__name__,
+            mode=DEPLOYMENT_MODE,
+            settings=settings,
+            configure_ssl=False)
+
+        # Assign roles to nodes
+        self.fuel_web.update_nodes(
+            cluster_id,
+            {'slave-01': ['controller'], })
+
+        # Configure VMWare vCenter settings
+        self.fuel_web.vcenter_configure(cluster_id,
+                                        vc_glance=True)
+
+        self.enable_plugin(
+            cluster_id, {'nsxv_tenant_router_types/value': 'exclusive'})
+
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id,
+            test_sets=['smoke'])
