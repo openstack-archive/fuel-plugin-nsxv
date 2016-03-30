@@ -1,11 +1,16 @@
 class nsxv::haproxy_nova_metadata_config (
-  $metadata_ha_conf = '/etc/haproxy/conf.d/050-nova-metadata-api.cfg',
+  $metadata_listen_ip,
 ) {
-  $public_vip = hiera('public_vip')
-
-  file_line { 'metadata_public_listen':
-    path  => $metadata_ha_conf,
-    after => 'listen nova-metadata-api',
-    line  => "  bind ${public_vip}:8775",
+  file { '/tmp/nova-haproxy-config.sh':
+    ensure  => file,
+    mode    => '0755',
+    source  => "puppet:///modules/${module_name}/nova-haproxy-config.sh",
+    replace => true,
+  }
+  exec { 'set nova metadata listen ip':
+    command   => "/tmp/nova-haproxy-config.sh ${metadata_listen_ip}",
+    logoutput => on_failure,
+    provider  => 'shell',
+    require   => File['/tmp/nova-haproxy-config.sh'],
   }
 }

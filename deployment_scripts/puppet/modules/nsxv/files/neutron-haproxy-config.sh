@@ -1,5 +1,5 @@
 #!/bin/bash
-neutronHaproxyConf='/etc/haproxy/conf.d/085-neutron.cfg'
+neutronHaproxyConf="$(find /etc/haproxy/conf.d -name '*neutron*')"
 tempFile="$(mktemp)"
 
 awk '
