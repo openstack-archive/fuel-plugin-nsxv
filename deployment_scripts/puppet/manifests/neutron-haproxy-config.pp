@@ -1,3 +1,7 @@
 notice('fuel-plugin-nsxv: neutron-haproxy-config.pp')
 
-class { '::nsxv::neutron_haproxy_config': }
+include openstack::ha::haproxy_restart
+
+class { '::nsxv::neutron_haproxy_config':
+  notify => Exec['haproxy-restart'],
+}
