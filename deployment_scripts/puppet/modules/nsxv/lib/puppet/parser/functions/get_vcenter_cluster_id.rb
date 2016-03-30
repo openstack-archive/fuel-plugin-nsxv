@@ -23,10 +23,23 @@ EOS
       begin
         vim = RbVmomi::VIM.connect(host: vc_host, ssl: true, insecure: true, user: vc_user, password: vc_password)
         rootFolder = vim.serviceInstance.content.rootFolder
-        dc = rootFolder.childEntity.grep(RbVmomi::VIM::Datacenter).find { |x| x.to_s == 'Datacenter("'+datacenter_id+'")' } or fail 'Can not search datacenter with id: ' + datacenter_id
-        cluster = dc.find_compute_resource(vc_cluster) or fail 'Can not search cluster: ' + vc_cluster
-        cluster_id = cluster.to_s.gsub!(/^[^"]+"([^"]+)"[^"]*/, '\1')
-        clusters_id.push(cluster_id)
+        dc = rootFolder.childEntity.grep(RbVmomi::VIM::Datacenter).find { |x| x._ref == datacenter_id } or fail 'Can not search datacenter with id: ' + datacenter_id
+        all_clusters_object = dc.hostFolder.inventory_flat({'ComputeResource' => []}).select do |k, v|
+          k.is_a?(RbVmomi::VIM::ComputeResource)
+        end
+        check_array = []
+        all_clusters_object.each do |cluster, options|
+          if cluster.name == vc_cluster
+            check_array.push(cluster._ref)
+          end
+        end
+        # check the name of the uniqueness in the data center
+        if check_array.length > 1
+          fail 'Cluster ' + vc_cluster + ' is not unique in datacenter'
+        elsif check_array.length == 0
+          fail 'Cluster ' + vc_cluster + ' not found'
+        end
+        clusters_id.push(check_array[0])
       rescue
         retry_count -= 1
         if retry_count > 0
