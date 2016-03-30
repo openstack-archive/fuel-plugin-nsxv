@@ -1,0 +1,9 @@
+# reservation ip in managment network for use with nsxv metadata proxy
+- id: "nsxv_metadataproxy/vip"
+  default_mapping: "management"
+  properties:
+    subnet: false
+    gateway: false
+    vip:
+      - name: "nsxv_metadataproxy_ip"
+        node_roles: ["primary-controller"]

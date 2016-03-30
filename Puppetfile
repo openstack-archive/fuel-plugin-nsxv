@@ -36,3 +36,5 @@ mod 'openstacklib',
 mod 'keystone',
     :git => 'https://review.fuel-infra.org/p/puppet-modules/puppet-keystone.git',
     :ref => '7.0.0-mos-rc3'
+
+# TODO: need l23network(use cidr_to_netmask function)

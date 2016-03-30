@@ -1,5 +1,34 @@
 notice('fuel-plugin-nsxv: nsxv-config.pp')
 
+$plugin_name            = 'NAME'
+$settings               = hiera($plugin_name)
+$neutron_config         = hiera_hash('neutron_config')
+$metadata_shared_secret = $neutron_config['metadata']['metadata_proxy_shared_secret']
+
+if $settings['nsxv_mgt_via_mgmt'] {
+  $nova_metadata_ips = hiera('management_vip')
+} else {
+  $nova_metadata_ips = hiera('public_vip')
+}
+
+if $settings['nsxv_mgt_reserve_ip'] {
+  prepare_network_config(hiera('network_scheme'))
+  $network_metadata = hiera('network_metadata')
+  $mgt_ip           = $network_metadata['vips']['nsxv_metadataproxy_ip']['ipaddr']
+  $mgt_netmask      = get_network_role_property('mgmt/vip','netmask')
+  #$mgt_netmask      = cidr_to_netmask(hiera('management_network_range'))
+  $mgt_gateway      = hiera('management_vrouter_vip')
+} else {
+  $mgt_ip      = $settings['nsxv_mgt_net_proxy_ips']
+  $mgt_netmask = $settings['nsxv_mgt_net_proxy_netmask']
+  $mgt_gateway = $settings['nsxv_mgt_net_default_gateway']
+}
+
 class { '::nsxv':
-  plugin_name => 'NAME',
+  metadata_shared_secret => $metadata_shared_secret,
+  settings               => $settings,
+  nova_metadata_ips      => $nova_metadata_ips,
+  mgt_ip                 => $mgt_ip,
+  mgt_netmask            => $mgt_netmask,
+  mgt_gateway            => $mgt_gateway,
 }

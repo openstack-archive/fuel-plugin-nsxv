@@ -29,7 +29,7 @@
     puppet_manifest: puppet/manifests/compute-vmware-nova-config.pp
     puppet_modules: puppet/modules:/etc/puppet/modules
     timeout: 300
-- id: openstack-haproxy-nova-metadata-public_vip
+- id: openstack-haproxy-nova-metadata
   version: 2.0.0
   type: puppet
   groups: [primary-controller,controller]

@@ -87,6 +87,20 @@ Plugin contains the following settings:
 
    To enable Nova metadata service, set the following settings must be set:
 
+#. Use mgmt network to access the metadata server -- Route to metadata server
+   via openstack management network. If you disable this setting metadata server
+   is configured to listen openstack public network and you will need to manually
+   specify the IP address, network mask and default route for the proxy metadata
+   router. Enabled by default.
+
+#. Reservation ip address in management network for use with NSXv metadata proxy
+   -- If you tick this checkbox, then ip address for NSXv metadata proxy will be
+   allocated in the managment network openstack. In the parameter "Metadata
+   portgroup MoRef ID", you must specify the portgroup id, which looks at
+   managmnet network openstack. If you disable this option you will need to
+   manually specify the IP address, network mask and default route for the proxy
+   metadata router. Enabled by default.
+
 #. Metadata portgroup MoRef ID -- portgroup MoRef ID for metadata proxy service.
 
 #. Metadata proxy IP addresses -- comma separated IP addresses used by Nova

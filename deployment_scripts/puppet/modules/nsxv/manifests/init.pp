@@ -1,19 +1,19 @@
 class nsxv (
+  # Do not remove unused variables: template nsx.ini.erb refers to them
+  $nsxv_config_dirs = [ '/etc/neutron', '/etc/neutron/plugins', '/etc/neutron/plugins/vmware' ],
   $nsxv_config_dir = '/etc/neutron/plugins/vmware',
   $neutron_plugin_name = 'python-vmware-nsx',
   $lbaas_plugin_name = 'python-neutron-lbaas',
-  $plugin_name = 'nsxv',
   $neutron_url_timeout = '600',
+  $nova_metadata_port = '8775',
+  $metadata_shared_secret,
+  $settings,
+  $nova_metadata_ips,
+  $mgt_ip,
+  $mgt_netmask,
+  $mgt_gateway,
 ) {
 
-  $neutron_config = hiera_hash('neutron_config')
-  $settings = hiera($plugin_name)
-
-  # Do not remove unused variables: template nsx.ini.erb refers to them
-  $nova_metadata_ips = hiera('public_vip')
-  $nova_metadata_port = '8775'
-  $metadata_shared_secret = $neutron_config['metadata']['metadata_proxy_shared_secret']
-  $nsxv_config_dirs = [ '/etc/neutron', '/etc/neutron/plugins', '/etc/neutron/plugins/vmware' ]
   $cluster_moid = get_vcenter_cluster_id($settings['nsxv_datacenter_moid'])
 
   if ! $settings['nsxv_insecure'] {
