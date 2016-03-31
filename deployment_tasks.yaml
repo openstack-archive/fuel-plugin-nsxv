@@ -56,7 +56,7 @@
   required_for: [openstack-haproxy]
   requires: [openstack-haproxy-neutron]
   parameters:
-    puppet_manifest: puppet/manifests/neutron-haproxy-config.pp
+    puppet_manifest: puppet/manifests/haproxy-neutron-config.pp
     puppet_modules: puppet/modules:/etc/puppet/modules
     timeout: 120
 - id: primary-openstack-network-plugins-l2
