@@ -1,6 +1,6 @@
 #!/bin/bash
 metadata_listen_ip="$1"
-metadata_listen_port='8775'
+metadata_listen_port="$2"
 metadata_listen="$metadata_listen_ip:$metadata_listen_port"
 novaHaproxyConf="$(find /etc/haproxy/conf.d -name '*nova-metadata-api*')"
 tempFile="$(mktemp)"

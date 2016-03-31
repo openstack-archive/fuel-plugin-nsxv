@@ -29,7 +29,7 @@
     puppet_manifest: puppet/manifests/compute-vmware-nova-config.pp
     puppet_modules: puppet/modules:/etc/puppet/modules
     timeout: 300
-- id: openstack-haproxy-nova-metadata
+- id: openstack-haproxy-nova-nsxv
   version: 2.0.0
   type: puppet
   groups: [primary-controller,controller]
@@ -37,6 +37,16 @@
   requires: [openstack-haproxy-nova]
   parameters:
     puppet_manifest: puppet/manifests/haproxy-nova-metadata-config.pp
+    puppet_modules: puppet/modules:/etc/puppet/modules
+    timeout: 120
+- id: openstack-haproxy-neutron-nsxv
+  version: 2.0.0
+  type: puppet
+  groups: [primary-controller, controller]
+  required_for: [openstack-haproxy]
+  requires: [openstack-haproxy-neutron]
+  parameters:
+    puppet_manifest: puppet/manifests/haproxy-neutron-config.pp
     puppet_modules: puppet/modules:/etc/puppet/modules
     timeout: 120
 - id: nsxv-install
@@ -49,16 +59,62 @@
     puppet_manifest: puppet/manifests/nsxv-config.pp
     puppet_modules: puppet/modules:/etc/puppet/modules
     timeout: 300
-- id: openstack-haproxy-neutron-nsxv
+- id: openstack-network-neutron-policy
   version: 2.0.0
   type: puppet
-  groups: [primary-controller, controller]
-  required_for: [openstack-haproxy]
-  requires: [openstack-haproxy-neutron]
+  groups: [primary-controller,controller]
+  required_for: [openstack-network-neutron-start,primary-openstack-network-neutron-start]
+  requires: [openstack-network-server-config]
   parameters:
-    puppet_manifest: puppet/manifests/neutron-haproxy-config.pp
+    puppet_manifest: puppet/manifests/neutron-server-policy.pp
+    puppet_modules: puppet/modules:/etc/puppet/modules
+    timeout: 300
+- id: openstack-network-neutron-start
+  version: 2.0.0
+  refresh_on: [neutron_config]
+  type: puppet
+  groups: [controller]
+  required_for: [openstack-network-end]
+  requires: [openstack-network-neutron-policy,nsxv-install]
+  cross-depends:
+    - name: primary-openstack-network-neutron-start
+  parameters:
+    puppet_manifest: puppet/manifests/neutron-server-start.pp
+    puppet_modules: puppet/modules:/etc/puppet/modules
+    timeout: 1800
+- id: primary-openstack-network-neutron-start
+  version: 2.0.0
+  refresh_on: [neutron_config]
+  type: puppet
+  groups: [primary-controller]
+  required_for: [openstack-network-networks-nsxv]
+  requires: [openstack-network-neutron-policy,nsxv-install]
+  parameters:
+    puppet_manifest: puppet/manifests/neutron-server-start.pp
+    puppet_modules: puppet/modules:/etc/puppet/modules
+    timeout: 1800
+- id: openstack-network-networks-nsxv
+  version: 2.0.0
+  type: puppet
+  groups: [primary-controller]
+  required_for: [openstack-network-routers]
+  requires: [primary-openstack-network-neutron-start]
+  parameters:
+    puppet_manifest: puppet/manifests/neutron-network-create.pp
+    puppet_modules: puppet/modules:/etc/puppet/modules
+    timeout: 600
+- id: horizon-enable-lbaas
+  version: 2.0.0
+  type: puppet
+  groups: [primary-controller,controller]
+  required_for: [deploy_end]
+  requires: [horizon]
+  parameters:
+    puppet_manifest: puppet/manifests/horizon-enable-lbaas.pp
     puppet_modules: puppet/modules:/etc/puppet/modules
     timeout: 120
+
+# skipped tasks
 - id: primary-openstack-network-plugins-l2
   version: 2.0.0
   type: skipped
@@ -86,60 +142,6 @@
 - id: openstack-network-agents-metadata
   version: 2.0.0
   type: skipped
-- id: openstack-network-neutron-policy
-  version: 2.0.0
-  type: puppet
-  groups: [primary-controller,controller]
-  required_for: [openstack-network-neutron-start,primary-openstack-network-neutron-start]
-  requires: [openstack-network-server-config]
-  parameters:
-    puppet_manifest: puppet/manifests/neutron-server-policy.pp
-    puppet_modules: puppet/modules:/etc/puppet/modules
-    timeout: 300
-- id: openstack-network-neutron-start
-  version: 2.0.0
-  refresh_on: [neutron_config]
-  type: puppet
-  groups: [controller]
-  required_for: [openstack-network-end]
-  requires: [openstack-network-neutron-policy]
-  cross-depends:
-    - name: primary-openstack-network-neutron-start
-  parameters:
-    puppet_manifest: puppet/manifests/neutron-server-start.pp
-    puppet_modules: puppet/modules:/etc/puppet/modules
-    timeout: 1800
-- id: primary-openstack-network-neutron-start
-  version: 2.0.0
-  refresh_on: [neutron_config]
-  type: puppet
-  groups: [primary-controller]
-  required_for: [openstack-network-networks-nsxv]
-  requires: [openstack-network-neutron-policy]
-  parameters:
-    puppet_manifest: puppet/manifests/neutron-server-start.pp
-    puppet_modules: puppet/modules:/etc/puppet/modules
-    timeout: 1800
-- id: openstack-network-networks-nsxv
-  version: 2.0.0
-  type: puppet
-  groups: [primary-controller]
-  required_for: [openstack-network-end,openstack-network-routers]
-  requires: [primary-openstack-network-neutron-start]
-  parameters:
-    puppet_manifest: puppet/manifests/neutron-network-create.pp
-    puppet_modules: puppet/modules:/etc/puppet/modules
-    timeout: 600
-- id: horizon-enable-lbaas
-  version: 2.0.0
-  type: puppet
-  groups: [primary-controller,controller]
-  required_for: [deploy_end]
-  requires: [horizon]
-  parameters:
-    puppet_manifest: puppet/manifests/horizon-enable-lbaas.pp
-    puppet_modules: puppet/modules:/etc/puppet/modules
-    timeout: 120
 
 # post deployment tasks
 - id: add-public-key-to-controller
