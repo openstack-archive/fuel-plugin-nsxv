@@ -5,13 +5,14 @@ class nsxv (
   $neutron_plugin_name = 'python-vmware-nsx',
   $lbaas_plugin_name = 'python-neutron-lbaas',
   $neutron_url_timeout = '600',
-  $nova_metadata_port = '8775',
   $metadata_shared_secret,
   $settings,
   $nova_metadata_ips,
+  $nova_metadata_port,
   $mgt_ip,
   $mgt_netmask,
   $mgt_gateway,
+  $neutron_url_timeout,
 ) {
 
   $cluster_moid = get_vcenter_cluster_id($settings['nsxv_datacenter_moid'])

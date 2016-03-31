@@ -1,7 +1,8 @@
 notice('fuel-plugin-nsxv: nsxv-config.pp')
 
-$plugin_name            = 'NAME'
-$settings               = hiera($plugin_name)
+include ::nsxv::params
+
+$settings               = hiera($::nsxv::params::plugin_name)
 $neutron_config         = hiera_hash('neutron_config')
 $metadata_shared_secret = $neutron_config['metadata']['metadata_proxy_shared_secret']
 
@@ -26,6 +27,8 @@ if $settings['nsxv_mgt_reserve_ip'] {
 
 class { '::nsxv':
   metadata_shared_secret => $metadata_shared_secret,
+  nova_metadata_port     => $::nsxv::params::nova_metadata_port,
+  neutron_url_timeout    => $::nsxv::params::neutron_url_timeout,
   settings               => $settings,
   nova_metadata_ips      => $nova_metadata_ips,
   mgt_ip                 => $mgt_ip,
