@@ -32,11 +32,14 @@ from fuelweb_test.settings import SERVTEST_TENANT
 from fuelweb_test.tests.base_test_case import SetupEnvironment
 from fuelweb_test.tests.base_test_case import TestBasic
 
-ADMIN_NET = 'admin_floating_net'
-EXT_IP = '8.8.8.8'
-PRIVATE_NET = "admin_internal_net"
-WAIT_FOR_COMMAND = 60 * 3
-WAIT_FOR_LONG_DEPLOY = 60 * 180
+from helpers.settings import (WAIT_FOR_COMMAND,
+                              WAIT_FOR_LONG_DEPLOY,
+                              EXT_IP,
+                              ADMIN_NET,
+                              PRIVATE_NET)
+
+from helpers.openstack import HopenStack
+from helpers import settings
 
 
 @test(groups=["plugins", "nsxv_plugin"])
@@ -47,29 +50,8 @@ class TestNSXvPlugin(TestBasic):
     plugin_name = 'nsxv'
     plugin_version = '2.0.0'
 
-    NSXV_PLUGIN_PATH = os.environ.get('NSXV_PLUGIN_PATH')
-    nsxv_manager_ip = os.environ.get('NSXV_MANAGER_IP')
-    nsxv_insecure = True if os.environ.get(
-        'NSXV_INSECURE') == 'true' else False
-    nsxv_user = os.environ.get('NSXV_USER')
-    nsxv_password = os.environ.get('NSXV_PASSWORD')
-    nsxv_datacenter_moid = os.environ.get('NSXV_DATACENTER_MOID')
-    nsxv_resource_pool_id = os.environ.get('NSXV_RESOURCE_POOL_ID')
-    nsxv_datastore_id = os.environ.get('NSXV_DATASTORE_ID')
-    nsxv_external_network = os.environ.get('NSXV_EXTERNAL_NETWORK')
-    nsxv_vdn_scope_id = os.environ.get('NSXV_VDN_SCOPE_ID')
-    nsxv_dvs_id = os.environ.get('NSXV_DVS_ID')
-    nsxv_backup_edge_pool = os.environ.get('NSXV_BACKUP_EDGE_POOL')
-    nsxv_mgt_net_moid = os.environ.get('NSXV_MGT_NET_MOID')
-    nsxv_mgt_net_proxy_ips = os.environ.get('NSXV_MGT_NET_PROXY_IPS')
-    nsxv_mgt_net_proxy_netmask = os.environ.get('NSXV_MGT_NET_PROXY_NETMASK')
-    nsxv_mgt_net_default_gw = os.environ.get('NSXV_MGT_NET_DEFAULT_GW')
-    nsxv_edge_ha = True if os.environ.get('NSXV_EDGE_HA') == 'true' else False
-    nsxv_floating_ip_range = os.environ.get('NSXV_FLOATING_IP_RANGE')
-    nsxv_floating_net_cidr = os.environ.get('NSXV_FLOATING_NET_CIDR')
-    nsxv_floating_net_gw = os.environ.get('NSXV_FLOATING_NET_GW')
-    nsxv_internal_net_cidr = os.environ.get('NSXV_INTERNAL_NET_CIDR')
-    nsxv_internal_net_dns = os.environ.get('NSXV_INTERNAL_NET_DNS')
+    net1 = {'name': 'net_1', 'cidr': '192.168.112.0/24'}
+    net2 = {'name': 'net_2', 'cidr': '192.168.113.0/24'}
 
     def node_name(self, name_node):
         """Return name of node."""
@@ -86,11 +68,12 @@ class TestNSXvPlugin(TestBasic):
         """Install plugin on fuel node."""
         admin_remote = self.env.d_env.get_admin_remote()
 
-        checkers.upload_tarball(admin_remote, self.NSXV_PLUGIN_PATH, "/var")
-
+        checkers.upload_tarball(admin_remote,
+                                settings.NSXV_PLUGIN_PATH,
+                                "/var")
         checkers.install_plugin_check_code(admin_remote,
                                            plugin=os.path.
-                                           basename(self.NSXV_PLUGIN_PATH))
+                                           basename(settings.NSXV_PLUGIN_PATH))
 
     def enable_plugin(self, cluster_id):
         """Fill the necessary fields with required values.
@@ -101,42 +84,10 @@ class TestNSXvPlugin(TestBasic):
             self.fuel_web.check_plugin_exists(cluster_id, self.plugin_name),
             "Test aborted")
 
-        plugin_settings = {'nsxv_manager_host/value': self.nsxv_manager_ip,
-                           'nsxv_insecure/value': self.nsxv_insecure,
-                           'nsxv_user/value': self.nsxv_user,
-                           'nsxv_password/value': self.nsxv_password,
-                           'nsxv_datacenter_moid/value':
-                           self.nsxv_datacenter_moid,
-                           'nsxv_resource_pool_id/value':
-                           self.nsxv_resource_pool_id,
-                           'nsxv_datastore_id/value': self.nsxv_datastore_id,
-                           'nsxv_external_network/value':
-                           self.nsxv_external_network,
-                           'nsxv_vdn_scope_id/value': self.nsxv_vdn_scope_id,
-                           'nsxv_dvs_id/value': self.nsxv_dvs_id,
-                           'nsxv_backup_edge_pool/value':
-                           self.nsxv_backup_edge_pool,
-                           'nsxv_mgt_net_moid/value': self.nsxv_mgt_net_moid,
-                           'nsxv_mgt_net_proxy_ips/value':
-                           self.nsxv_mgt_net_proxy_ips,
-                           'nsxv_mgt_net_proxy_netmask/value':
-                           self.nsxv_mgt_net_proxy_netmask,
-                           'nsxv_mgt_net_default_gateway/value':
-                           self.nsxv_mgt_net_default_gw,
-                           'nsxv_floating_ip_range/value':
-                           self.nsxv_floating_ip_range,
-                           'nsxv_floating_net_cidr/value':
-                           self.nsxv_floating_net_cidr,
-                           'nsxv_internal_net_cidr/value':
-                           self.nsxv_internal_net_cidr,
-                           'nsxv_floating_net_gw/value':
-                           self.nsxv_floating_net_gw,
-                           'nsxv_internal_net_dns/value':
-                           self.nsxv_internal_net_dns,
-                           'nsxv_edge_ha/value': self.nsxv_edge_ha}
-
-        self.fuel_web.update_plugin_settings(
-            cluster_id, self.plugin_name, self.plugin_version, plugin_settings)
+        self.fuel_web.update_plugin_settings(cluster_id,
+                                             self.plugin_name,
+                                             self.plugin_version,
+                                             settings.plugin_configuration)
 
     def patch_haproxy(self, controllers):
         """To avoid 504 error we need to patch haproxy config.
@@ -147,8 +98,8 @@ class TestNSXvPlugin(TestBasic):
                                        "timeout  client-fin 600s/' " \
                                        "/etc/haproxy/conf.d/*neutron.cfg"
         change_neutron_server_config = "sed -i 's/timeout  server-fin.*/" \
-            "timeout  server-fin 600s/' " \
-            "/etc/haproxy/conf.d/*neutron.cfg"
+                                       "timeout  server-fin 600s/' " \
+                                       "/etc/haproxy/conf.d/*neutron.cfg"
         stop_haproxy = "service haproxy stop"
         start_haproxy = "service haproxy start"
         for controller in controllers:
@@ -449,9 +400,6 @@ class TestNSXvPlugin(TestBasic):
         public_net = self.create_net_public()
         router = self.add_router('router_04', public_net)
         self.add_subnet_to_router(router['id'], subnet_private['id'])
-
-    net1 = {'name': 'net_1', 'cidr': '192.168.112.0/24'}
-    net2 = {'name': 'net_2', 'cidr': '192.168.113.0/24'}
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_1],
           groups=["nsxv_smoke", "nsxv_plugin"])
@@ -1052,7 +1000,7 @@ class TestNSXvPlugin(TestBasic):
         self.fuel_web.run_ostf(
             cluster_id=cluster_id, test_sets=['smoke'])
 
-    @test(depends_on=[SetupEnvironment.prepare_slaves_3],
+    @test(depends_on=[nsxv_ha_mode],
           groups=["nsxv_floating_ip_to_public", 'nsxv_plugin'])
     def nsxv_floating_ip_to_public(self):
         """Check connectivity Vms to public network with floating ip.
@@ -1071,62 +1019,53 @@ class TestNSXvPlugin(TestBasic):
         Duration 1,5 hours
 
         """
-        self.env.revert_snapshot("ready_with_3_slaves", skip_timesync=True)
-
-        self.install_nsxv_plugin()
-
-        # Configure cluster with vcenter
-        cluster_id = self.fuel_web.create_cluster(
-            name=self.__class__.__name__,
-            mode=DEPLOYMENT_MODE,
-            settings=self.get_settings(),
-            configure_ssl=False)
-
-        # Configure VMWare vCenter settings
-        self.fuel_web.vcenter_configure(cluster_id)
-
-        self.enable_plugin(cluster_id=cluster_id)
-
-        # Assign role to node
-        self.fuel_web.update_nodes(
-            cluster_id,
-            {'slave-01': ['controller'], })
-        self.fuel_web.deploy_cluster_wait(cluster_id)
-
-        # Create non default network with subnet.
-        logger.info('Create network {}'.format(self.net1))
-        private_net = self.create_network(self.net1['name'])
-        self.create_subnet(private_net, self.net1['cidr'])
-
+        cluster_id = self.fuel_web.get_last_created_cluster()
         # Create os_conn
         os_ip = self.fuel_web.get_public_vip(cluster_id)
-        os_conn = os_actions.OpenStackActions(
-            os_ip, SERVTEST_USERNAME,
-            SERVTEST_PASSWORD,
-            SERVTEST_TENANT)
+        os_conn = os_actions.OpenStackActions(os_ip,
+                                              SERVTEST_USERNAME,
+                                              SERVTEST_PASSWORD,
+                                              SERVTEST_TENANT)
+        nsxv_ip = self.fuel_web.get_public_vip(cluster_id)
+        hos = HopenStack(nsxv_ip)
 
-        # create security group with rules for ssh and ping
-        security_group = {}
-        security_group[os_conn.get_tenant(SERVTEST_TENANT).id] =\
-            os_conn.create_sec_group_for_ssh()
-        security_group = security_group[
-            os_conn.get_tenant(SERVTEST_TENANT).id].id
+        network_params = {
+                    'name': 'net04_ext',
+                    'admin_state_up': True,
+                    'router:external': True,
+                    'shared': True, }
+        net = hos.create_network(network_params)
+        subnet_params = {
+                    'network_id': net['id'],
+                    'ip_version': 4,
+                    'cidr': '172.16.0.0/24',
+                    'name': 'subnet04_ext',
+                    'allocation_pools': [{"start": "172.16.0.30",
+                                          "end": "172.16.0.40"}],
+                    'gateway_ip': '172.16.0.1',
+                    'enable_dhcp': False, }
+        subnet = hos.create_subnetwork(subnet_params)
 
-        private_net = os_conn.get_network(PRIVATE_NET)
+        router = self.add_router("shared", net)
+        self.add_subnet_to_router(router['id'], subnet['id'])
+
+        sec_group = os_conn.create_sec_group_for_ssh()
+
 
         # Launch instance VM_1, VM_2 in the tenant network net_01
         # with image TestVM-VMDK and flavor m1.tiny in the nova az.
-        self.create_instances(
-            os_conn=os_conn, vm_count=1,
-            nics=[{'net-id': private_net['id']}],
-            security_group=security_group)
+        self.create_instances(os_conn=os_conn,
+                              vm_count=1,
+                              nics=[{'net-id': net['id']}],
+                              security_group=sec_group)
 
         self.create_and_assign_floating_ip(os_conn=os_conn)
 
         # Send ping from instances VM_1 and VM_2 to 8.8.8.8
         srv_list = os_conn.get_servers()
-        self.check_connection_vms(
-            os_conn, srv_list, destination_ip=[EXT_IP])
+        self.check_connection_vms(os_conn,
+                                  srv_list,
+                                  destination_ip=[EXT_IP])
 
     @test(depends_on=[nsxv_smoke],
           groups=["nsxv_create_and_delete_vms", 'nsxv_plugin'])
