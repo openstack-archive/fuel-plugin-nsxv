@@ -8,18 +8,26 @@ set -eux
 ROOT="$(dirname `readlink -f $0`)"
 PLUGIN_MOD_DIR="$ROOT/deployment_scripts/puppet/modules/upstream"
 
-version=$(sed -rn 's/^version:\s*([0-9.])/\1/p' $ROOT/metadata.yaml)
-name=$(sed -rn 's/^name:\s*(.*)/\1/p' $ROOT/metadata.yaml)
+version=$(sed -rn 's/^version:\s*([0-9.])/\1/p' "$ROOT"/metadata.yaml)
+name=$(sed -rn 's/^name:\s*(.*)/\1/p' "$ROOT"/metadata.yaml)
 
-sed -i "s/'NAME'/'$name'/" $ROOT/deployment_scripts/puppet/manifests/*.pp
-sed -i "s/'NAME'/'$name'/" $ROOT/deployment_scripts/puppet/modules/nsxv/files/reconf_neutron_with_new_compute.sh
+sed -i "s/'NAME'/'$name'/" "$ROOT"/deployment_scripts/puppet/manifests/*.pp
+sed -i "s/'NAME'/'$name'/" "$ROOT"/deployment_scripts/puppet/modules/nsxv/files/reconf_neutron_with_new_compute.sh
 
 # Download upstream puppet modules that are not in fuel-library/
-$ROOT/remove_modules.sh
-$ROOT/update_modules.sh -d $PLUGIN_MOD_DIR
+"$ROOT"/remove_modules.sh
+"$ROOT"/update_modules.sh -d "$PLUGIN_MOD_DIR"
 
 # Remove .git directory
-rm -fr $(find $PLUGIN_MOD_DIR -name '.git' )
+rm -fr $(find "$PLUGIN_MOD_DIR" -name '.git' )
 
-mv $PLUGIN_MOD_DIR/* $(dirname $PLUGIN_MOD_DIR)
-rmdir $PLUGIN_MOD_DIR
+mv "$PLUGIN_MOD_DIR"/* "$(dirname $PLUGIN_MOD_DIR)"
+
+# Download puppet modules that are in fuel-library/
+REPO_PATH='https://github.com/openstack/fuel-library/tarball/c2a335b5b725f1b994f78d4c78723d29fa44685a'
+
+wget -qO- "$REPO_PATH" | tar -C "$PLUGIN_MOD_DIR" --strip-components=8 -zxvf - openstack-fuel-library-c2a335b/deployment/puppet/osnailyfacter/lib/puppet/parser/functions
+mv "$PLUGIN_MOD_DIR"/get_ssl_property.rb "$(dirname $PLUGIN_MOD_DIR)"/nsxv/lib/puppet/parser/functions
+
+# clean
+rm -fr "$PLUGIN_MOD_DIR"
