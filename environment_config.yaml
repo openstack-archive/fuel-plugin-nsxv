@@ -118,19 +118,19 @@ attributes:
         action: 'hide'
   nsxv_metadata_listen_mgmt:
     value: false
-    label: 'Use mgmt network to access the metadata server'
-    description: 'Route to metadata server via openstack management network'
+    label: 'Use management network to access the nova-api-metadata'
+    description: 'If disabled nova-api-metadata listens on Public network'
     weight: 86
     type: 'checkbox'
   nsxv_mgt_reserve_ip:
     value: false
-    label: 'Reservation ip address in management network for use with NSXv metadata proxy'
-    description: 'If you tick this checkbox, then ip address for NSXv metadata proxy will be allocated in the managment network openstack. In the parameter "Metadata portgroup MoRef ID",    you must specify the portgroup id, which looks at managmnet network openstack.'
+    label: 'Allocate IP address in management network for NSX metadata proxy'
+    description: 'If enabled, then IP address for NSX metadata proxy will be allocated in the OpenStack management network. In the parameter "Metadata portgroup MoRef ID", you must specify portgroup id, which is adjacent with OpenStack management network'
     weight: 87
     type: 'checkbox'
     restrictions:
       - condition: 'settings:nsxv.nsxv_metadata_listen_mgmt.value == false'
-        message: '"Use mgmt network to access the metadata server" not selected'
+        message: '"Use management network to access the nova-api-metadata" not enabled'
         action: 'disable'
   nsxv_mgt_net_moid:
     value: ''

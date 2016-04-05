@@ -85,7 +85,16 @@ Plugin contains the following settings:
    certificate file* setting will appear providing an option to upload
    CA certificate which emitted NSX Manager certificate.
 
-   To enable Nova metadata service, set the following settings must be set:
+   To enable Nova metadata service, the following settings must be set:
+
+#. Use management network to access the nova-api-metadata -- configure
+   nova-api-metadata service to listen on OpenStack management network. If
+   disabled nova-api-metadata will listen on Public network.
+
+#. Allocate IP address in management network for NSX metadata proxy --
+   automatic IP address allocation, if disabled then user have to manually
+   specify IP address, netmask and gateway to avoid possible collisions. By
+   default management traffic is forwarded into Public network via vrouter IP.
 
 #. Metadata portgroup MoRef ID -- portgroup MoRef ID for metadata proxy service.
 

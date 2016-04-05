@@ -16,7 +16,7 @@ if $settings['nsxv_mgt_reserve_ip'] {
   prepare_network_config(hiera('network_scheme'))
   $network_metadata = hiera('network_metadata')
   $mgt_ip           = $network_metadata['vips']['nsxv_metadataproxy_ip']['ipaddr']
-  $mgt_netmask      = get_network_role_property('mgmt/vip','netmask')
+  $mgt_netmask      = get_network_role_property('mgmt/vip', 'netmask')
   $mgt_gateway      = hiera('management_vrouter_vip')
 } else {
   $mgt_ip      = $settings['nsxv_mgt_net_proxy_ips']
