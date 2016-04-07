@@ -63,3 +63,12 @@
     puppet_manifest: puppet/manifests/openstack-haproxy-neutron.pp
     puppet_modules: puppet/modules:/etc/puppet/modules
     timeout: 300
+- id: nova-neutron-timeout-fix
+  type: puppet
+  groups: [primary-controller, controller]
+  required_for: [vmware-vcenter]
+  requires: [openstack-controller]
+  parameters:
+    puppet_manifest: puppet/manifests/nova-neutron-timeout-fix.pp
+    puppet_modules: puppet/modules:/etc/puppet/modules
+    timeout: 300
