@@ -93,8 +93,7 @@ Plugin contains the following settings:
 
 #. Allocate IP address in management network for NSX metadata proxy --
    automatic IP address allocation, if disabled then user have to manually
-   specify IP address, netmask and gateway to avoid possible collisions. By
-   default management traffic is forwarded into Public network via vrouter IP.
+   specify IP address, netmask and gateway to avoid possible collisions.
 
 #. Metadata portgroup MoRef ID -- portgroup MoRef ID for metadata proxy service.
 
