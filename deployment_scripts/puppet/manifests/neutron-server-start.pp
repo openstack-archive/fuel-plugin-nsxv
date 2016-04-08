@@ -17,7 +17,7 @@ neutron_config {
 }
 Neutron_config<||> ~> Service['neutron-server']
 
-if 'primary-controller' in hiera('role') {
+if 'primary-controller' in hiera('roles') {
   include ::neutron::db::sync
 
   Exec['neutron-db-sync'] ~> Service['neutron-server']
