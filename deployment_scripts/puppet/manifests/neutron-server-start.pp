@@ -2,7 +2,7 @@ notice('fuel-plugin-nsxv: neutron-server-start.pp')
 
 include ::neutron::params
 
-service { 'neutron-server':
+service { 'neutron-server-start':
   ensure     => 'running',
   name       => $::neutron::params::server_service,
   enable     => true,
@@ -10,17 +10,27 @@ service { 'neutron-server':
   hasrestart => true,
 }
 
+# Need stop for apply the new settings after a refresh_on/rexecute_on
+# (example apply new cluster_morefid settings after add new compute-vmware role)
+exec {'neutron-server-stop':
+  path     => '/usr/sbin:/usr/bin:/sbin:/bin',
+  command  => "service ${::neutron::params::server_service} stop",
+  provider => 'shell',
+}
+
 neutron_config {
   'DEFAULT/core_plugin': value => 'vmware_nsx.plugin.NsxVPlugin';
   'DEFAULT/service_plugins': value => 'neutron_lbaas.services.loadbalancer.plugin.LoadBalancerPlugin';
   'service_providers/service_provider': value => 'LOADBALANCER:VMWareEdge:neutron_lbaas.services.loadbalancer.drivers.vmware.edge_driver.EdgeLoadbalancerDriver:default';
 }
+
 Neutron_config<||> ~> Service['neutron-server']
+Exec['neutron-server-stop'] -> Service['neutron-server-start']
 
 if 'primary-controller' in hiera('roles') {
   include ::neutron::db::sync
 
-  Exec['neutron-db-sync'] ~> Service['neutron-server']
+  Exec['neutron-server-stop'] -> Exec['neutron-db-sync'] ~> Service['neutron-server-start']
   Neutron_config<||> ~> Exec['neutron-db-sync']
 
   $neutron_config         = hiera_hash('neutron_config')
