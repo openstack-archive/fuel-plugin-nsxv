@@ -51,6 +51,7 @@
     timeout: 120
 - id: nsxv-install
   version: 2.0.0
+  refresh_on: [neutron_config,nova_config]
   type: puppet
   groups: [primary-controller,controller]
   required_for: [openstack-network-neutron-start,primary-openstack-network-neutron-start,vmware-vcenter]
@@ -142,40 +143,3 @@
 - id: openstack-network-agents-metadata
   version: 2.0.0
   type: skipped
-
-# post deployment tasks
-- id: add-public-key-to-controller
-  version: 2.0.0
-  required_for: [post_deployment_end]
-  requires: [post_deployment_start]
-  role: ['primary-controller', 'controller']
-  reexecute_on: [deploy_changes]
-  type: puppet
-  parameters:
-    puppet_manifest: puppet/manifests/add-public-key-to-controller.pp
-    puppet_modules: puppet/modules:/etc/puppet/modules
-    timeout: 120
-- id: add-private-key-to-compute
-  version: 2.0.0
-  required_for: [post_deployment_end]
-  requires: [post_deployment_start]
-  role: ['compute-vmware']
-  reexecute_on: [deploy_changes]
-  type: puppet
-  parameters:
-    puppet_manifest: puppet/manifests/add-private-key-to-compute.pp
-    puppet_modules: puppet/modules:/etc/puppet/modules
-    timeout: 120
-- id: neutron-reconf-add-compute
-  version: 2.0.0
-  required_for: [post_deployment_end]
-  requires: [add-private-key-to-compute]
-  cross-depends:
-    - name: add-public-key-to-controller
-  role: ['compute-vmware']
-  reexecute_on: [deploy_changes]
-  type: puppet
-  parameters:
-    puppet_manifest: puppet/manifests/neutron-reconf-add-compute.pp
-    puppet_modules: puppet/modules:/etc/puppet/modules
-    timeout: 300

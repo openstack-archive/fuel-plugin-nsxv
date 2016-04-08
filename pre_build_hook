@@ -8,11 +8,6 @@ set -eux
 ROOT="$(dirname `readlink -f $0`)"
 PLUGIN_MOD_DIR="$ROOT/deployment_scripts/puppet/modules/upstream"
 
-version=$(sed -rn 's/^version:\s*([0-9.])/\1/p' $ROOT/metadata.yaml)
-name=$(sed -rn 's/^name:\s*(.*)/\1/p' $ROOT/metadata.yaml)
-
-sed -i "s/'NAME'/'$name'/" $ROOT/deployment_scripts/puppet/modules/nsxv/files/reconf_neutron_with_new_compute.sh
-
 ## Download upstream puppet modules that are not in fuel-library/
 #$ROOT/remove_modules.sh
 #$ROOT/update_modules.sh -d $PLUGIN_MOD_DIR
