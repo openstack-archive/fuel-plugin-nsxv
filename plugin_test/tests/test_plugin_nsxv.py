@@ -34,6 +34,8 @@ from fuelweb_test.tests.base_test_case import TestBasic
 
 ADMIN_NET = 'admin_floating_net'
 EXT_IP = '8.8.8.8'
+DEFAULT_ROUTER_NAME = 'router04'
+METADATA_IP = '169.254.169.254'
 PRIVATE_NET = "admin_internal_net"
 WAIT_FOR_COMMAND = 60 * 3
 WAIT_FOR_LONG_DEPLOY = 60 * 180
@@ -1571,3 +1573,104 @@ class TestNSXvPlugin(TestBasic):
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
             test_sets=['smoke'])
+
+    @test(depends_on=[SetupEnvironment.prepare_slaves_1],
+          groups=["nsxv_metadata_mgt_disabled", "nsxv_plugin"])
+    def nsxv_metadata_mgt_disabled(self):
+        """Check that option nsxv_metadata_listen_mgmt is disabled by default.
+
+        Scenario:
+            1. Upload the plugin to master node
+            2. Create cluster and configure NSXv for that cluster
+            3. Provision one controller node
+            4. Deploy cluster with plugin
+            5. Launch instance
+            6. wget metadata server address from launched instance
+
+        Duration 60 min
+
+        """
+        self.env.revert_snapshot('ready_with_1_slaves', skip_timesync=True)
+
+        self.install_nsxv_plugin()
+
+        # Configure cluster
+        settings = self.get_settings()
+        # Configure cluster
+        cluster_id = self.fuel_web.create_cluster(
+            name=self.__class__.__name__,
+            mode=DEPLOYMENT_MODE,
+            settings=settings,
+            configure_ssl=False)
+
+        # Assign roles to nodes
+        self.fuel_web.update_nodes(
+            cluster_id,
+            {'slave-01': ['controller'], })
+
+        # Configure VMWare vCenter settings
+        self.fuel_web.vcenter_configure(cluster_id)
+
+        self.enable_plugin(cluster_id)
+
+        plugin_data = self.fuel_web.get_plugin_data(
+            cluster_id, self.plugin_name, self.plugin_version)
+        assert_true(plugin_data['nsxv_metadata_listen_mgmt']['value'] is False,
+                    "Check default value of nsxv_metadata_listen_mgmt (False)")
+        assert_true(plugin_data['nsxv_mgt_reserve_ip']['value'] is False,
+                    "Check default value of nsxv_mgt_reserve_ip (False)")
+
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id,
+            test_sets=['smoke'])
+
+        common = self.get_common(cluster_id)
+        os_ip = self.fuel_web.get_public_vip(cluster_id)
+        os_conn = os_actions.OpenStackActions(
+            os_ip, SERVTEST_USERNAME,
+            SERVTEST_PASSWORD,
+            SERVTEST_TENANT)
+
+        ext = os_conn.get_network(ADMIN_NET)
+        router = os_conn.get_router_by_name(DEFAULT_ROUTER_NAME)
+
+        common.create_key('mgmt_key')
+
+        # Create non default network with subnet.
+        logger.info('Create network {}'.format(self.net1))
+        private_net = self.create_network(self.net1['name'])
+        subnet_private = self.create_subnet(private_net, self.net1['cidr'])
+        self.add_subnet_to_router(router['id'], subnet_private['id'])
+        sec_grp = os_conn.create_sec_group_for_ssh()
+        self.create_instances(os_conn,
+                              vm_count=1,
+                              nics=[{'net-id': private_net['id']}],
+                              security_group=sec_grp.name,
+                              key_name='mgmt_key')
+
+        self.create_and_assign_floating_ip(os_conn=os_conn, ext_net=ext)
+        srv_list = os_conn.get_servers()
+
+        # SSH to instance and wget metadata ip
+        primary_controller = self.fuel_web.get_nailgun_primary_node(
+            self.env.d_env.nodes().slaves[0])
+        remote = self.fuel_web.get_ssh_for_node(
+            primary_controller.name)
+
+        for srv in srv_list:
+            addresses = srv.addresses[srv.addresses.keys()[0]]
+            fip = [
+                add['addr'] for add in addresses
+                if add['OS-EXT-IPS:type'] == 'floating'][0]
+
+            cmd = "wget -O - {}".format(METADATA_IP)
+            command_result = os_conn.execute_through_host(
+                remote, fip, cmd)
+
+            assert_true(
+                command_result['exit_code'] == 0, "Wget exits with error!")
+            assert_true(
+                command_result['stdout'].split('\n')[-1] == 'latest',
+                "Wget does not return 'latest' item in stdout")
