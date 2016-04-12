@@ -21,9 +21,11 @@ from helpers.tools import show_pos
 
 
 class HopenStack(object):
+
     """
         HOpenStack - Helpers for OpenStack
     """
+
     def __init__(self, nsxv_ip):
         self._common = Common(controller_ip=nsxv_ip,
                               user=fw_settings.SERVTEST_USERNAME,
@@ -129,5 +131,3 @@ class HopenStack(object):
                 "Aggregate not found. agg_src id:{0}, agg_dst id:{1}".format(
                     agg_src_id, agg_dst_id
                 ))
-
-

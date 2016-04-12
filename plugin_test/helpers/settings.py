@@ -13,7 +13,8 @@ License for the specific language governing permissions and limitations
 under the License.
 """
 import os
-from distutils.util import strtobool
+
+from fuelweb_test.settings import get_var_as_bool
 
 
 WAIT_FOR_COMMAND = 60 * 3  # 3 minutes
@@ -24,12 +25,15 @@ PRIVATE_NET = "admin_internal_net"
 ADMIN_NET = 'admin_floating_net'
 DEFAULT_ROUTER_NAME = 'router04'
 METADATA_IP = '169.254.169.254'
+VM_USER = 'cirros'
+VM_PASS = 'cubswin:)'
 
 NSXV_PLUGIN_PATH = os.environ.get('NSXV_PLUGIN_PATH')
 
 plugin_configuration = {
     'nsxv_manager_host/value': os.environ.get('NSXV_MANAGER_IP'),
-    'nsxv_insecure/value': strtobool(os.environ.get('NSXV_INSECURE')),
+    'nsxv_insecure/value': get_var_as_bool(
+        os.environ.get('NSXV_INSECURE'), True),
     'nsxv_user/value': os.environ.get('NSXV_USER'),
     'nsxv_password/value': os.environ.get('NSXV_PASSWORD'),
     'nsxv_datacenter_moid/value': os.environ.get('NSXV_DATACENTER_MOID'),
@@ -50,5 +54,6 @@ plugin_configuration = {
     'nsxv_internal_net_cidr/value': os.environ.get('NSXV_INTERNAL_NET_CIDR'),
     'nsxv_floating_net_gw/value': os.environ.get('NSXV_FLOATING_NET_GW'),
     'nsxv_internal_net_dns/value': os.environ.get('NSXV_INTERNAL_NET_DNS'),
-    'nsxv_edge_ha/value': strtobool(os.environ.get('NSXV_EDGE_HA')),
+    'nsxv_edge_ha/value': get_var_as_bool(
+        os.environ.get('NSXV_EDGE_HA'), False),
 }
