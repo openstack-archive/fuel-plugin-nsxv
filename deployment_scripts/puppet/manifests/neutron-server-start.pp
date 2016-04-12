@@ -19,10 +19,12 @@ exec {'neutron-server-stop':
   onlyif   => "service ${::neutron::params::server_service} status|grep -q running",
 }
 
+include ::nsxv::params
+
 neutron_config {
-  'DEFAULT/core_plugin': value => 'vmware_nsx.plugin.NsxVPlugin';
-  'DEFAULT/service_plugins': value => 'neutron_lbaas.services.loadbalancer.plugin.LoadBalancerPlugin';
-  'service_providers/service_provider': value => 'LOADBALANCER:VMWareEdge:neutron_lbaas.services.loadbalancer.drivers.vmware.edge_driver.EdgeLoadbalancerDriver:default';
+  'DEFAULT/core_plugin':                value => $::nsxv::params::core_plugin;
+  'DEFAULT/service_plugins':            value => $::nsxv::params::service_plugins;
+  'service_providers/service_provider': value => $::nsxv::params::service_providers;
 }
 
 Neutron_config<||> ~> Service['neutron-server']
