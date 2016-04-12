@@ -24,6 +24,8 @@ PRIVATE_NET = "admin_internal_net"
 ADMIN_NET = 'admin_floating_net'
 DEFAULT_ROUTER_NAME = 'router04'
 METADATA_IP = '169.254.169.254'
+VM_USER = 'cirros'
+VM_PASS = 'cubswin:)'
 
 NSXV_PLUGIN_PATH = os.environ.get('NSXV_PLUGIN_PATH')
 
