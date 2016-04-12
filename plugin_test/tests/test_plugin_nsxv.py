@@ -14,6 +14,8 @@ under the License.
 """
 
 import os
+import paramiko
+import time
 
 from proboscis import test
 from proboscis.asserts import assert_true, assert_false
@@ -38,6 +40,7 @@ from helpers import settings as pt_settings  # Plugin Tests Settings
 
 @test(groups=["plugins", "nsxv_plugin"])
 class TestNSXvPlugin(TestBasic):
+
     """Here are automated tests from test plan that has mark 'Automated'."""
 
     _common = None
@@ -253,10 +256,11 @@ class TestNSXvPlugin(TestBasic):
         :param ext_net: external network object
         :param tenant_id: id for current tenant. Admin tenant is by default.
         """
+        fips = []
         if not ext_net:
             ext_net = [net for net
                        in os_conn.neutron.list_networks()["networks"]
-                       if net['name'] == "net04_ext"][0]
+                       if net['name'] == pt_settings.ADMIN_NET][0]
         if not tenant_id:
             tenant_id = os_conn.get_tenant(SERVTEST_TENANT).id
         if not srv_list:
@@ -266,8 +270,73 @@ class TestNSXvPlugin(TestBasic):
                 {'floatingip': {
                     'floating_network_id': ext_net['id'],
                     'tenant_id': tenant_id}})
+            fips.append(fip['floatingip']['floating_ip_address'])
             os_conn.nova.servers.add_floating_ip(
                 srv, fip['floatingip']['floating_ip_address'])
+        return fips
+
+    def get_ssh_connection(self, ip, username, userpassword,
+                           timeout=30, port=22):
+        """Get ssh to host.
+
+        :param ip: string, host ip to connect to
+        :param username: string, a username to use for authentication
+        :param userpassword: string, a password to use for authentication
+        :param timeout: timeout (in seconds) for the TCP connection
+        :param port: host port to connect to
+        """
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh.connect(
+            ip, port=port, username=username,
+            password=userpassword, timeout=timeout
+        )
+        return ssh
+
+    def remote_execute_command(self, instance1_ip, instance2_ip, command):
+        """Check execute remote command.
+
+        :param instance1: string, instance ip connect from
+        :param instance2: string, instance ip connect to
+        :param command: string, remote command
+        """
+        logger.info("Logged: {}  {}  {}".format(
+            instance1_ip, instance2_ip, command))
+        ssh = self.get_ssh_connection(instance1_ip, pt_settings.VM_USER,
+                                      pt_settings.VM_PASS, timeout=30)
+
+        interm_transp = ssh.get_transport()
+        logger.info("Opening channel to VM")
+        interm_chan = interm_transp.open_channel('direct-tcpip',
+                                                 (instance2_ip, 22),
+                                                 (instance1_ip, 0))
+        logger.info("Opening paramiko transport")
+        transport = paramiko.Transport(interm_chan)
+        logger.info("Starting client")
+        transport.start_client()
+        logger.info("Passing authentication to VM")
+        transport.auth_password(pt_settings.VM_USER, pt_settings.VM_PASS)
+        channel = transport.open_session()
+        channel.get_pty()
+        channel.fileno()
+        channel.exec_command(command)
+
+        result = {
+            'stdout': [],
+            'stderr': [],
+            'exit_code': 0
+        }
+
+        logger.debug("Receiving exit_code")
+        result['exit_code'] = channel.recv_exit_status()
+        logger.debug("Receiving stdout")
+        result['stdout'] = channel.recv(1024)
+        logger.debug("Receiving stderr")
+        result['stderr'] = channel.recv_stderr(1024)
+
+        logger.debug("Closing channel")
+        channel.close()
+        return result
 
     def get_common(self, cluster_id):
         """Return 'common' object.
@@ -314,7 +383,7 @@ class TestNSXvPlugin(TestBasic):
         common = self.get_common(cluster_id)
         network = common.neutron.create_network(body={
             'network': {
-                'name': 'net04_ext',
+                'name': pt_settings.ADMIN_NET,
                 'admin_state_up': True,
                 'router:external': True,
                 'shared': True, }})
@@ -399,10 +468,10 @@ class TestNSXvPlugin(TestBasic):
 
     def create_all_necessary_stuff(self):
         """Create all that is required to launch smoke OSTF."""
-        private_net = self.create_network('net04')
+        private_net = self.create_network(pt_settings.PRIVATE_NET)
         subnet_private = self.create_subnet(private_net, '10.100.0.0/24')
         public_net = self.create_net_public()
-        router = self.add_router('router_04', public_net)
+        router = self.add_router(pt_settings.DEFAULT_ROUTER_NAME, public_net)
         self.add_subnet_to_router(router['id'], subnet_private['id'])
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_1],
@@ -1636,7 +1705,8 @@ class TestNSXvPlugin(TestBasic):
         os_conn = os_actions.OpenStackActions(
             os_ip, SERVTEST_USERNAME,
             SERVTEST_PASSWORD,
-            SERVTEST_TENANT)
+            SERVTEST_TENANT
+        )
 
         ext = os_conn.get_network(pt_settings.ADMIN_NET)
         router = os_conn.get_router_by_name(pt_settings.DEFAULT_ROUTER_NAME)
@@ -1679,3 +1749,183 @@ class TestNSXvPlugin(TestBasic):
             assert_true(
                 command_result['stdout'].split('\n')[-1] == 'latest',
                 "Wget does not return 'latest' item in stdout")
+
+    @test(depends_on=[nsxv_ha_mode],
+          groups=["nsxv_create_and_delete_secgroups", "nsxv_plugin"])
+    def nsxv_create_and_delete_secgroups(self):
+        """Verify security group feature.
+
+        Scenario:
+            1. Setup nsxv_ha_mode.
+            3. Launch instance VM_1 in the tenant network net_1 with image
+               TestVM-VMDK and flavor m1.tiny in the vcenter1 az.
+            4. Launch instance VM_2 in the tenant net_2 with image
+               TestVM-VMDK and flavor m1.tiny in the vcenter2 az.
+            5. Create security groups SG_1 to allow ICMP traffic.
+            6. Add Ingress rule for ICMP protocol to SG_1.
+            7. Attach SG_1 to VMs.
+            8. Check ping between VM_1 and VM_2 and vice verse.
+            9. Create security groups SG_2 to allow TCP traffic 22 port.
+               Add Ingress rule for TCP protocol to SG_2.
+            10. Attach SG_2 to VMs.
+            11. ssh from VM_1 to VM_2 and vice verse.
+            12. Delete custom rules from SG_1 and SG_2.
+            13. Check ping and ssh arent available from VM_1 to VM_2
+                and vice versa.
+            14. Add Ingress rule for ICMP protocol to SG_1.
+            15. Add Ingress rule for SSH protocol to SG_2.
+            16. Check ping between VM_1 and VM_2 and vice verse.
+            17. Check ssh from VM_1 to VM_2 and vice verse.
+            18. Attach Vms to default security group.
+            19. Delete security groups.
+            20. Check ping between VM_1 and VM_2 and vice verse.
+            21. Check SSH from VM_1 to VM_2 and vice verse.
+
+        Duration 90 min
+
+        """
+        key = 'sec_grp_key'
+        SG1 = "SG1"
+        SG2 = "SG2"
+
+        # security group rules
+        tcp = {
+            "security_group_rule":
+            {"direction": "ingress",
+             "port_range_min": "22",
+             "ethertype": "IPv4",
+             "port_range_max": "22",
+             "protocol": "TCP",
+             "security_group_id": ""}}
+        icmp = {
+            "security_group_rule":
+            {"direction": "ingress",
+             "ethertype": "IPv4",
+             "protocol": "icmp",
+             "security_group_id": ""}}
+
+        cluster_id = self.fuel_web.get_last_created_cluster()
+        common = self.get_common(cluster_id)
+        os_ip = self.fuel_web.get_public_vip(cluster_id)
+        os_conn = os_actions.OpenStackActions(
+            os_ip, SERVTEST_USERNAME,
+            SERVTEST_PASSWORD,
+            SERVTEST_TENANT
+        )
+        ext = os_conn.get_network(pt_settings.ADMIN_NET)
+        router = os_conn.get_router_by_name(pt_settings.DEFAULT_ROUTER_NAME)
+
+        common.create_key(key)
+
+        # Create private networks with subnets
+        logger.info('Create network {}'.format(self.net1))
+        private_net1 = self.create_network(self.net1['name'])
+        subnet1 = self.create_subnet(private_net1, self.net1['cidr'])
+        self.add_subnet_to_router(router['id'], subnet1['id'])
+        logger.info('Create network {}'.format(self.net2))
+        private_net2 = self.create_network(self.net2['name'])
+        subnet2 = self.create_subnet(private_net2, self.net2['cidr'])
+        self.add_subnet_to_router(router['id'], subnet2['id'])
+
+        self.create_instances(os_conn,
+                              vm_count=1,
+                              nics=[{'net-id': private_net1['id']}],
+                              key_name=key)
+        self.create_instances(os_conn,
+                              vm_count=1,
+                              nics=[{'net-id': private_net2['id']}],
+                              key_name=key)
+
+        floating_ip = self.create_and_assign_floating_ip(
+            os_conn=os_conn, ext_net=ext)
+        srv_list = os_conn.get_servers()
+
+        sg1 = os_conn.nova.security_groups.create(
+            SG1, "d")
+
+        icmp["security_group_rule"]["security_group_id"] = sg1.id
+        os_conn.neutron.create_security_group_rule(icmp)
+
+        sg2 = os_conn.nova.security_groups.create(
+            SG2, "d2")
+
+        tcp["security_group_rule"]["security_group_id"] = sg2.id
+        os_conn.neutron.create_security_group_rule(tcp)
+
+        logger.info("""Attach SG_1 and SG2 to instances""")
+        for srv in srv_list:
+            srv.add_security_group(sg1.id)
+            srv.add_security_group(sg2.id)
+
+        controller = self.fuel_web.get_nailgun_primary_node(
+            self.env.d_env.nodes().slaves[0])
+
+        with self.fuel_web.get_ssh_for_node(controller.name) as ssh_contr:
+            self.check_connection_vms(
+                os_conn, srv_list, remote=ssh_contr)
+
+            ip_pair = [(ip_1, ip_2)
+                       for ip_1 in floating_ip
+                       for ip_2 in floating_ip
+                       if ip_1 != ip_2]
+
+            for ips in ip_pair:
+                self.remote_execute_command(ips[0], ips[1], ' ')
+
+            sg_rules = os_conn.neutron.list_security_group_rules()[
+                'security_group_rules']
+            sg_rules = [
+                sg_rule for sg_rule
+                in os_conn.neutron.list_security_group_rules()[
+                    'security_group_rules']
+                if sg_rule['security_group_id'] in [sg1.id, sg2.id]]
+            for rule in sg_rules:
+                os_conn.neutron.delete_security_group_rule(rule['id'])
+
+            for ip in floating_ip:
+                try:
+                    self.get_ssh_connection(
+                        ip, self.instance_creds[0],
+                        self.instance_creds[1])
+                except Exception as e:
+                    logger.info('{}'.format(e))
+
+            tcp["security_group_rule"]["security_group_id"] = sg2.id
+            os_conn.neutron.create_security_group_rule(tcp)
+            tcp["security_group_rule"]["direction"] = "egress"
+            os_conn.neutron.create_security_group_rule(tcp)
+
+            for ips in ip_pair:
+                wait(
+                    lambda: self.remote_execute_command(
+                        ips[0], ips[1], ' '), timeout=30, interval=5)
+
+            self.check_connection_vms(
+                os_conn, srv_list, remote=ssh_contr,
+                result_of_command=1)
+
+            icmp["security_group_rule"]["security_group_id"] = sg1.id
+            os_conn.neutron.create_security_group_rule(icmp)
+            icmp["security_group_rule"]["direction"] = "egress"
+            os_conn.neutron.create_security_group_rule(icmp)
+
+            time.sleep(30)  # need wait
+
+            self.check_connection_vms(
+                os_conn, srv_list, remote=ssh_contr)
+
+            srv_list = os_conn.get_servers()
+            for srv in srv_list:
+                for sg in srv.security_groups:
+                    srv.remove_security_group(sg['name'])
+
+            for srv in srv_list:
+                srv.add_security_group('default')
+
+            time.sleep(30)  # need wait
+
+            self.check_connection_vms(
+                os_conn, srv_list, remote=ssh_contr)
+
+            for ips in ip_pair:
+                self.remote_execute_command(ips[0], ips[1], ' ')
