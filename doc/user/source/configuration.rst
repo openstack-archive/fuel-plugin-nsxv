@@ -21,7 +21,14 @@ Plugin contains the following settings:
    OpenStack Controller must have L3 connectivity with NSX Manager through
    Public network.
 
-#. NSX Manager user and password for access.
+#. NSX Manager username.
+
+   .. note::
+
+      In order for Neutron NSX plugin to operate properly account that it uses
+      must have Enterprise administrator role.
+
+#. NSX Manager password.
 
 #. Datacenter MoRef ID -- ID of Datacenter where NSX Edge nodes will be
    deployed.
