@@ -38,6 +38,7 @@
 - id: nsxv-install
   type: puppet
   refresh_on: [neutron_config]
+  reexecute_on: [deploy_changes]
   groups: [primary-controller,controller]
   required_for: [openstack-network-neutron-start]
   requires: [openstack-network-server-config]
@@ -83,6 +84,7 @@
     timeout: 300
 - id: openstack-network-neutron-start
   refresh_on: [neutron_config]
+  reexecute_on: [deploy_changes]
   type: puppet
   groups: [primary-controller,controller]
   required_for: [openstack-network-server-nova]
