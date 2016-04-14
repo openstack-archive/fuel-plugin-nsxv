@@ -29,6 +29,31 @@ class nsxv (
     }
   }
 
+  $metadata_nova_client_cert_filename = try_get_value($settings['nsxv_metadata_nova_client_cert'], 'name', '')
+  $metadata_nova_client_priv_key_filename = try_get_value($settings['nsxv_metadata_nova_client_priv_key'], 'name', '')
+  if empty($metadata_nova_client_cert_filename) and empty($metadata_nova_client_priv_key_filename) {
+    $metadata_insecure = true
+  } else {
+    $metadata_insecure = false
+
+    $metadata_nova_client_cert_content = $settings['nsxv_metadata_nova_client_cert']['content']
+    $metadata_nova_client_cert_file = "${nsxv_config_dir}/cert_${metadata_nova_client_cert_filename}"
+
+    $metadata_nova_client_priv_key_content = $settings['nsxv_metadata_nova_client_priv_key']['content']
+    $metadata_nova_client_priv_key_file = "${nsxv_config_dir}/key_${metadata_nova_client_priv_key_filename}"
+
+    file { $metadata_nova_client_cert_file:
+      ensure  => present,
+      content => $metadata_nova_client_cert_content,
+      require => File[$nsxv_config_dirs],
+    }
+    file { $metadata_nova_client_priv_key_file:
+      ensure  => present,
+      content => $metadata_nova_client_priv_key_content,
+      require => File[$nsxv_config_dirs],
+    }
+  }
+
   package { $nsx_plugin_name:
     ensure => latest,
   }

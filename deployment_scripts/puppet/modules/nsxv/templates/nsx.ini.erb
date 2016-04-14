@@ -123,6 +123,33 @@ nova_metadata_port = <%= scope.lookupvar('nova_metadata_port') %>
 # (Optional) Shared secret to sign metadata requests
 metadata_shared_secret = <%= scope.lookupvar('metadata_shared_secret') %>
 
+# (Optional) If True, the end to end connection for metadata service is
+# not verified. If False, the default CA truststore is used for verification.
+metadata_insecure = <%= scope.lookupvar('metadata_insecure') %>
+
+# (Optional) Client certificate to use when metadata connection is to be
+# verified. If not provided, a self signed certificate will be used.
+<% if not scope.lookupvar('metadata_insecure') -%>
+metadata_nova_client_cert = <%= scope.lookupvar('metadata_nova_client_cert_file') %>
+<% else -%>
+# metadata_nova_client_cert =
+<% end -%>
+
+# (Optional) Private key to use for client certificate
+<% if not scope.lookupvar('metadata_insecure') -%>
+metadata_nova_client_priv_key = <%= scope.lookupvar('metadata_nova_client_priv_key_file') %>
+<% else -%>
+# metadata_nova_client_priv_key =
+<% end -%>
+
+# (Optional) Comma separated list of tcp ports, to be allowed access to the
+# metadata proxy, in addition to the default 80,443,8775 tcp ports
+<% if not (settings['nsxv_metadata_service_allowed_ports']).to_s.strip.empty? -%>
+metadata_service_allowed_ports = <%= settings['nsxv_metadata_service_allowed_ports'] %>
+<% else -%>
+# metadata_service_allowed_ports =
+<% end -%>
+
 # (Optional) Indicates if Nsxv spoofguard component is used to implement
 # port-security feature.
 spoofguard_enabled = <%= settings['nsxv_spoofguard_enabled'] %>

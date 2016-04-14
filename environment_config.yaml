@@ -120,29 +120,57 @@ attributes:
     value: false
     label: 'Use management network to access the nova-api-metadata'
     description: 'If disabled nova-api-metadata listens on Public network'
-    weight: 86
+    weight: 90
     type: 'checkbox'
   nsxv_mgt_reserve_ip:
     value: false
     label: 'Allocate IP address in management network for NSX metadata proxy'
     description: 'If enabled, then IP address for NSX metadata proxy will be allocated in the OpenStack management network. In the parameter "Metadata portgroup MoRef ID", you must specify portgroup id, which is adjacent with OpenStack management network'
-    weight: 87
+    weight: 95
     type: 'checkbox'
     restrictions:
       - condition: 'settings:nsxv.nsxv_metadata_listen_mgmt.value == false'
         message: '"Use management network to access the nova-api-metadata" not enabled'
         action: 'disable'
+  nsxv_metadata_nova_client_cert:
+    value: ''
+    label: 'Client certificate for nova metadata api server'
+    description: 'Client certificate to use when metadata connection is to be verified. If not provided, a self signed certificate will be used, enabled, If file loaded'
+    weight: 100
+    type: 'file'
+    restrictions:
+      - condition: 'settings:nsxv.nsxv_metadata_nova_client_priv_key.value.name != null and settings:nsxv.nsxv_metadata_nova_client_cert.value.name == null'
+        action: 'none'
+        strict: false
+        message: 'If "Private key" loaded, also need load "Client certificate for nova metadata api server"'
+  nsxv_metadata_nova_client_priv_key:
+    value: ''
+    label: 'Private key'
+    description: 'Private key to use for client certificate, enabled, If file loaded'
+    weight: 105
+    type: 'file'
+    restrictions:
+      - condition: 'settings:nsxv.nsxv_metadata_nova_client_priv_key.value.name == null and settings:nsxv.nsxv_metadata_nova_client_cert.value.name != null'
+        action: 'none'
+        strict: false
+        message: 'If "Client certificate for nova metadata api server" loaded, also need load "Private key"'
+  nsxv_metadata_service_allowed_ports:
+    value: ''
+    label: 'List of tcp ports'
+    description: 'Comma separated list of tcp ports, to be allowed access to the metadata proxy, in addition to the default 80,443,8775 tcp ports'
+    weight: 110
+    type: 'text'
   nsxv_mgt_net_moid:
     value: ''
     label: 'Metadata portgroup MoRef ID'
     description: 'Portgroup MoRef ID for metadata proxy management network'
-    weight: 90
+    weight: 115
     type: 'text'
   nsxv_mgt_net_proxy_ips:
     value: ''
     label: 'Metadata proxy IP addresses'
     description: 'Management network IP address for metadata proxy, comma separated'
-    weight: 95
+    weight: 120
     type: 'text'
     restrictions:
       - condition: 'settings:nsxv.nsxv_mgt_reserve_ip.value == true'
@@ -151,7 +179,7 @@ attributes:
     value: ''
     label: 'Management network netmask'
     description: 'Management network netmask for metadata proxy'
-    weight: 100
+    weight: 125
     type: 'text'
     restrictions:
       - condition: 'settings:nsxv.nsxv_mgt_reserve_ip.value == true'
@@ -160,7 +188,7 @@ attributes:
     value: ''
     label: 'Management network default gateway'
     description: 'Management network default gateway for metadata proxy'
-    weight: 105
+    weight: 130
     type: 'text'
     restrictions:
       - condition: 'settings:nsxv.nsxv_mgt_reserve_ip.value == true'
@@ -169,7 +197,7 @@ attributes:
     value: ''
     label: 'Floating IP ranges'
     description: 'Dash separated IP addresses allocation pool from external network, e.g. "start_ip_address-end_ip_address"'
-    weight: 110
+    weight: 135
     type: 'text'
     regex:
       source: '^(?:[0-9]{1,3}\.){3}[0-9]{1,3}-(?:[0-9]{1,3}\.){3}[0-9]{1,3}$'
@@ -178,7 +206,7 @@ attributes:
     value: ''
     label: 'External network CIDR'
     description: 'Network in CIDR notation that includes floating IP ranges'
-    weight: 115
+    weight: 140
     type: 'text'
     regex:
       source: '^(?:[0-9]{1,3}\.){3}[0-9]{1,3}/[0-9]{1,2}$'
@@ -187,13 +215,13 @@ attributes:
     value: ''
     label: 'Gateway'
     description: 'Default gateway for external network, if not defined, first IP address of the network is used'
-    weight: 120
+    weight: 145
     type: 'text'
   nsxv_internal_net_cidr:
     value: ''
     label: 'Internal network CIDR'
     description: 'Network in CIDR notation for use as internal'
-    weight: 125
+    weight: 150
     type: 'text'
     regex:
       source: '^(?:[0-9]{1,3}\.){3}[0-9]{1,3}/[0-9]{1,2}$'
@@ -202,19 +230,19 @@ attributes:
     value: ''
     label: 'DNS for internal network'
     description: 'Comma separated IP addresses of DNS server for internal network'
-    weight: 130
+    weight: 155
     type: 'text'
   nsxv_additional:
     value: false
     label: 'Additional settings'
     description: ''
-    weight: 135
+    weight: 160
     type: 'checkbox'
   nsxv_task_status_check_interval:
     value: ''
     label: 'Task status check interval (millisecond)'
     description: 'Asynchronous task status check interval'
-    weight: 140
+    weight: 165
     type: 'text'
     restrictions:
       - condition: 'settings:nsxv.nsxv_additional.value == false'
@@ -223,7 +251,7 @@ attributes:
     value: ''
     label: 'Maximum tunnels per vnic'
     description: 'Maximum number of sub interfaces supported per vnic in edge'
-    weight: 145
+    weight: 170
     type: 'text'
     restrictions:
       - condition: 'settings:nsxv.nsxv_additional.value == false'
@@ -232,7 +260,7 @@ attributes:
     value: ''
     label: 'API retries'
     description: 'Maximum number of API retries'
-    weight: 150
+    weight: 175
     type: 'text'
     restrictions:
       - condition: 'settings:nsxv.nsxv_additional.value == false'
@@ -241,7 +269,7 @@ attributes:
     value: false
     label: 'Enable SpoofGuard'
     description: 'Indicates if NSXv SpoofGuard component is used to implement port-security feature'
-    weight: 155
+    weight: 180
     type: 'checkbox'
     restrictions:
       - condition: 'settings:nsxv.nsxv_additional.value == false'
@@ -250,7 +278,7 @@ attributes:
     value: ''
     label: 'Tenant router types'
     description: 'Ordered list of router types to allocate as tenant routers'
-    weight: 160
+    weight: 185
     type: 'text'
     restrictions:
       - condition: 'settings:nsxv.nsxv_additional.value == false'
@@ -259,7 +287,7 @@ attributes:
     value: ''
     label: 'Exclusive router size'
     description: 'Edge form factor for exclusive router'
-    weight: 165
+    weight: 190
     type: 'text'
     restrictions:
       - condition: 'settings:nsxv.nsxv_additional.value == false'
@@ -268,7 +296,7 @@ attributes:
     value: ''
     label: 'Edge user'
     description: 'User for Edge node login'
-    weight: 170
+    weight: 195
     type: 'text'
     restrictions:
       - condition: 'settings:nsxv.nsxv_additional.value == false'
@@ -277,7 +305,7 @@ attributes:
     value: ''
     label: 'Edge password'
     description: 'Password for Edge node login'
-    weight: 175
+    weight: 200
     type: 'password'
     restrictions:
       - condition: 'settings:nsxv.nsxv_additional.value == false'
@@ -286,7 +314,7 @@ attributes:
     value: ''
     label: 'DHCP lease time (sec)'
     description: ''
-    weight: 180
+    weight: 205
     type: 'text'
     restrictions:
       - condition: 'settings:nsxv.nsxv_additional.value == false'
@@ -295,7 +323,7 @@ attributes:
     value: ''
     label: 'Coordinator URL'
     description: 'URL for distributed locking coordinator'
-    weight: 185
+    weight: 210
     type: 'text'
     restrictions:
       - condition: 'settings:nsxv.nsxv_additional.value == false'
