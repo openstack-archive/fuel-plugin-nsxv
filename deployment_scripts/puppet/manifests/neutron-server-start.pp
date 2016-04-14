@@ -16,6 +16,7 @@ exec {'neutron-server-stop':
   path     => '/usr/sbin:/usr/bin:/sbin:/bin',
   command  => "service ${::neutron::params::server_service} stop",
   provider => 'shell',
+  onlyif   => "service ${::neutron::params::server_service} status|grep -q running",
 }
 
 neutron_config {
