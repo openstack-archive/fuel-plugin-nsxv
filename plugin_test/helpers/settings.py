@@ -1,3 +1,4 @@
+
 """Copyright 2016 Mirantis, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -27,6 +28,9 @@ DEFAULT_ROUTER_NAME = 'router04'
 METADATA_IP = '169.254.169.254'
 VM_USER = 'cirros'
 VM_PASS = 'cubswin:)'
+AZ_VCENTER1 = 'vcenter'
+AZ_VCENTER2 = 'vcenter2'
+
 
 NSXV_PLUGIN_PATH = os.environ.get('NSXV_PLUGIN_PATH')
 
