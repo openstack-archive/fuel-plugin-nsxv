@@ -1,32 +1,33 @@
-#    Copyright 2015 Mirantis, Inc.
-#
-#    Licensed under the Apache License, Version 2.0 (the "License"); you may
-#    not use this file except in compliance with the License. You may obtain
-#    a copy of the License at
-#
-#         http://www.apache.org/licenses/LICENSE-2.0
-#
-#    Unless required by applicable law or agreed to in writing, software
-#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-#    License for the specific language governing permissions and limitations
-#    under the License.
+"""Copyright 2016 Mirantis, Inc.
 
-import sys
+Licensed under the Apache License, Version 2.0 (the "License"); you may
+not use this file except in compliance with the License. You may obtain
+copy of the License at
 
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+License for the specific language governing permissions and limitations
+under the License.
+"""
 import os
 import re
+import sys
+
 from nose.plugins import Plugin
 from paramiko.transport import _join_lingering_threads
 
 
 class CloseSSHConnectionsPlugin(Plugin):
-    """Closes all paramiko's ssh connections after each test case
+    """Closes all paramiko's ssh connections after each test case.
 
     Plugin fixes proboscis disability to run cleanup of any kind.
     'afterTest' calls _join_lingering_threads function from paramiko,
     which stops all threads (set the state to inactive and joins for 10s)
     """
+
     name = 'closesshconnections'
 
     def options(self, parser, env=os.environ):
@@ -55,7 +56,7 @@ def run_tests():
 
 
 if __name__ == '__main__':
-    sys.path.append(sys.path[0]+"/fuel-qa")
+    sys.path.append(sys.path[0] + "/fuel-qa")
     import_tests()
     from fuelweb_test.helpers.patching import map_test
     if any(re.search(r'--group=patching_master_tests', arg)
