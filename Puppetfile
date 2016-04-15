@@ -15,12 +15,12 @@ mod 'stdlib',
 # Pull in puppet-neutron
 mod 'neutron',
     :git => 'https://review.fuel-infra.org/p/puppet-modules/puppet-neutron.git',
-    :ref => '7.0.0-rc7'
+    :ref => 'stable/mitaka'
 
 # Pull in puppet-nova
 mod 'nova',
     :git => 'https://review.fuel-infra.org/p/puppet-modules/puppet-nova.git',
-    :ref => '7.0.0-mos-rc2'
+    :ref => 'stable/mitaka'
 
 # Pull in puppetlabs-inifile
 mod 'inifile',
@@ -30,11 +30,11 @@ mod 'inifile',
 # Pull in puppet-openstacklib
 mod 'openstacklib',
     :git => 'https://review.fuel-infra.org/p/puppet-modules/puppet-openstacklib.git',
-    :ref => '7.0.0-mos-rc4'
+    :ref => 'stable/mitaka'
 
 # Pull in puppet-keystone
 mod 'keystone',
     :git => 'https://review.fuel-infra.org/p/puppet-modules/puppet-keystone.git',
-    :ref => '7.0.0-mos-rc3'
+    :ref => 'stable/mitaka'
 
 # TODO: need l23network(use cidr_to_netmask function)
