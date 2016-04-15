@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 ###############################################################################
 #
 #    Copyright 2015 Mirantis, Inc.
@@ -109,7 +109,7 @@ while getopts ":bp:g:h:vru:d:" opt; do
 done
 shift "$((OPTIND-1))"
 
-DEPLOYMENT_DIR=$(cd `dirname $0` && pwd -P)
+DEPLOYMENT_DIR=$(cd $(dirname $0) && pwd -P)
 # Timeout in seconds for running puppet librarian
 TIMEOUT=600
 export PUPPET_GEM_VERSION=${PUPPET_GEM_VERSION:-'3.4.3'}
@@ -128,7 +128,7 @@ if [ "$USE_BUNDLER" = true ]; then
 fi
 
 # if no timeout command, return true so we don't fail this script (LP#1510665)
-TIMEOUT_CMD=`type -P timeout || true`
+TIMEOUT_CMD=$(type -P timeout || true)
 if [ -n "$TIMEOUT_CMD" ]; then
     TIMEOUT_CMD="$TIMEOUT_CMD $TIMEOUT"
 fi
