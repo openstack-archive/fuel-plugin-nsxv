@@ -970,6 +970,15 @@ class TestNSXvPlugin(TestBasic):
         self.fuel_web.run_ostf(
             cluster_id=cluster_id, test_sets=['smoke', 'sanity', 'ha'])
 
+        # Create Availability zone and move host from one to another
+        nsxv_ip = self.fuel_web.get_public_vip(cluster_id)
+        hos = HopenStack(nsxv_ip)
+
+        hos.aggregate_create('vcenter02', pt_settings.AZ_VCENTER2)
+        hos.hosts_change_aggregate('vcenter',
+                                   'vcenter02',
+                                   'vcenter-vmcluster2')
+
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],
           groups=["nsxv_ceph", "nsxv_plugin"])
     def nsxv_ceph(self):
@@ -1100,14 +1109,9 @@ class TestNSXvPlugin(TestBasic):
                                               SERVTEST_USERNAME,
                                               SERVTEST_PASSWORD,
                                               SERVTEST_TENANT)
-        # Create Availability zone and move host from one to another
+
         nsxv_ip = self.fuel_web.get_public_vip(cluster_id)
         hos = HopenStack(nsxv_ip)
-
-        hos.aggregate_create('vcenter02', 'az_vcenter02')
-        hos.hosts_change_aggregate('vcenter',
-                                   'vcenter02',
-                                   'vcenter-vmcluster2')
 
         # Create  nets, subnet and attach them to the router
         net = os_conn.get_network(pt_settings.ADMIN_NET)
@@ -1129,13 +1133,13 @@ class TestNSXvPlugin(TestBasic):
                               vm_count=1,
                               nics=[{'net-id': private_net_1['id']}],
                               security_group=sec_group.name,
-                              availability_zone='az_vcenter02')
+                              availability_zone=pt_settings.AZ_VCENTER2)
 
         self.create_instances(os_conn=os_conn,
                               vm_count=1,
                               nics=[{'net-id': private_net_2['id']}],
                               security_group=sec_group.name,
-                              availability_zone='vcenter')
+                              availability_zone=pt_settings.AZ_VCENTER1)
 
         self.create_and_assign_floating_ip(os_conn=os_conn, ext_net=net)
 
@@ -1148,7 +1152,7 @@ class TestNSXvPlugin(TestBasic):
     @test(depends_on=[nsxv_ha_mode],
           groups=["nsxv_public_network_availability", 'nsxv_plugin'])
     def nsxv_public_network_availability(self):
-        """Verifies that public network is available.
+        """Verify that public network is available.
 
         Scenario:
             1. Setup nsxv_ha_mode.
@@ -1171,14 +1175,9 @@ class TestNSXvPlugin(TestBasic):
                                               SERVTEST_USERNAME,
                                               SERVTEST_PASSWORD,
                                               SERVTEST_TENANT)
-        # Create Availability zone and move host from one to another
+
         nsxv_ip = self.fuel_web.get_public_vip(cluster_id)
         hos = HopenStack(nsxv_ip)
-
-        hos.aggregate_create('vcenter02', 'az_vcenter02')
-        hos.hosts_change_aggregate('vcenter',
-                                   'vcenter02',
-                                   'vcenter-vmcluster2')
 
         # Create  nets, subnet and attach them to the router
         net = os_conn.get_network(pt_settings.PRIVATE_NET)
@@ -1199,13 +1198,13 @@ class TestNSXvPlugin(TestBasic):
                               vm_count=1,
                               nics=[{'net-id': private_net_1['id']}],
                               security_group=sec_group.name,
-                              availability_zone='az_vcenter02')
+                              availability_zone=pt_settings.AZ_VCENTER2)
 
         self.create_instances(os_conn=os_conn,
                               vm_count=1,
                               nics=[{'net-id': private_net_2['id']}],
                               security_group=sec_group.name,
-                              availability_zone='vcenter')
+                              availability_zone=pt_settings.AZ_VCENTER1)
 
         # Send ping from instances VM_1 and VM_2 to 8.8.8.8
         srv_list = os_conn.get_servers()
@@ -1830,10 +1829,12 @@ class TestNSXvPlugin(TestBasic):
         self.create_instances(os_conn,
                               vm_count=1,
                               nics=[{'net-id': private_net1['id']}],
+                              availability_zone=pt_settings.AZ_VCENTER1,
                               key_name=key)
         self.create_instances(os_conn,
                               vm_count=1,
                               nics=[{'net-id': private_net2['id']}],
+                              availability_zone=pt_settings.AZ_VCENTER2,
                               key_name=key)
 
         floating_ip = self.create_and_assign_floating_ip(
@@ -1929,3 +1930,69 @@ class TestNSXvPlugin(TestBasic):
 
             for ips in ip_pair:
                 self.remote_execute_command(ips[0], ips[1], ' ')
+
+    @test(depends_on=[nsxv_ha_mode],
+          groups=["nsxv_multi_vnic", "nsxv_plugin"])
+    def nsxv_multi_vnic(self):
+        """Check abilities to assign multiple vNICs to a single VM.
+
+        Scenario:
+            1. Setup nsxv_ha_mode
+            2. Add two private networks (net_1 and net_2)
+            3. Add one subnet (net_1_subnet_1: 192.168.101.0/24,
+               net_2_subnet_2, 192.168.102.0/24) to each network. One of
+               subnets should have gateway and another should not.
+            4. Launch instance VM_1 with image TestVM-VMDK and flavor m1.tiny
+               in vcenter1 az. Check abilities to assign multiple vNIC net_1
+               and net_2 to VM_1.
+            5. Launch instance VM_2 with image TestVM-VMDK and flavor m1.tiny
+               in vcenter2 az. Check abilities to assign multiple vNIC net_1
+               and net_2 to VM_2.
+            6. Send icmp ping from VM_1 to VM_2 and vice versa.
+
+        Duration 1.5 hours
+
+        """
+        key = 'mvnic'
+        cluster_id = self.fuel_web.get_last_created_cluster()
+        common = self.get_common(cluster_id)
+        os_ip = self.fuel_web.get_public_vip(cluster_id)
+        os_conn = os_actions.OpenStackActions(
+            os_ip, SERVTEST_USERNAME,
+            SERVTEST_PASSWORD,
+            SERVTEST_TENANT)
+
+        common.create_key(key)
+
+        ext = os_conn.get_network(pt_settings.ADMIN_NET)
+        router = os_conn.get_router_by_name(pt_settings.DEFAULT_ROUTER_NAME)
+
+        # Create private networks with subnets
+        logger.info('Create network {}'.format(self.net1))
+        private_net1 = self.create_network(self.net1['name'])
+        subnet1 = self.create_subnet(private_net1, self.net1['cidr'])
+        self.add_subnet_to_router(router['id'], subnet1['id'])
+        logger.info('Create network {}'.format(self.net2))
+        private_net2 = self.create_network(self.net2['name'])
+        self.create_subnet(private_net2, self.net2['cidr'])
+
+        sec_grp = os_conn.create_sec_group_for_ssh()
+        self.create_instances(os_conn,
+                              vm_count=1,
+                              nics=[{'net-id': private_net1['id']},
+                                    {'net-id': private_net2['id']}],
+                              security_group=sec_grp.name,
+                              availability_zone=pt_settings.AZ_VCENTER1,
+                              key_name=key)
+        self.create_instances(os_conn,
+                              vm_count=1,
+                              nics=[{'net-id': private_net1['id']},
+                                    {'net-id': private_net2['id']}],
+                              security_group=sec_grp.name,
+                              availability_zone=pt_settings.AZ_VCENTER2,
+                              key_name=key)
+        self.create_and_assign_floating_ip(os_conn=os_conn, ext_net=ext)
+
+        srv_list = os_conn.get_servers()
+        self.check_connection_vms(
+            os_conn, srv_list)
