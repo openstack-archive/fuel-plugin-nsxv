@@ -19,11 +19,11 @@ from fuelweb_test import logger
 
 
 def show_pos(f):
-    """Wrapper shows current POSition in debug output"""
+    """Wrapper shows current POSition in debug output."""
     @wraps(f)
     def wrapper(*args, **kwargs):
-        logger.debug('Call {func}({argc}, {argv})'.format(f.__name__,
-                                                          args,
-                                                          kwargs))
+        logger.debug('Call {func}({args}, {kwargs})'.format(func=f.__name__,
+                                                            args=args,
+                                                            kwargs=kwargs))
         return f(*args, **kwargs)
     return wrapper

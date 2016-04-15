@@ -14,19 +14,20 @@ under the License.
 """
 
 from fuelweb_test import logger
-from fuelweb_test.helpers.common import Common
 from fuelweb_test import settings as fw_settings
+from fuelweb_test.helpers.common import Common
 
 from helpers.tools import show_pos
 
 
 class HopenStack(object):
-
-    """
-        HOpenStack - Helpers for OpenStack
-    """
+    """HOpenStack - Helpers for OpenStack."""
 
     def __init__(self, nsxv_ip):
+        """Init Common.
+
+        :param nsxv_ip: controller ip
+        """
         self._common = Common(controller_ip=nsxv_ip,
                               user=fw_settings.SERVTEST_USERNAME,
                               password=fw_settings.SERVTEST_PASSWORD,
@@ -37,6 +38,7 @@ class HopenStack(object):
         """Create network.
 
         :param name: name of network
+        :return: dict with network info
         """
         request_body = {'network': {"name": name}}
         network = self._common.neutron.create_network(body=request_body)
@@ -52,6 +54,7 @@ class HopenStack(object):
 
         :param network: dictionary
         :param cidr: string CIDR
+        :return: dict with subnet info
         """
         subnet_params = {
             "subnet": {"network_id": network['id'],
@@ -72,37 +75,42 @@ class HopenStack(object):
 
         :param name: aggregate name
         :param availability_zone: availability zone name
+        :return: answer on create aggregation request
         """
         return self._common.nova.aggregates.create(name, availability_zone)
 
     @show_pos
     def aggregate_host_remove(self, aggregate, hostname):
-        """Remove host from aggregate
+        """Remove host from aggregate.
 
         :param aggregate: aggregate ID
         :param hostname: host name
+        :return: answer on remove_host request
         """
         return self._common.nova.aggregates.remove_host(aggregate, hostname)
 
     @show_pos
     def aggregate_host_add(self, aggregate, hostname):
-        """Add host to aggregate
+        """Add host to aggregate.
+
         :param aggregate: destination aggregate ID
         :param hostname: host name
-        :return:
+        :return: answer on add_host request
         """
         return self._common.nova.aggregates.add_host(aggregate, hostname)
 
     @show_pos
     def aggregate_list(self):
-        """ Retrieve aggregates list
+        """Retrieve aggregates list.
+
         :return: Aggregate objects list
         """
         return self._common.nova.aggregates.list()
 
     @show_pos
     def hosts_list(self, zone=None):
-        """Retrieve hosts list
+        """Retrieve hosts list.
+
         :param zone: availability zone name, optional parameter
         :return: Host objects list
         """
@@ -110,7 +118,8 @@ class HopenStack(object):
 
     @show_pos
     def hosts_change_aggregate(self, agg_src, agg_dst, hostname):
-        """Move host from one aggregate to another
+        """Move host from one aggregate to another.
+
         :param agg_src: Source aggregate ID
         :param agg_dst: Destination aggregate ID
         :param hostname: Host name
