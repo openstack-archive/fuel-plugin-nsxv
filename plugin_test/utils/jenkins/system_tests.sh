@@ -410,7 +410,7 @@ MakeISO() {
   if [ "${DRY_RUN}" = "yes" ]; then
     ISO="${WORKSPACE}/build/iso/fuel.iso"
   else
-    ISO="`ls ${WORKSPACE}/build/iso/*.iso | head -n 1`"
+    ISO="$(find ${WORKSPACE}/build/iso/ -maxdepth 1 -type f -name '*.iso'|sort -d| head -n 1)"
     # check that ISO file exists
     if [ ! -f "${ISO}" ]; then
       echo "Error! ISO file not found!"
@@ -545,7 +545,7 @@ RunTest() {
       if [ "${DRY_RUN}" = "yes" ]; then
         echo dos.py erase "${ENV_NAME}"
       else
-        if [ "$(dos.py list | grep "^${ENV_NAME}\$")" ]; then
+        if dos.py list | grep -q "^${ENV_NAME}\$" ; then
           dos.py erase "${ENV_NAME}"
         fi
       fi
@@ -584,7 +584,7 @@ RunTest() {
 	exit 1
     fi
 
-    while [ "$(virsh net-list | grep $ENV_NAME | wc -l)" -ne 5 ];do sleep 10
+    while [ "$(virsh net-list | grep -c $ENV_NAME)" -ne 5 ];do sleep 10
 	if ! ps -p $SYSTEST_PID > /dev/null
 	then
 	    echo System tests exited prematurely, aborting
@@ -645,7 +645,7 @@ add_interface_to_bridge() {
   ip=$4
 
   for net in $(virsh net-list |grep ${env}_${net_name} |awk '{print $1}');do
-    bridge=`virsh net-info $net |grep -i bridge |awk '{print $2}'`
+    bridge=$(virsh net-info $net |grep -i bridge |awk '{print $2}')
     setup_bridge $bridge $nic $ip && echo $net_name bridge $bridge ready
   done
 }
@@ -658,7 +658,7 @@ setup_bridge() {
   sudo /sbin/brctl stp $bridge off
   sudo /sbin/brctl addif $bridge $nic
   # set if with existing ip down
-  for itf in `sudo ip -o addr show to $ip |cut -d' ' -f2`; do
+  for itf in $(sudo ip -o addr show to $ip |cut -d' ' -f2); do
       echo deleting $ip from $itf
       sudo ip addr del dev $itf $ip
   done
@@ -674,7 +674,7 @@ setup_bridge() {
 
 clean_old_bridges() {
   for intf in $WORKSTATION_IFS; do
-    for br in `/sbin/brctl show | grep -v "bridge name" | cut -f1 -d'	'`; do
+    for br in $(/sbin/brctl show | grep -v "bridge name" | cut -f1 -d'	'); do
       /sbin/brctl show $br| grep -q $intf && sudo /sbin/brctl delif $br $intf \
         && sudo /sbin/ip link set dev $br down && echo $intf deleted from $br
     done
