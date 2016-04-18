@@ -6,4 +6,3 @@
     gateway: false
     vip:
       - name: "nsxv_metadataproxy_ip"
-        node_roles: ["primary-controller"]
