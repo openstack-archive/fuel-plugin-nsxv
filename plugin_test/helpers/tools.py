@@ -18,6 +18,31 @@ from functools import wraps
 from fuelweb_test import logger
 
 
+def find_first(seq, predicate):
+    """Find next item from sequence."""
+    return next((x for x in seq if predicate(x)), None)
+
+
+class ShowPos(object):
+    """Print func name and its parameters for each call."""
+
+    @staticmethod
+    def deco(f):
+        """Logger decorator."""
+        def wrapper(*args, **kwargs):
+            logger.debug("Call {0}({1}, {2})".format(f.__name__, args, kwargs))
+            return f(*args, **kwargs)
+        return wrapper
+
+    def __getattribute__(self, name):
+        """Log by attributes."""
+        attr = object.__getattribute__(self, name)
+        if callable(attr):
+            return ShowPos.deco(attr)
+        else:
+            return attr
+
+
 def show_pos(f):
     """Wrapper shows current POSition in debug output."""
     @wraps(f)

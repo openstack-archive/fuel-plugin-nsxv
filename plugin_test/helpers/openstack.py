@@ -13,28 +13,81 @@ License for the specific language governing permissions and limitations
 under the License.
 """
 
+from keystoneclient.exceptions import Conflict
+from keystoneclient.exceptions import NotFound
+
 from fuelweb_test import logger
 from fuelweb_test import settings as fw_settings
-
 from fuelweb_test.helpers.common import Common
+from helpers.tools import ShowPos
+from helpers.tools import find_first
 
-from helpers.tools import show_pos
+
+def get_openstack_list_paginator(page_size=10):
+    """Retrieve information from openstack via pagination.
+
+    NOTE: This decorator is not applicable for:
+        * cinder.volume_snaphosts.list
+        * glance.images.list
+        * keystone.users.list
+        * neutron.list_networks
+        * neutron.list_subnets
+        * neutron.list_routers
+        * neutron.list_ports
+    because 'limit' is not working or not implemented in their API methods.
+    """
+    assert callable(page_size) is False, 'This is not a decorator'
+    assert type(page_size) is int, 'page_size is not Int'
+
+    def paginator(fn):
+        def under_page(*args, **kwargs):
+            # Process listing as a regular call due to limit or
+            # marker parameters were passed
+            limit = kwargs.pop('limit', None)
+            marker = kwargs.pop('marker', None)
+            if limit or marker:
+                res = fn(*args, limit=limit, marker=marker, **kwargs)
+                for item in res:
+                    yield item
+                return
+            # Process listing with a pagination
+            last_item_id = None
+            while True:
+                items = fn(*args, limit=page_size,
+                           marker=last_item_id, **kwargs)
+                if not items:
+                    break
+                for item in items:
+                    if type(item) is dict:
+                        last_item_id = item['id']
+                    else:
+                        last_item_id = item.id
+                    yield item
+
+        def paged_requester(*args, **kwargs):
+            return [item for item in under_page(*args, **kwargs)]
+
+        # return under_page
+        return paged_requester
+    return paginator
 
 
-class HopenStack(object):
+class HopenStack(ShowPos):
     """HOpenStack - Helpers for OpenStack."""
 
-    def __init__(self, nsxv_ip):
+    def __init__(self, nsxv_ip, user=None, password=None, tenant=None):
         """Init Common.
 
         :param nsxv_ip: controller ip
         """
+        user = user or fw_settings.SERVTEST_USERNAME
+        password = password or fw_settings.SERVTEST_PASSWORD
+        tenant = tenant or fw_settings.SERVTEST_TENANT
         self._common = Common(controller_ip=nsxv_ip,
-                              user=fw_settings.SERVTEST_USERNAME,
-                              password=fw_settings.SERVTEST_PASSWORD,
-                              tenant=fw_settings.SERVTEST_TENANT)
+                              user=user,
+                              password=password,
+                              tenant=tenant)
 
-    @show_pos
     def create_network(self, name):
         """Create network.
 
@@ -49,7 +102,6 @@ class HopenStack(object):
 
         return network['network']
 
-    @show_pos
     def create_subnetwork(self, network, cidr):
         """Create a subnet.
 
@@ -70,7 +122,6 @@ class HopenStack(object):
 
         return subnet
 
-    @show_pos
     def aggregate_create(self, name, availability_zone):
         """Create a aggregate.
 
@@ -80,7 +131,6 @@ class HopenStack(object):
         """
         return self._common.nova.aggregates.create(name, availability_zone)
 
-    @show_pos
     def aggregate_host_remove(self, aggregate, hostname):
         """Remove host from aggregate.
 
@@ -90,7 +140,6 @@ class HopenStack(object):
         """
         return self._common.nova.aggregates.remove_host(aggregate, hostname)
 
-    @show_pos
     def aggregate_host_add(self, aggregate, hostname):
         """Add host to aggregate.
 
@@ -100,7 +149,6 @@ class HopenStack(object):
         """
         return self._common.nova.aggregates.add_host(aggregate, hostname)
 
-    @show_pos
     def aggregate_list(self):
         """Retrieve aggregates list.
 
@@ -108,7 +156,6 @@ class HopenStack(object):
         """
         return self._common.nova.aggregates.list()
 
-    @show_pos
     def hosts_list(self, zone=None):
         """Retrieve hosts list.
 
@@ -117,7 +164,6 @@ class HopenStack(object):
         """
         return self._common.nova.hosts.list(zone=zone)
 
-    @show_pos
     def hosts_change_aggregate(self, agg_src, agg_dst, hostname):
         """Move host from one aggregate to another.
 
@@ -141,3 +187,94 @@ class HopenStack(object):
                 "Aggregate not found. agg_src id:{0}, agg_dst id:{1}".format(
                     agg_src_id, agg_dst_id
                 ))
+
+    def role_get(self, role_name):
+        """Get user role by name.
+
+        :param role_name: string role name
+        :return role: dict with role description
+        """
+        try:
+            role = self._common.keystone.roles.find(name=role_name)
+        except NotFound:
+            return None
+        return role
+
+    def user_get(self, username):
+        """Get user by user name.
+
+        :param username: string user name
+        :return role: dict with user description
+        """
+        user = find_first(self._common.keystone.users.list(),
+                          lambda x: x.name == username)
+        return user
+
+    @get_openstack_list_paginator()  # use pagination with defalt page size
+    def tenants_list(self, limit=None, marker=None):
+        """List tenants.
+
+        :param limit: how much tenants to be listed
+        :param marker: from which position list the tenants
+        :return tenants: list with tenants
+        """
+        tenants = self._common.keystone.tenants.list(limit=limit,
+                                                     marker=marker)
+        return tenants
+
+    def tenants_create(self, tenant_name):
+        """Create tenant with given name.
+
+        :param tenant_name: name of tenant
+        :return tenant: dict with tenant details
+        """
+        tenant = find_first(self.tenants_list(),
+                            lambda x: x.name == tenant_name)
+        if tenant is None:
+            tenant = self._common.keystone.tenants.create(
+                tenant_name=tenant_name,
+                enabled=True)
+            logger.info("Created tenant name:'{0}', id:'{1}'".format(
+                tenant_name, tenant.id))
+        else:
+            logger.warning(
+                "Tenant already exist, name: '{0}' id: '{1}'".format(
+                    tenant_name, tenant.id))
+        return tenant
+
+    def tenant_assign_user_role(self, tenant, user, role):
+        """Link tenant with user ad role.
+
+        :param tenant: name of tenant
+        :param user: name of user
+        :param user: name of role
+        :return res: dict keystone answer
+        """
+        res = self._common.keystone.roles.add_user_role(user, role, tenant)
+        return res
+
+    def security_group_create(self, name, description=''):
+        """Create security group.
+
+        :param name: name of security group
+        :param description: string with description
+        :return: security group object
+        """
+        return self._common.nova.security_groups.create(name, description)
+
+    def security_group_add_rule(self, tenant_id, group):
+        """Add rule to security group.
+
+        :param tenant_id: tenant id
+        :param group: security group object
+        """
+        body = {'security_group_rule': {'direction': 'ingress',
+                                        'security_group_id': group.id,
+                                        'tenant_id': tenant_id}
+                }
+        try:
+            self._common.neutron.create_security_group_rule(body=body)
+        except Conflict as e:
+            logger.warning(
+                "Can't create rule for tenant {0}. Exception: {1}".format(
+                    tenant_id, e))

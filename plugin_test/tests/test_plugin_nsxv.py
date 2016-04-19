@@ -12,40 +12,31 @@ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 License for the specific language governing permissions and limitations
 under the License.
 """
+
 import os
 import time
+import paramiko
 
 from devops.error import TimeoutError
 from devops.helpers.helpers import wait
+from proboscis import test
+from proboscis.asserts import assert_false
+from proboscis.asserts import assert_true
 
 from fuelweb_test import logger
-
 from fuelweb_test.helpers import os_actions
 from fuelweb_test.helpers import utils
-
 from fuelweb_test.helpers.common import Common
-
 from fuelweb_test.helpers.decorators import log_snapshot_after_test
-
 from fuelweb_test.settings import DEPLOYMENT_MODE
 from fuelweb_test.settings import NEUTRON_SEGMENT_TYPE
 from fuelweb_test.settings import SERVTEST_PASSWORD
 from fuelweb_test.settings import SERVTEST_TENANT
 from fuelweb_test.settings import SERVTEST_USERNAME
-
 from fuelweb_test.tests.base_test_case import SetupEnvironment
 from fuelweb_test.tests.base_test_case import TestBasic
-
 from helpers import settings as pt_settings  # Plugin Tests Settings
-
 from helpers.openstack import HopenStack
-
-import paramiko
-
-from proboscis import test
-
-from proboscis.asserts import assert_false
-from proboscis.asserts import assert_true
 
 
 @test(groups=["plugins", "nsxv_plugin"])
@@ -218,9 +209,13 @@ class TestNSXvPlugin(TestBasic):
         for srv in srv_list:
             addresses = srv.addresses[srv.addresses.keys()[0]]
 
-            fip = [
-                add['addr'] for add in addresses
-                if add['OS-EXT-IPS:type'] == 'floating'][0]
+            try:
+                fip = [
+                    add['addr'] for add in addresses
+                    if add['OS-EXT-IPS:type'] == 'floating'][0]
+            except Exception:
+                logger.error(addresses)
+                raise
 
             if not destination_ip:
                 destination_ip = [s.networks[s.networks.keys()[0]][0]
@@ -459,10 +454,10 @@ class TestNSXvPlugin(TestBasic):
         if not cluster_id:
             cluster_id = self.fuel_web.get_last_created_cluster()
         common = self.get_common(cluster_id)
-        answer = common.neutron.add_interface_router(
+        port = common.neutron.add_interface_router(
             router_id,
             {'subnet_id': sub_id})
-        return answer
+        return port
 
     def create_subnet(self, network, cidr, cluster_id=None):
         """Create a subnet.
@@ -493,7 +488,7 @@ class TestNSXvPlugin(TestBasic):
         self.add_subnet_to_router(router['id'], subnet_private['id'])
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_1],
-          groups=["nsxv_smoke", "nsxv_plugin"])
+          groups=["nsxv_smoke"])
     @log_snapshot_after_test
     def nsxv_smoke(self):
         """Deploy a cluster with NSXv Plugin.
@@ -507,7 +502,7 @@ class TestNSXvPlugin(TestBasic):
         Duration 90 min
 
         """
-        self.env.revert_snapshot('ready_with_1_slaves', skip_timesync=True)
+        self.env.revert_snapshot('ready_with_1_slaves')
 
         self.install_nsxv_plugin()
 
@@ -548,7 +543,7 @@ class TestNSXvPlugin(TestBasic):
         return (clusters_id[-1]).rstrip().split(',')
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],
-          groups=["nsxv_smoke_add_compute", "nsxv_plugin"])
+          groups=["nsxv_smoke_add_compute"])
     @log_snapshot_after_test
     def nsxv_smoke_add_compute(self):
         """Deploy a cluster with NSXv Plugin, after add compute-vmware role.
@@ -567,7 +562,7 @@ class TestNSXvPlugin(TestBasic):
         Duration 90 min
 
         """
-        self.env.revert_snapshot('ready_with_5_slaves', skip_timesync=True)
+        self.env.revert_snapshot('ready_with_5_slaves')
 
         self.install_nsxv_plugin()
 
@@ -626,7 +621,7 @@ class TestNSXvPlugin(TestBasic):
                         "Clusters on node {0} not reconfigured".format(node))
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_9],
-          groups=["nsxv_bvt", "nsxv_plugin"])
+          groups=["nsxv_bvt"])
     @log_snapshot_after_test
     def nsxv_bvt(self):
         """Deploy cluster with plugin and vmware datastore backend.
@@ -642,7 +637,7 @@ class TestNSXvPlugin(TestBasic):
         Duration 3 hours
 
         """
-        self.env.revert_snapshot("ready_with_9_slaves", skip_timesync=True)
+        self.env.revert_snapshot("ready_with_9_slaves")
 
         self.install_nsxv_plugin()
 
@@ -683,7 +678,7 @@ class TestNSXvPlugin(TestBasic):
             test_sets=['smoke', 'sanity', 'ha'],)
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_9],
-          groups=["nsxv_add_delete_nodes", "nsxv_plugin"])
+          groups=["nsxv_add_delete_nodes"])
     @log_snapshot_after_test
     def nsxv_add_delete_nodes(self):
         """Deploy cluster with plugin and vmware datastore backend.
@@ -701,7 +696,7 @@ class TestNSXvPlugin(TestBasic):
         Duration 3 hours
 
         """
-        self.env.revert_snapshot("ready_with_9_slaves", skip_timesync=True)
+        self.env.revert_snapshot("ready_with_9_slaves")
 
         self.install_nsxv_plugin()
 
@@ -757,7 +752,7 @@ class TestNSXvPlugin(TestBasic):
             cluster_id=cluster_id, test_sets=['smoke'])
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_9],
-          groups=["nsxv_add_delete_controller", "nsxv_plugin"])
+          groups=["nsxv_add_delete_controller"])
     @log_snapshot_after_test
     def nsxv_add_delete_controller(self):
         """Deploy cluster with plugin, adding and deletion controler node.
@@ -781,7 +776,7 @@ class TestNSXvPlugin(TestBasic):
         Duration 3.5 hours
 
         """
-        self.env.revert_snapshot("ready_with_9_slaves", skip_timesync=True)
+        self.env.revert_snapshot("ready_with_9_slaves")
 
         self.install_nsxv_plugin()
 
@@ -876,7 +871,7 @@ class TestNSXvPlugin(TestBasic):
         self.check_connection_vms(os_conn, srv_list)
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],
-          groups=["nsxv_ceilometer", "nsxv_plugin"])
+          groups=["nsxv_ceilometer"])
     @log_snapshot_after_test
     def nsxv_ceilometer(self):
         """Deploy cluster with plugin and ceilometer.
@@ -893,7 +888,7 @@ class TestNSXvPlugin(TestBasic):
         Duration 3 hours
 
         """
-        self.env.revert_snapshot("ready_with_5_slaves", skip_timesync=True)
+        self.env.revert_snapshot("ready_with_5_slaves")
 
         self.install_nsxv_plugin()
 
@@ -931,7 +926,7 @@ class TestNSXvPlugin(TestBasic):
             test_sets=['smoke', 'tests_platform'],)
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],
-          groups=["nsxv_ha_mode", "nsxv_plugin"])
+          groups=["nsxv_ha_mode"])
     @log_snapshot_after_test
     def nsxv_ha_mode(self):
         """Deploy cluster with plugin in HA mode.
@@ -948,7 +943,7 @@ class TestNSXvPlugin(TestBasic):
         Duration 2.5 hours
 
         """
-        self.env.revert_snapshot("ready_with_5_slaves", skip_timesync=True)
+        self.env.revert_snapshot("ready_with_5_slaves")
 
         self.install_nsxv_plugin()
 
@@ -994,7 +989,7 @@ class TestNSXvPlugin(TestBasic):
                                    'vcenter-vmcluster2')
 
     @test(depends_on=[nsxv_ha_mode],
-          groups=["nsxv_floating_ip_to_public", 'nsxv_plugin'])
+          groups=["nsxv_floating_ip_to_public"])
     @log_snapshot_after_test
     def nsxv_floating_ip_to_public(self):
         """Check connectivity Vms to public network with floating ip.
@@ -1023,10 +1018,10 @@ class TestNSXvPlugin(TestBasic):
         nsxv_ip = self.fuel_web.get_public_vip(cluster_id)
         hos = HopenStack(nsxv_ip)
 
-        # Create  nets, subnet and attach them to the router
+        # Create nets, subnet and attach them to the router
         net = os_conn.get_network(pt_settings.ADMIN_NET)
 
-        router = self.os_conn.get_router_by_name(
+        router = os_conn.get_router_by_name(
             pt_settings.DEFAULT_ROUTER_NAME)
 
         private_net_1 = hos.create_network(self.net1['name'])
@@ -1060,7 +1055,7 @@ class TestNSXvPlugin(TestBasic):
                                   destination_ip=[pt_settings.EXT_IP])
 
     @test(depends_on=[nsxv_ha_mode],
-          groups=["nsxv_public_network_availability", 'nsxv_plugin'])
+          groups=["nsxv_public_network_availability"])
     @log_snapshot_after_test
     def nsxv_public_network_availability(self):
         """Verify that public network is available.
@@ -1124,7 +1119,7 @@ class TestNSXvPlugin(TestBasic):
                                   destination_ip=[pt_settings.EXT_IP])
 
     @test(depends_on=[nsxv_smoke],
-          groups=["nsxv_create_and_delete_vms", 'nsxv_plugin'])
+          groups=["nsxv_create_and_delete_vms"])
     @log_snapshot_after_test
     def nsxv_create_and_delete_vms(self):
         """Check creation instance in the one group simultaneously.
@@ -1159,7 +1154,7 @@ class TestNSXvPlugin(TestBasic):
         wait(lambda: os_conn.get_servers() is None, timeout=300)
 
     @test(depends_on=[nsxv_smoke],
-          groups=["nsxv_uninstall", 'nsxv_plugin'])
+          groups=["nsxv_uninstall"])
     @log_snapshot_after_test
     def nsxv_uninstall(self):
         """Verify that uninstall of Fuel NSXv plugin is successful.
@@ -1172,7 +1167,7 @@ class TestNSXvPlugin(TestBasic):
         Duration 1 hour
 
         """
-        self.env.revert_snapshot("deploy_nsxv", skip_timesync=True)
+        self.env.revert_snapshot("deploy_nsxv")
 
         cluster_id = self.fuel_web.get_last_created_cluster()
 
@@ -1192,7 +1187,7 @@ class TestNSXvPlugin(TestBasic):
             "{} plugin has not been removed".format(self.plugin_name))
 
     @test(depends_on=[nsxv_smoke],
-          groups=["nsxv_uninstall_negative", 'nsxv_plugin'])
+          groups=["nsxv_uninstall_negative"])
     @log_snapshot_after_test
     def nsxv_uninstall_negative(self):
         """Verify that uninstall of Fuel NSXv plugin is unsuccessful.
@@ -1204,7 +1199,7 @@ class TestNSXvPlugin(TestBasic):
         Duration 1 hour
 
         """
-        self.env.revert_snapshot("deploy_nsxv", skip_timesync=True)
+        self.env.revert_snapshot("deploy_nsxv")
 
         # Try to uninstall plugin
         cmd = 'fuel plugins --remove {}=={}'.format(
@@ -1220,7 +1215,7 @@ class TestNSXvPlugin(TestBasic):
             "Plugin is removed {}".format(self.plugin_name))
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
-          groups=["nsxv_install", 'nsxv_plugin'])
+          groups=["nsxv_install"])
     @log_snapshot_after_test
     def nsxv_install(self):
         """Verify that installation of Fuel NSXv plugin is successful.
@@ -1231,7 +1226,7 @@ class TestNSXvPlugin(TestBasic):
         Duration 10 mins
 
         """
-        self.env.revert_snapshot('ready_with_3_slaves', skip_timesync=True)
+        self.env.revert_snapshot('ready_with_3_slaves')
 
         self.install_nsxv_plugin()
 
@@ -1244,7 +1239,7 @@ class TestNSXvPlugin(TestBasic):
             "{} plugin has not been installed".format(self.plugin_name))
 
     @test(depends_on=[nsxv_ha_mode],
-          groups=["nsxv_connectivity_via_shared_router", "nsxv_plugin"])
+          groups=["nsxv_connectivity_via_shared_router"])
     @log_snapshot_after_test
     def nsxv_connectivity_via_shared_router(self):
         """Test connectivity via shared router.
@@ -1290,7 +1285,7 @@ class TestNSXvPlugin(TestBasic):
             os_conn, srv_list, destination_ip=[pt_settings.EXT_IP])
 
     @test(depends_on=[nsxv_ha_mode],
-          groups=["nsxv_connectivity_via_distributed_router", "nsxv_plugin"])
+          groups=["nsxv_connectivity_via_distributed_router"])
     @log_snapshot_after_test
     def nsxv_connectivity_via_distributed_router(self):
         """Test connectivity via distributed router.
@@ -1339,7 +1334,7 @@ class TestNSXvPlugin(TestBasic):
             os_conn, srv_list, destination_ip=[pt_settings.EXT_IP])
 
     @test(depends_on=[nsxv_ha_mode],
-          groups=["nsxv_connectivity_via_exclusive_router", "nsxv_plugin"])
+          groups=["nsxv_connectivity_via_exclusive_router"])
     @log_snapshot_after_test
     def nsxv_connectivity_via_exclusive_router(self):
         """Test connectivity via exclusive router.
@@ -1388,7 +1383,7 @@ class TestNSXvPlugin(TestBasic):
             os_conn, srv_list, destination_ip=[pt_settings.EXT_IP])
 
     @test(depends_on=[nsxv_ha_mode],
-          groups=["nsxv_create_terminate_networks", "nsxv_plugin"])
+          groups=["nsxv_create_terminate_networks"])
     @log_snapshot_after_test
     def nsxv_create_terminate_networks(self):
         """Test creating and deleting networks.
@@ -1419,7 +1414,7 @@ class TestNSXvPlugin(TestBasic):
         self.create_subnet(private_net1, self.net1['cidr'])
 
     @test(depends_on=[nsxv_ha_mode],
-          groups=["nsxv_public_network_to_all_nodes", "nsxv_plugin"])
+          groups=["nsxv_public_network_to_all_nodes"])
     @log_snapshot_after_test
     def nsxv_public_network_to_all_nodes(self):
         """Test the feature "Assign public network to all nodes" works.
@@ -1474,7 +1469,7 @@ class TestNSXvPlugin(TestBasic):
                         "br-ex wasn't found on node {}".format(compute_vmware))
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_3],
-          groups=["nsxv_kvm_deploy", "nsxv_plugin"])
+          groups=["nsxv_kvm_deploy"])
     @log_snapshot_after_test
     def nsxv_kvm_deploy(self):
         """Test deploy with KVM.
@@ -1487,7 +1482,7 @@ class TestNSXvPlugin(TestBasic):
         Duration 30 min
 
         """
-        self.env.revert_snapshot("ready_with_3_slaves", skip_timesync=True)
+        self.env.revert_snapshot("ready_with_3_slaves")
 
         self.install_nsxv_plugin()
 
@@ -1524,7 +1519,7 @@ class TestNSXvPlugin(TestBasic):
             cluster_id=cluster_id, test_sets=['smoke'])
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_1],
-          groups=["nsxv_specified_router_type", "nsxv_plugin"])
+          groups=["nsxv_specified_router_type"])
     @log_snapshot_after_test
     def nsxv_specified_router_type(self):
         """Deploy a cluster with NSXv Plugin.
@@ -1538,7 +1533,7 @@ class TestNSXvPlugin(TestBasic):
         Duration 90 min
 
         """
-        self.env.revert_snapshot('ready_with_1_slaves', skip_timesync=True)
+        self.env.revert_snapshot('ready_with_1_slaves')
 
         self.install_nsxv_plugin()
 
@@ -1569,7 +1564,7 @@ class TestNSXvPlugin(TestBasic):
             test_sets=['smoke'])
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_1],
-          groups=["nsxv_metadata_mgt_disabled", "nsxv_plugin"])
+          groups=["nsxv_metadata_mgt_disabled"])
     @log_snapshot_after_test
     def nsxv_metadata_mgt_disabled(self):
         """Check that option nsxv_metadata_listen is public by default.
@@ -1585,7 +1580,7 @@ class TestNSXvPlugin(TestBasic):
         Duration 60 min
 
         """
-        self.env.revert_snapshot('ready_with_1_slaves', skip_timesync=True)
+        self.env.revert_snapshot('ready_with_1_slaves')
 
         self.install_nsxv_plugin()
 
@@ -1671,7 +1666,7 @@ class TestNSXvPlugin(TestBasic):
                 "Wget does not return 'latest' item in stdout")
 
     @test(depends_on=[nsxv_ha_mode],
-          groups=["nsxv_create_and_delete_secgroups", "nsxv_plugin"])
+          groups=["nsxv_create_and_delete_secgroups"])
     @log_snapshot_after_test
     def nsxv_create_and_delete_secgroups(self):
         """Verify security group feature.
@@ -1852,7 +1847,7 @@ class TestNSXvPlugin(TestBasic):
                 self.remote_execute_command(ips[0], ips[1], ' ')
 
     @test(depends_on=[nsxv_ha_mode],
-          groups=["nsxv_multi_vnic", "nsxv_plugin"])
+          groups=["nsxv_multi_vnic"])
     @log_snapshot_after_test
     def nsxv_multi_vnic(self):
         """Check abilities to assign multiple vNICs to a single VM.
@@ -1924,7 +1919,7 @@ class TestNSXvPlugin(TestBasic):
             os_conn, srv_list)
 
     @test(depends_on=[nsxv_ha_mode],
-          groups=["nsxv_ability_to_bind_port", "nsxv_plugin"])
+          groups=["nsxv_ability_to_bind_port"])
     @log_snapshot_after_test
     def nsxv_ability_to_bind_port(self):
         """Verify that system could manipulate with port.
@@ -1993,7 +1988,7 @@ class TestNSXvPlugin(TestBasic):
         self.check_connection_vms(os_conn, srv_list)
 
     @test(depends_on=[nsxv_ha_mode],
-          groups=["nsxv_connectivity_diff_networks", "nsxv_plugin"])
+          groups=["nsxv_connectivity_diff_networks"])
     @log_snapshot_after_test
     def nsxv_connectivity_diff_networks(self):
         """Verify that there is a connection between networks.
@@ -2073,3 +2068,246 @@ class TestNSXvPlugin(TestBasic):
         srv_list_between_networks = [srv_list1[0], srv_list2[0]]
         self.check_connection_vms(
             os_conn, srv_list_between_networks, destination_ip=fips)
+
+    @test(depends_on=[nsxv_ha_mode],
+          groups=["nsxv_same_ip_different_tenants"])
+    @log_snapshot_after_test
+    def nsxv_same_ip_different_tenants(self):
+        """Verify connectivity with same IP in different tenants.
+
+        Scenario:
+            1. Setup nsxv_ha_mode.
+            2. Create 2 non-admin tenants 'test_1' and 'test_2'.
+            3. For each of project add admin with 'admin' and 'member' roles.
+            4. In tenant 'test_1' create net1 and subnet1 with
+                CIDR 10.0.0.0/24
+            5. In tenant 'test_2' create net1 and subnet1 with
+                CIDR 10.0.0.0/24
+            6. Create router in each tenant.
+            7. In tenant 'test_1' create security group 'SG_1' and
+                add rule that allows ingress icmp traffic
+            8. In tenant 'test_2' create security group 'SG_1' and
+                add rule that allows ingress icmp traffic
+            9. In tenant 'test_2' create security group 'SG_2'
+            10. In tenant 'test_1' add VM_1 of vcenter1 in net1 with
+                ip 10.0.0.4 and 'SG_1' as security group.
+            11. In tenant 'test_1' add VM_2 of vcenter2 in net1 with
+                ip 10.0.0.5 and 'SG_1' as security group.
+            12. In tenant 'test_2' add VM_3 of vcenter1 in net1 with
+                ip 10.0.0.4 and 'SG_1' as security group.
+            13. In tenant 'test_2' add VM_4 of vcenter2 in net1 with
+                ip 10.0.0.5 and 'SG_1' as security group.
+            14. Assign floating IPs for all created VMs.
+            15. Verify that VMs with same ip on different tenants should
+                communicate between each other. Send icmp ping from VM_1
+                to VM_3, VM_2 to VM_4 and vice versa via floating ip.
+
+        Duration 1.5 hours
+
+        """
+        cluster_id = self.fuel_web.get_last_created_cluster()
+        os_ip = self.fuel_web.get_public_vip(cluster_id)
+        hos = HopenStack(os_ip)
+        tenant_1_name = 'tenant_test_1'
+        tenant_2_name = 'tenant_test_2'
+
+        # Create tenants
+        tenant_t1 = hos.tenants_create(tenant_1_name)
+        tenant_t2 = hos.tenants_create(tenant_2_name)
+        user_admin = hos.user_get('admin')
+        role_admin = hos.role_get('admin')
+        role_member = hos.role_get('_member_')
+        hos.tenant_assign_user_role(tenant_t1, user_admin, role_admin)
+        hos.tenant_assign_user_role(tenant_t1, user_admin, role_member)
+
+        hos.tenant_assign_user_role(tenant_t2, user_admin, role_admin)
+        hos.tenant_assign_user_role(tenant_t2, user_admin, role_member)
+
+        hos_t1 = HopenStack(os_ip, tenant=tenant_t1.name)
+        hos_t2 = HopenStack(os_ip, tenant=tenant_t2.name)
+
+        # Create networks and subnetworks
+        tenant_1_net_1_conf = {'name': 'tenant_1_net_1', 'cidr': '10.0.0.0/24'}
+        tenant_2_net_1_conf = {'name': 'tenant_2_net_1', 'cidr': '10.0.0.0/24'}
+
+        tenant_1_net_1 = hos_t1.create_network(tenant_1_net_1_conf['name'])
+        tenant_2_net_1 = hos_t2.create_network(tenant_2_net_1_conf['name'])
+
+        tenant1_subnet = hos_t1.create_subnetwork(tenant_1_net_1,
+                                                  tenant_1_net_1_conf['cidr'])
+        tenant2_subnet = hos_t2.create_subnetwork(tenant_2_net_1,
+                                                  tenant_2_net_1_conf['cidr'])
+
+        os_conn = os_actions.OpenStackActions(os_ip,
+                                              SERVTEST_USERNAME,
+                                              SERVTEST_PASSWORD,
+                                              SERVTEST_TENANT)
+        ext = os_conn.get_network(pt_settings.ADMIN_NET)
+        tenant_1_os_conn = os_actions.OpenStackActions(os_ip,
+                                                       SERVTEST_USERNAME,
+                                                       SERVTEST_PASSWORD,
+                                                       tenant_1_name)
+        tenant_2_os_conn = os_actions.OpenStackActions(os_ip,
+                                                       SERVTEST_USERNAME,
+                                                       SERVTEST_PASSWORD,
+                                                       tenant_2_name)
+
+        # Create routers and attach subnets
+        tenant1_router = os_conn.create_router("t1", tenant_t1)
+        tenant2_router = os_conn.create_router("t2", tenant_t2)
+        os_conn.add_router_interface(tenant1_router['id'],
+                                     tenant1_subnet['id'])
+        os_conn.add_router_interface(tenant2_router['id'],
+                                     tenant2_subnet['id'])
+
+        # Create security groups
+        tenant_1_sg1 = tenant_1_os_conn.create_sec_group_for_ssh()
+        tenant_2_sg1 = tenant_2_os_conn.create_sec_group_for_ssh()
+
+        # Create instances in different Availability zones
+        self.create_instances(os_conn=tenant_1_os_conn,
+                              vm_count=1,
+                              nics=[{'net-id': tenant_1_net_1['id']}],
+                              security_group=tenant_1_sg1.name,
+                              availability_zone=pt_settings.AZ_VCENTER1)
+        self.create_instances(os_conn=tenant_1_os_conn,
+                              vm_count=1,
+                              nics=[{'net-id': tenant_1_net_1['id']}],
+                              security_group=tenant_1_sg1.name,
+                              availability_zone=pt_settings.AZ_VCENTER2)
+
+        self.create_instances(os_conn=tenant_2_os_conn,
+                              vm_count=1,
+                              nics=[{'net-id': tenant_2_net_1['id']}],
+                              security_group=tenant_2_sg1.name,
+                              availability_zone=pt_settings.AZ_VCENTER1)
+        self.create_instances(os_conn=tenant_2_os_conn,
+                              vm_count=1,
+                              nics=[{'net-id': tenant_2_net_1['id']}],
+                              security_group=tenant_2_sg1.name,
+                              availability_zone=pt_settings.AZ_VCENTER2)
+
+        srv_list = tenant_1_os_conn.get_servers()
+        fips = self.create_and_assign_floating_ip(os_conn,
+                                                  srv_list=srv_list,
+                                                  ext_net=ext,
+                                                  tenant_id=tenant_t1.id)
+        srv_list = tenant_1_os_conn.get_servers()
+        self.check_connection_vms(tenant_1_os_conn,
+                                  srv_list)
+
+        srv_list = tenant_2_os_conn.get_servers()
+        self.create_and_assign_floating_ip(os_conn,
+                                           srv_list=srv_list,
+                                           ext_net=ext,
+                                           tenant_id=tenant_t2.id)
+        srv_list = tenant_2_os_conn.get_servers()
+        self.check_connection_vms(tenant_2_os_conn,
+                                  srv_list)
+
+        self.check_connection_vms(tenant_2_os_conn,
+                                  srv_list,
+                                  destination_ip=fips)
+
+    @test(depends_on=[nsxv_ha_mode],
+          groups=["nsxv_different_tenants"])
+    @log_snapshot_after_test
+    def nsxv_different_tenants(self):
+        """Verify isolation in different tenants.
+
+        Scenario:
+            1. Setup nsxv_ha_mode.
+            2. Create non-admin tenant 'test'.
+            3. Add admin with 'admin' and 'member' roles.
+            4. In tenant 'test' create net1 with subnet1 and subnet2.
+            5. Attach both subnets to router.
+            7. In tenant 'test' create security group 'SG_1' and
+               add rule that allows ingress icmp and tcp traffic.
+            8. Launch instance in tenant 'test'.
+            9. In default tenant create security group 'SG_1' and
+               add rule that allows ingress icmp and tcp traffic.
+            10. Launch instance in default tenant on default net.
+            11. Verify that VMs on different tenants should not communicate
+                between each other. Send icmp ping from VM_1 of admin tenant
+                to VM_2 of test_tenant and vice versa.
+
+        Duration 1.5 hours
+
+        """
+        key = "t2"
+        cluster_id = self.fuel_web.get_last_created_cluster()
+        os_ip = self.fuel_web.get_public_vip(cluster_id)
+        hos = HopenStack(os_ip)
+        tenant_2_name = 'tenant_test_2'
+
+        # Create tenants
+        tenant_t2 = hos.tenants_create(tenant_2_name)
+        user_admin = hos.user_get('admin')
+        role_admin = hos.role_get('admin')
+        role_member = hos.role_get('_member_')
+        hos.tenant_assign_user_role(tenant_t2, user_admin, role_admin)
+        hos.tenant_assign_user_role(tenant_t2, user_admin, role_member)
+
+        hos_t2 = HopenStack(os_ip, tenant=tenant_t2.name)
+        hos_t2._common.create_key(key)
+
+        # Create networks and subnetworks
+        tenant_2_net_conf = {'name': 'tenant_2', 'cidr1': '192.168.0.0/24',
+                             'cidr2': '10.0.0.0/24'}
+        tenant_2_net_1 = hos_t2.create_network(tenant_2_net_conf['name'])
+        tenant2_subnet = hos_t2.create_subnetwork(tenant_2_net_1,
+                                                  tenant_2_net_conf['cidr1'])
+        tenant2_subnet2 = hos_t2.create_subnetwork(tenant_2_net_1,
+                                                   tenant_2_net_conf['cidr2'])
+
+        os_conn = os_actions.OpenStackActions(os_ip,
+                                              SERVTEST_USERNAME,
+                                              SERVTEST_PASSWORD,
+                                              SERVTEST_TENANT)
+        ext = os_conn.get_network(pt_settings.ADMIN_NET)
+        private_net = os_conn.get_network(pt_settings.PRIVATE_NET)
+
+        tenant_2_os_conn = os_actions.OpenStackActions(os_ip,
+                                                       SERVTEST_USERNAME,
+                                                       SERVTEST_PASSWORD,
+                                                       tenant_2_name)
+
+        # Create routers and attach subnets
+        tenant2_router = tenant_2_os_conn.create_router("t2", tenant_t2)
+        tenant_2_os_conn.add_router_interface(tenant2_router['id'],
+                                              tenant2_subnet['id'])
+        tenant_2_os_conn.add_router_interface(tenant2_router['id'],
+                                              tenant2_subnet2['id'])
+
+        # Create security groups
+        sec_grp = os_conn.create_sec_group_for_ssh()
+        tenant_2_sg1 = tenant_2_os_conn.create_sec_group_for_ssh()
+
+        # Create instances in different Availability zones
+        self.create_instances(os_conn=tenant_2_os_conn,
+                              vm_count=1,
+                              nics=[{'net-id': tenant_2_net_1['id']}],
+                              security_group=tenant_2_sg1.name,
+                              availability_zone=pt_settings.AZ_VCENTER1,
+                              key_name=key)
+        self.create_instances(os_conn,
+                              vm_count=1,
+                              nics=[{'net-id': private_net['id']}],
+                              security_group=sec_grp.name,
+                              availability_zone=pt_settings.AZ_VCENTER2)
+
+        srv_list_admin = os_conn.get_servers()
+        for srv in srv_list_admin:
+            addresses = srv.addresses[srv.addresses.keys()[0]]
+            ip = [add['addr'] for add in addresses]
+
+        srv_list_tenant = tenant_2_os_conn.get_servers()
+        self.create_and_assign_floating_ip(os_conn,
+                                           srv_list_tenant,
+                                           ext_net=ext,
+                                           tenant_id=tenant_t2.id)
+        srv_list_tenant = tenant_2_os_conn.get_servers()
+        self.check_connection_vms(tenant_2_os_conn,
+                                  srv_list_tenant,
+                                  result_of_command=1,
+                                  destination_ip=ip)
