@@ -18,6 +18,30 @@ from functools import wraps
 from fuelweb_test import logger
 
 
+def find_first(seq, predicate):
+    return next((x for x in seq if predicate(x)), None)
+
+
+class ShowPos(object):
+    """Print func name and it's parameters for each call
+        Use this class as base for your classes.
+    """
+
+    @staticmethod
+    def deco(f):
+        def wrapper(*args, **kwargs):
+            logger.debug("Call {0}({1}, {2})".format(f.__name__, args, kwargs))
+            return f(*args, **kwargs)
+        return wrapper
+
+    def __getattribute__(self, name):
+        attr = object.__getattribute__(self, name)
+        if callable(attr):
+            return ShowPos.deco(attr)
+        else:
+            return attr
+
+
 def show_pos(f):
     """Wrapper shows current POSition in debug output"""
     @wraps(f)

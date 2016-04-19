@@ -1929,3 +1929,126 @@ class TestNSXvPlugin(TestBasic):
 
             for ips in ip_pair:
                 self.remote_execute_command(ips[0], ips[1], ' ')
+
+    @test(depends_on=[nsxv_ha_mode],
+          groups=["nsxv_same_ip_different_tenants", 'nsxv_plugin'])
+    def nsxv_same_ip_different_tenants(self):
+        """Verifies connectivity with same IP in different tenants.
+
+        Scenario:
+            1. Setup nsxv_ha_mode
+            2. Create 2 non-admin tenants 'test_1' and 'test_2'.
+            3. For each of project add admin with 'admin' and 'member' roles.
+            4. In tenant 'test_1' create net1 and subnet1 with
+                CIDR 10.0.0.0/24
+            5. In tenant 'test_2' create net1 and subnet1 with
+                CIDR 10.0.0.0/24
+            6. In tenant 'test_2' create net2 and subnet2 with
+                CIDR 10.0.0.0/24
+            7. In tenant 'test_1' create security group 'SG_1' and
+                add rule that allows ingress icmp traffic
+            8. In tenant 'test_2' create security group 'SG_1' and
+                add rule that allows ingress icmp traffic
+            9. In tenant 'test_2' create security group 'SG_2'
+            10. In tenant 'test_1' add VM_1 of vcenter1 in net1 with
+                ip 10.0.0.4 and 'SG_1' as security group.
+            11. In tenant 'test_1' add VM_2 of vcenter2 in net1 with
+                ip 10.0.0.5 and 'SG_1' as security group.
+            12. In tenant 'test_2' add VM_3 of vcenter1 in net1 with
+                ip 10.0.0.4 and 'SG_1' as security group.
+            13. In tenant 'test_2' add VM_4 of vcenter2 in net1 with
+                ip 10.0.0.5 and 'SG_1' as security group.
+            14. Assign floating IPs for all created VMs.
+            15. Verify that VMs with same ip on different tenants should
+                communicate between each other.
+                Send icmp ping from VM_1 to VM_3, VM_2 to Vm_4 and vice versa.
+
+        """
+        cluster_id = self.fuel_web.get_last_created_cluster()
+        nsxv_ip = self.fuel_web.get_public_vip(cluster_id)
+        hos = HopenStack(nsxv_ip)
+        tenant_1_name = 'tenant_test_1'
+        tenant_2_name = 'tenant_test_2'
+
+        # Create tenants
+        tenant_t1 = hos.tenants_create(tenant_1_name)
+        tenant_t2 = hos.tenants_create(tenant_2_name)
+        user_admin = hos.user_get('admin')
+        role_admin = hos.role_get('admin')
+        role_member = hos.role_get('_member_')
+        hos.tenant_assign_user_role(tenant_t1, user_admin, role_admin)
+        hos.tenant_assign_user_role(tenant_t1, user_admin, role_member)
+
+        hos.tenant_assign_user_role(tenant_t2, user_admin, role_admin)
+        hos.tenant_assign_user_role(tenant_t2, user_admin, role_member)
+
+        hos_t1 = HopenStack(nsxv_ip, tenant=tenant_t1.name)
+        hos_t2 = HopenStack(nsxv_ip, tenant=tenant_t2.name)
+
+        # Create networks and subnetworks
+        tenant_1_net_1_conf = {'name': 'tenant_1_net_1', 'cidr': '10.0.0.0/24'}
+        tenant_2_net_1_conf = {'name': 'tenant_2_net_1', 'cidr': '10.0.0.0/24'}
+        tenant_2_net_2_conf = {'name': 'tenant_2_net_2', 'cidr': '10.0.0.0/24'}
+        tenant_1_net_1 = hos_t1.create_network(tenant_1_net_1_conf['name'])
+        tenant_2_net_1 = hos_t2.create_network(tenant_2_net_1_conf['name'])
+        tenant_2_net_2 = hos_t2.create_network(tenant_2_net_2_conf['name'])
+
+        hos_t1.create_subnetwork(tenant_1_net_1, tenant_1_net_1_conf['cidr'])
+        hos_t1.create_subnetwork(tenant_2_net_1, tenant_2_net_1_conf['cidr'])
+        hos_t1.create_subnetwork(tenant_2_net_2, tenant_2_net_2_conf['cidr'])
+
+        # Create security groups
+        tenant_1_sg1 = hos.security_group_create('T1_SG1')
+        tenant_2_sg1 = hos.security_group_create('T2_SG1')
+        tenant_2_sg2 = hos.security_group_create('T2_SG2')
+
+        hos.security_group_add_rule(tenant_t1.id, tenant_1_sg1)
+        hos.security_group_add_rule(tenant_t2.id, tenant_2_sg1)
+
+        # Create instances
+        os_ip = self.fuel_web.get_public_vip(cluster_id)
+        tenant_1_os_conn = os_actions.OpenStackActions(os_ip,
+                                                       SERVTEST_USERNAME,
+                                                       SERVTEST_PASSWORD,
+                                                       tenant_1_name)
+
+        # Create instances in different Availability zones
+        self.create_instances(os_conn=tenant_1_os_conn,
+                              vm_count=1,
+                              nics=[{'net-id': tenant_2_net_1['id']}],
+                              security_group='T1_SG1',
+                              availability_zone='vcenter')
+        self.create_instances(os_conn=tenant_1_os_conn,
+                              vm_count=1,
+                              nics=[{'net-id': tenant_2_net_1['id']}],
+                              security_group='T1_SG1',
+                              availability_zone='vcenter')
+
+        tenant_2_os_conn = os_actions.OpenStackActions(os_ip,
+                                                       SERVTEST_USERNAME,
+                                                       SERVTEST_PASSWORD,
+                                                       tenant_2_name)
+        self.create_instances(os_conn=tenant_2_os_conn,
+                              vm_count=1,
+                              nics=[{'net-id': tenant_2_net_1['id']}],
+                              security_group='T2_SG1',
+                              availability_zone='vcenter')
+        self.create_instances(os_conn=tenant_2_os_conn,
+                              vm_count=1,
+                              nics=[{'net-id': tenant_2_net_1['id']}],
+                              security_group='T2_SG1',
+                              availability_zone='vcenter')
+
+        os_conn = os_actions.OpenStackActions(os_ip,
+                                              SERVTEST_USERNAME,
+                                              SERVTEST_PASSWORD,
+                                              SERVTEST_TENANT)
+
+        ext = os_conn.get_network(pt_settings.ADMIN_NET)
+        self.create_and_assign_floating_ip(os_conn=os_conn,
+                                           ext_net=ext)
+
+        srv_list = os_conn.get_servers()
+        self.check_connection_vms(os_conn,
+                                  srv_list,
+                                  destination_ip=[pt_settings.EXT_IP])
