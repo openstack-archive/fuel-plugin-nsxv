@@ -17,6 +17,7 @@ import os
 from fuelweb_test.settings import get_var_as_bool
 
 
+HALF_MIN_WAIT = 30  # 30 seconds
 WAIT_FOR_COMMAND = 60 * 3  # 3 minutes
 WAIT_FOR_LONG_DEPLOY = 60 * 180  # 180 minutes
 
