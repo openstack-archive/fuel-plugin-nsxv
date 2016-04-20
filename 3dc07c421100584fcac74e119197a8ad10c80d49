@@ -1,0 +1,9 @@
+Code-Review+1: Ruslan Khozinov <rkhozinov@mirantis.com>
+Code-Review+2: Igor Zinovik <izinovik@mirantis.com>
+Workflow+1: Igor Zinovik <izinovik@mirantis.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Wed, 20 Apr 2016 11:35:36 +0000
+Reviewed-on: https://review.openstack.org/306491
+Project: openstack/fuel-plugin-nsxv
+Branch: refs/heads/master
