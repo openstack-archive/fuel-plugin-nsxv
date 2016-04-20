@@ -19,15 +19,20 @@ from devops.error import TimeoutError
 from devops.helpers.helpers import wait
 
 from fuelweb_test import logger
+
 from fuelweb_test.helpers import os_actions
 from fuelweb_test.helpers import utils
+
 from fuelweb_test.helpers.common import Common
+
 from fuelweb_test.helpers.decorators import log_snapshot_after_test
+
 from fuelweb_test.settings import DEPLOYMENT_MODE
 from fuelweb_test.settings import NEUTRON_SEGMENT_TYPE
 from fuelweb_test.settings import SERVTEST_PASSWORD
 from fuelweb_test.settings import SERVTEST_TENANT
 from fuelweb_test.settings import SERVTEST_USERNAME
+
 from fuelweb_test.tests.base_test_case import SetupEnvironment
 from fuelweb_test.tests.base_test_case import TestBasic
 
@@ -37,6 +42,7 @@ from helpers.openstack import HopenStack
 import paramiko
 
 from proboscis import test
+
 from proboscis.asserts import assert_false
 from proboscis.asserts import assert_true
 
@@ -1816,7 +1822,7 @@ class TestNSXvPlugin(TestBasic):
             icmp["security_group_rule"]["direction"] = "ingress"
             os_conn.neutron.create_security_group_rule(icmp)
 
-            time.sleep(30)  # need wait
+            time.sleep(pt_settings.HALF_MIN_WAIT)
 
             self.check_connection_vms(
                 os_conn, srv_list, remote=ssh_contr)
@@ -1829,7 +1835,7 @@ class TestNSXvPlugin(TestBasic):
             for srv in srv_list:
                 srv.add_security_group('default')
 
-            time.sleep(30)  # need wait
+            time.sleep(pt_settings.HALF_MIN_WAIT)
 
             self.check_connection_vms(
                 os_conn, srv_list, remote=ssh_contr)
@@ -1908,3 +1914,72 @@ class TestNSXvPlugin(TestBasic):
 
         self.check_connection_vms(
             os_conn, srv_list)
+
+    @test(depends_on=[nsxv_ha_mode],
+          groups=["nsxv_ability_to_bind_port", "nsxv_plugin"])
+    @log_snapshot_after_test
+    def nsxv_ability_to_bind_port(self):
+        """Verify that system could manipulate with port.
+
+        Scenario:
+            1. Setup nsxv_ha_mode
+            2. Launch instance VM_1 with image TestVM-VMDK and flavor m1.tiny.
+            3. Launch instance VM_2 with image TestVM-VMDK and flavor m1.tiny.
+            4. Verify that VMs should communicate between each other.
+               Send icmp ping from VM_1 to VM_2 and vice versa.
+            5. Disable NSX-v_port of VM_1.
+            6. Verify that VMs should communicate between each other.
+               Send icmp ping from VM_2 to VM_1 and vice versa.
+            7. Enable NSX-v_port of VM_1.
+            8. Verify that VMs should communicate between each other.
+               Send icmp ping from VM_1 to VM_2 and vice versa.
+
+        Duration 90 min
+
+        """
+        key = 'bind_port'
+        cluster_id = self.fuel_web.get_last_created_cluster()
+        common = self.get_common(cluster_id)
+        os_ip = self.fuel_web.get_public_vip(cluster_id)
+        os_conn = os_actions.OpenStackActions(
+            os_ip, SERVTEST_USERNAME,
+            SERVTEST_PASSWORD,
+            SERVTEST_TENANT)
+
+        common.create_key(key)
+        ext = os_conn.get_network(pt_settings.ADMIN_NET)
+        private_net = os_conn.get_network(pt_settings.PRIVATE_NET)
+
+        sec_grp = os_conn.create_sec_group_for_ssh()
+        self.create_instances(os_conn,
+                              vm_count=1,
+                              nics=[{'net-id': private_net['id']}],
+                              security_group=sec_grp.name,
+                              key_name=key)
+        self.create_instances(os_conn,
+                              vm_count=1,
+                              nics=[{'net-id': private_net['id']}],
+                              security_group=sec_grp.name,
+                              key_name=key)
+        self.create_and_assign_floating_ip(os_conn=os_conn, ext_net=ext)
+
+        srv_list = os_conn.get_servers()
+        self.check_connection_vms(
+            os_conn, srv_list)
+
+        # Disabling port on the first available vm
+        port = os_conn.neutron.list_ports(
+            device_id=srv_list[0].id)['ports'][0]
+        os_conn.neutron.update_port(
+            port['id'], {'port': {'admin_state_up': False}})
+        time.sleep(pt_settings.HALF_MIN_WAIT)
+        # Check connection. Now it is not affected. Such implementation from
+        # neutron plugin.
+        self.check_connection_vms(
+            os_conn, srv_list, result_of_command=0)
+
+        # Enabling port
+        os_conn.neutron.update_port(
+            port['id'], {'port': {'admin_state_up': True}})
+        time.sleep(pt_settings.HALF_MIN_WAIT)
+        self.check_connection_vms(os_conn, srv_list)

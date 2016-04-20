@@ -15,6 +15,7 @@ under the License.
 
 from fuelweb_test import logger
 from fuelweb_test import settings as fw_settings
+
 from fuelweb_test.helpers.common import Common
 
 from helpers.tools import show_pos
