@@ -5,10 +5,9 @@
 
 set -eux
 
-ROOT="$(dirname `readlink -f $0`)"
+ROOT="$(dirname $(readlink -f $0))"
 PLUGIN_MOD_DIR="$ROOT/deployment_scripts/puppet/modules/upstream"
 
-version=$(sed -rn 's/^version:\s*([0-9.])/\1/p' "$ROOT"/metadata.yaml)
 name=$(sed -rn 's/^name:\s*(.*)/\1/p' "$ROOT"/metadata.yaml)
 
 sed -i "s/'NAME'/'$name'/" "$ROOT"/deployment_scripts/puppet/manifests/*.pp
@@ -18,7 +17,7 @@ sed -i "s/'NAME'/'$name'/" "$ROOT"/deployment_scripts/puppet/manifests/*.pp
 "$ROOT"/update_modules.sh -d "$PLUGIN_MOD_DIR"
 
 # Remove .git directory
-rm -fr $(find "$PLUGIN_MOD_DIR" -name '.git' )
+rm -fr $(find "${PLUGIN_MOD_DIR:?}" -name '.git' )
 
 mv "$PLUGIN_MOD_DIR"/* "$(dirname $PLUGIN_MOD_DIR)"
 
