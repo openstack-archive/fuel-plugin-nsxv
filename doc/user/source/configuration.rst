@@ -102,6 +102,15 @@ Plugin contains the following settings:
    automatic IP address allocation, if disabled then user have to manually
    specify IP address, netmask and gateway to avoid possible collisions.
 
+#. Certificate for metadata proxy -- certificate in PEM format that will be
+   used to secure connection between metadata proxy and metadata agent (NSX
+   Edge).
+
+#. Private key -- key that was used to generate aforementioned certificate.
+
+#. Metadata allowed ports -- comma separated list of TCP port allowed access to
+   the metadata proxy, in addition to 80, 443 and 8775.
+
 #. Metadata portgroup MoRef ID -- portgroup MoRef ID for metadata proxy service.
 
 #. Metadata proxy IP addresses -- comma separated IP addresses used by Nova
@@ -128,6 +137,9 @@ Plugin contains the following settings:
 
    If you tick *Additional settings* checkbox following options will become
    available for configuration:
+
+#. Instance name servers -- comma separated IP addresses of name servers that
+   will be passed to instance if DHCP service was not enabled for subnet.
 
 #. Task status check interval -- asynchronous task status check interval,
    default is 2000 (millisecond).
