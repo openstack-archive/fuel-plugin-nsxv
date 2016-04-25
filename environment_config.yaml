@@ -119,7 +119,7 @@ attributes:
   nsxv_metadata_initializer:
     value: true
     label: 'Init metadata infrastructure'
-    description: 'If True, the server instance will attempt to initialize the metadata infrastructure for access to nova-metadata service'
+    description: 'If enabled, instance will attempt to initialize the metadata infrastructure to access to metadata proxy  service'
     weight: 86
     type: 'checkbox'
   nsxv_metadata_listen_mgmt:

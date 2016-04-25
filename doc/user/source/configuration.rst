@@ -94,6 +94,10 @@ Plugin contains the following settings:
 
    To enable Nova metadata service, the following settings must be set:
 
+#. Init metadata infrastructure -- If enabled, instance will attempt to
+   initialize the metadata infrastructure to access to metadata proxy  service,
+   otherwise metadata proxy will not be deployed.
+
 #. Use management network to access the nova-api-metadata -- configure
    nova-api-metadata service to listen on OpenStack management network. If
    disabled nova-api-metadata will listen on Public network.
@@ -101,6 +105,15 @@ Plugin contains the following settings:
 #. Allocate IP address in management network for NSX metadata proxy --
    automatic IP address allocation, if disabled then user have to manually
    specify IP address, netmask and gateway to avoid possible collisions.
+
+#. Certificate for metadata proxy -- certificate in PEM format that will be
+   used to secure connection between metadata proxy and metadata agent (NSX
+   Edge).
+
+#. Private key -- key that was used to generate aforementioned certificate.
+
+#. Metadata allowed ports -- comma separated list of TCP port allowed access to
+   the metadata proxy, in addition to 80, 443 and 8775.
 
 #. Metadata portgroup MoRef ID -- portgroup MoRef ID for metadata proxy service.
 
@@ -128,6 +141,9 @@ Plugin contains the following settings:
 
    If you tick *Additional settings* checkbox following options will become
    available for configuration:
+
+#. Instance name servers -- comma separated IP addresses of name servers that
+   will be passed to instance.
 
 #. Task status check interval -- asynchronous task status check interval,
    default is 2000 (millisecond).
