@@ -36,8 +36,6 @@ NSXV_PLUGIN_PATH = os.environ.get('NSXV_PLUGIN_PATH')
 
 plugin_configuration = {
     'nsxv_manager_host/value': os.environ.get('NSXV_MANAGER_IP'),
-    'nsxv_insecure/value': get_var_as_bool(
-        os.environ.get('NSXV_INSECURE'), True),
     'nsxv_user/value': os.environ.get('NSXV_USER'),
     'nsxv_password/value': os.environ.get('NSXV_PASSWORD'),
     'nsxv_datacenter_moid/value': os.environ.get('NSXV_DATACENTER_MOID'),

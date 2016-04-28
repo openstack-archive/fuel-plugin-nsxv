@@ -91,6 +91,10 @@ class TestNSXvPlugin(TestBasic):
             self.fuel_web.check_plugin_exists(cluster_id, self.plugin_name),
             "Test aborted")
 
+        # Enable metadata initializer
+        pt_settings.plugin_configuration.update(
+            {'nsxv_metadata_initializer/value': True})
+
         # Enable additional settings
         if settings:
             self.fuel_web.update_plugin_settings(cluster_id,
@@ -1565,7 +1569,7 @@ class TestNSXvPlugin(TestBasic):
           groups=["nsxv_metadata_mgt_disabled", "nsxv_plugin"])
     @log_snapshot_after_test
     def nsxv_metadata_mgt_disabled(self):
-        """Check that option nsxv_metadata_listen_mgmt is disabled by default.
+        """Check that option nsxv_metadata_listen is public by default.
 
         Scenario:
             1. Upload the plugin to master node
@@ -1603,10 +1607,10 @@ class TestNSXvPlugin(TestBasic):
 
         plugin_data = self.fuel_web.get_plugin_data(
             cluster_id, self.plugin_name, self.plugin_version)
-        assert_true(plugin_data['nsxv_metadata_listen_mgmt']['value'] is False,
-                    "Check default value of nsxv_metadata_listen_mgmt (False)")
+        assert_true(plugin_data['nsxv_metadata_listen']['value'] == "public",
+                    "Check default value of nsxv_metadata_listen")
         assert_true(plugin_data['nsxv_mgt_reserve_ip']['value'] is False,
-                    "Check default value of nsxv_mgt_reserve_ip (False)")
+                    "Check default value of nsxv_mgt_reserve_ip")
 
         self.fuel_web.deploy_cluster_wait(cluster_id)
 
