@@ -60,7 +60,7 @@ if 'primary-controller' in hiera('role') {
     ],
     path        => '/usr/sbin:/usr/bin:/sbin:/bin',
     tries       => '30',
-    try_sleep   => '4',
+    try_sleep   => '15',
     command     => 'neutron net-list --http-timeout=4 2>&1 > /dev/null',
     provider    => 'shell',
     subscribe   => Service['neutron-server'],
