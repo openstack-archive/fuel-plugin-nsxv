@@ -5,10 +5,10 @@ manager_uri = https://<%= settings['nsxv_manager_host'] %>
 # (Optional) If true, the NSXv server certificate is not verified.
 # If false, then the default CA truststore is used for verification.
 # This option is ignored if "ca_file" is set.
-insecure = <%= settings['nsxv_insecure'] %>
+insecure = <%= scope.lookupvar('insecure') %>
 
 # (Optional) Specify a CA bundle file to use in verifying the NSXv server certificate.
-<% if not settings['nsxv_insecure'] -%>
+<% if not scope.lookupvar('insecure') -%>
 ca_file = <%= scope.lookupvar('ca_file') %>
 <% else -%>
 # ca_file =
@@ -89,7 +89,7 @@ retries = <%= settings['nsxv_retries'] %>
 # If True, the server instance will attempt to initialize the metadata
 # infrastructure for access to nova-metadata service
 metadata_initializer = <%= settings['nsxv_metadata_initializer'] %>
-
+<% if settings['nsxv_metadata_initializer'] -%>
 # (Optional) Network ID for management network connectivity
 <% if not (settings['nsxv_mgt_net_moid']).to_s.strip.empty? -%>
 mgt_net_moid = <%= settings['nsxv_mgt_net_moid'] %>
@@ -152,6 +152,7 @@ metadata_nova_client_priv_key = <%= scope.lookupvar('metadata_nova_client_priv_k
 metadata_service_allowed_ports = <%= settings['nsxv_metadata_service_allowed_ports'] %>
 <% else -%>
 # metadata_service_allowed_ports =
+<% end -%>
 <% end -%>
 
 # (Optional) Indicates if Nsxv spoofguard component is used to implement

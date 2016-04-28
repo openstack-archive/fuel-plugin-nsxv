@@ -5,21 +5,23 @@ class nsxv (
   $nsx_plugin_name = 'python-vmware-nsx',
   $lbaas_plugin_name = 'python-neutron-lbaas',
   $neutron_url_timeout = '600',
-  $metadata_shared_secret,
   $settings,
-  $nova_metadata_ips,
-  $nova_metadata_port,
-  $mgt_ip,
-  $mgt_netmask,
-  $mgt_gateway,
-  $neutron_url_timeout,
+  $nova_metadata_ips = '',
+  $nova_metadata_port = '',
+  $metadata_shared_secret = '',
+  $mgt_ip = '',
+  $mgt_netmask = '',
+  $mgt_gateway = '',
 ) {
 
   $cluster_moid = get_vcenter_cluster_id($settings['nsxv_datacenter_moid'])
 
-  if ! $settings['nsxv_insecure'] {
+  $ca_filename = try_get_value($settings['nsxv_ca_file'],'name','')
+  if empty($ca_filename) {
+    $insecure = true
+  } else {
+    $insecure = false
     $ca_certificate_content = $settings['nsxv_ca_file']['content']
-    $ca_filename = $settings['nsxv_ca_file']['name']
     $ca_file = "${nsxv_config_dir}/${ca_filename}"
 
     file { $ca_file:
@@ -29,31 +31,33 @@ class nsxv (
     }
   }
 
-  $metadata_nova_client_cert_filename = try_get_value($settings['nsxv_metadata_nova_client_cert'], 'name', '')
-  $metadata_nova_client_priv_key_filename = try_get_value($settings['nsxv_metadata_nova_client_priv_key'], 'name', '')
-  if empty($metadata_nova_client_cert_filename) and empty($metadata_nova_client_priv_key_filename) {
-    $metadata_insecure = true
-  } else {
-    $metadata_insecure = false
+  if $settings['nsxv_metadata_initializer'] {
+    $metadata_nova_client_cert_filename = try_get_value($settings['nsxv_metadata_nova_client_cert'], 'name', '')
+    $metadata_nova_client_priv_key_filename = try_get_value($settings['nsxv_metadata_nova_client_priv_key'], 'name', '')
+    if empty($metadata_nova_client_cert_filename) and empty($metadata_nova_client_priv_key_filename) {
+      $metadata_insecure = true
+    } else {
+      $metadata_insecure = false
 
-    $metadata_nova_client_cert_content = $settings['nsxv_metadata_nova_client_cert']['content']
-    $metadata_nova_client_cert_file = "${nsxv_config_dir}/cert_${metadata_nova_client_cert_filename}"
+      $metadata_nova_client_cert_content = $settings['nsxv_metadata_nova_client_cert']['content']
+      $metadata_nova_client_cert_file = "${nsxv_config_dir}/cert_${metadata_nova_client_cert_filename}"
 
-    $metadata_nova_client_priv_key_content = $settings['nsxv_metadata_nova_client_priv_key']['content']
-    $metadata_nova_client_priv_key_file = "${nsxv_config_dir}/key_${metadata_nova_client_priv_key_filename}"
+      $metadata_nova_client_priv_key_content = $settings['nsxv_metadata_nova_client_priv_key']['content']
+      $metadata_nova_client_priv_key_file = "${nsxv_config_dir}/key_${metadata_nova_client_priv_key_filename}"
 
-    file { $metadata_nova_client_cert_file:
-      ensure  => present,
-      content => $metadata_nova_client_cert_content,
-      require => File[$nsxv_config_dirs],
-    }
-    file { $metadata_nova_client_priv_key_file:
-      ensure  => present,
-      content => $metadata_nova_client_priv_key_content,
-      require => File[$nsxv_config_dirs],
-      owner   => 'neutron',
-      group   => 'neutron',
-      mode    => '0600',
+      file { $metadata_nova_client_cert_file:
+        ensure  => present,
+        content => $metadata_nova_client_cert_content,
+        require => File[$nsxv_config_dirs],
+      }
+      file { $metadata_nova_client_priv_key_file:
+        ensure  => present,
+        content => $metadata_nova_client_priv_key_content,
+        require => File[$nsxv_config_dirs],
+        owner   => 'neutron',
+        group   => 'neutron',
+        mode    => '0600',
+      }
     }
   }
 
