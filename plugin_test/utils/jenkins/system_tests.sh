@@ -339,9 +339,6 @@ CheckVariables() {
   if [ -z "${NSXV_EDGE_HA}" ]; then
     export NSXV_EDGE_HA='false'
   fi
-  if [ -z "${NSXV_INSECURE}" ]; then
-    export NSXV_INSECURE='true'
-  fi
 
   if [ -z "${NSXV_FLOATING_IP_RANGE}" ]; then
     export NSXV_FLOATING_IP_RANGE='172.16.211.100-172.16.211.150'
