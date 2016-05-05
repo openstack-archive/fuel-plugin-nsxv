@@ -22,7 +22,7 @@ class nsxv::upload_image (
       "OS_AUTH_URL=${os_auth_url}",
       'OS_ENDPOINT_TYPE=internalURL',
     ],
-    command     => "glance -k image-create --name=${img_name} --is-public=${public} --container-format=${container_format} --disk-format=${disk_format} --property hypervisor_type='vmware' --property vmware_disktype='streamOptimized' --property vmware_adaptertype='lsilogic' --min-ram ${min_ram} < ${img_path}",
+    command     => "glance -k image-create --name=${img_name} --is-public=${public} --container-format=${container_format} --disk-format=${disk_format} --property hypervisor_type='vmware' --property vmware_disktype='streamOptimized' --property vmware_adaptertype='lsiLogic' --min-ram ${min_ram} < ${img_path}",
     unless      => "glance -k image-list && (glance -k image-list | grep ${img_name})",
     require     => Package['tcl-testvm'],
   }
