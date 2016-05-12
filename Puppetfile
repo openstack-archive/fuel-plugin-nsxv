@@ -9,32 +9,30 @@
 
 # Pull in puppetlabs-stdlib
 mod 'stdlib',
-    :git => 'https://review.fuel-infra.org/p/puppet-modules/puppetlabs-stdlib.git',
+    :git => 'https://github.com/fuel-infra/puppetlabs-stdlib.git',
     :ref => '4.9.0'
+
+# Pull in puppetlabs-inifile
+mod 'inifile',
+    :git => 'https://github.com/fuel-infra/puppetlabs-inifile.git',
+    :ref => '1.4.2'
 
 # Pull in puppet-neutron
 mod 'neutron',
-    :git => 'https://review.fuel-infra.org/p/puppet-modules/puppet-neutron.git',
+    :git => 'https://github.com/fuel-infra/puppet-neutron.git',
     :ref => 'stable/mitaka'
 
 # Pull in puppet-nova
 mod 'nova',
-    :git => 'https://review.fuel-infra.org/p/puppet-modules/puppet-nova.git',
+    :git => 'https://github.com/fuel-infra/puppet-nova.git',
     :ref => 'stable/mitaka'
-
-# Pull in puppetlabs-inifile
-mod 'inifile',
-    :git => 'https://review.fuel-infra.org/p/puppet-modules/puppetlabs-inifile.git',
-    :ref => '1.4.2'
 
 # Pull in puppet-openstacklib
 mod 'openstacklib',
-    :git => 'https://review.fuel-infra.org/p/puppet-modules/puppet-openstacklib.git',
+    :git => 'https://github.com/fuel-infra/puppet-openstacklib.git',
     :ref => 'stable/mitaka'
 
 # Pull in puppet-keystone
 mod 'keystone',
-    :git => 'https://review.fuel-infra.org/p/puppet-modules/puppet-keystone.git',
+    :git => 'https://github.com/fuel-infra/puppet-keystone.git',
     :ref => 'stable/mitaka'
-
-# TODO: need l23network(use cidr_to_netmask function)
