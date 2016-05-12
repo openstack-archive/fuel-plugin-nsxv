@@ -1,8 +1,9 @@
 Configuration
 =============
 
-Switch to Networks tab of the Fuel web UI and click on *Settings*/*Other* section,
-the plugin checkbox enabled by default.
+Switch to Networks tab of the Fuel web UI and click on *Settings*/*Other*
+section, the plugin checkbox enabled by default. For reasons of clarity not all
+settings are shown on the screenshot below:
 
 .. image:: /image/nsxv-settings-filled.png
    :scale: 60 %
@@ -29,6 +30,10 @@ Plugin contains the following settings:
       must have Enterprise administrator role.
 
 #. NSX Manager password.
+
+#. CA certificate file -- file in PEM format that contains bundle of CA
+   certificates which will be used by Neutron during HTTPS connection to NSX
+   Manager.  If no file is present, then HTTPS connection will not be verified.
 
 #. Datacenter MoRef ID -- ID of Datacenter where NSX Edge nodes will be
    deployed.
@@ -87,20 +92,19 @@ Plugin contains the following settings:
 #. Enable HA for NSX Edges -- if you enable this option NSX Edges will be
    deployed in active/standby pair on different ESXi hosts.
 
-#. Bypass NSX Manager certificate verification -- disable this option if you
-   want Neutron NSX plugin to verify NSX Manager security certificate. *CA
-   certificate file* setting will appear providing an option to upload
-   CA certificate which emitted NSX Manager certificate.
+#. Which network will be used to access the nova-api-metadata -- select network
+   through which nova-api-metadata service will be available for NSX edge
+   nodes. Currently two options are available *Public* and *Management*
+   networks.
+
+   Sub item "Allocate IP address in management network for NSX metadata proxy"
+   allocates IP address from OpenStack management network.
 
    To enable Nova metadata service, the following settings must be set:
 
 #. Init metadata infrastructure -- If enabled, instance will attempt to
    initialize the metadata infrastructure to access to metadata proxy  service,
    otherwise metadata proxy will not be deployed.
-
-#. Use management network to access the nova-api-metadata -- configure
-   nova-api-metadata service to listen on OpenStack management network. If
-   disabled nova-api-metadata will listen on Public network.
 
 #. Allocate IP address in management network for NSX metadata proxy --
    automatic IP address allocation, if disabled then user have to manually
