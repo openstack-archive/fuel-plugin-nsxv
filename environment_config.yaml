@@ -114,9 +114,9 @@ attributes:
     weight: 70
     type: 'checkbox'
   nsxv_metadata_listen:
-    label: 'Which network will be used to access the nova-api-metadata'
+    label: 'Which network will be used to access the nova-metadata'
     weight: 75
-    type: 'radio'
+    type: 'select'
     value: 'public'
     values:
       - data: 'public'
