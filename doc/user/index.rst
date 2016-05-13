@@ -37,6 +37,7 @@ Documentation contents
    source/environment
    source/configuration
    source/limitations
+   source/known-issues
    source/usage
    source/release-notes
    source/troubleshooting
