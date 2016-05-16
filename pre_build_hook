@@ -7,9 +7,10 @@ set -eux
 
 ROOT="$(dirname $(readlink -f $0))"
 PLUGIN_MOD_DIR="$ROOT/deployment_scripts/puppet/modules/upstream"
+NAME=$(sed -rn 's/^name:\s*(.*)/\1/p' "$ROOT"/metadata.yaml)
 
 # Download upstream puppet modules that are not in fuel-library/
-"$ROOT"/remove_modules.sh
+find "$ROOT/deployment_scripts/puppet/modules" -maxdepth 1 -mindepth 1 -type d ! -name $NAME -prune -exec rm -fr {} \;
 "$ROOT"/update_modules.sh -d "$PLUGIN_MOD_DIR"
 
 # Remove .git directory
