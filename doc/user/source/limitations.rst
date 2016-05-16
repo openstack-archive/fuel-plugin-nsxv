@@ -10,12 +10,21 @@ they can be put into folders. Plugin supports clusters that are located on
 first level of hierarchy, if you have cluster inside folder that you want to
 use it for OpenStack you have to put it on first level of hierarchy.
 
-Compute node is not supported
------------------------------
+Incompatible roles are explicitly hidden
+----------------------------------------
 
-Is is worth to mention that it is not possible to use compute nodes in
-vCenter/NSX cluster, because NSX v6.x switch is available only for ESXi, so it
-is not possible to pass traffic inside compute node that runs Linux and KVM.
+Is is worth to mention that following roles gets disabled for OpenStack
+environment with the plugin:
+
+ * Compute
+ * Ironic
+ * Cinder
+
+Compute and Ironic are incompatible, because NSX v6.x switch is available
+exclusively for ESXi, so it is not possible to pass traffic inside compute node
+that runs Linux and KVM. Cinder is disabled due to inability to pass LVM based
+volumes via iSCSI to ESXi hosts, instead use "Cinder proxy for VMware
+datastore" role.
 
 Public floating IP range is ignored
 -----------------------------------
