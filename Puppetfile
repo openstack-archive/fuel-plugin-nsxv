@@ -35,4 +35,4 @@ mod 'openstacklib',
 # Pull in puppet-keystone
 mod 'keystone',
     :git => 'https://review.fuel-infra.org/p/puppet-modules/puppet-keystone.git',
-    :ref => '7.0.0-mos-rc3'
+    :ref => '8.0.0-mu-1'
