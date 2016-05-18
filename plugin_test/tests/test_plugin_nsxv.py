@@ -647,7 +647,8 @@ class TestNSXvPlugin(TestBasic):
 
         self.enable_plugin(cluster_id=cluster_id)
 
-        self.fuel_web.deploy_cluster_wait(cluster_id)
+        self.fuel_web.deploy_cluster_wait(cluster_id,
+                                          timeout=WAIT_FOR_LONG_DEPLOY)
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id,
