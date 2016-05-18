@@ -267,7 +267,7 @@ CheckVariables() {
     export WORKSTATION_NODES="esxi1 esxi2 esxi3 vcenter trusty"
   fi
   if [ -z "${WORKSTATION_IFS}" ]; then
-    export WORKSTATION_IFS="vmnet1 vmnet2"
+    export WORKSTATION_IFS="vmnet1 vmnet5"
   fi
   if [ -z "${VCENTER_CLUSTERS}" ]; then
     export VCENTER_CLUSTERS="Cluster1,Cluster2"
@@ -325,16 +325,16 @@ CheckVariables() {
     export NSXV_BACKUP_EDGE_POOL='service:compact:1:2,vdr:compact:1:2'
   fi
   if [ -z "${NSXV_MGT_NET_MOID}" ]; then
-    export NSXV_MGT_NET_MOID='network-222'
+    export NSXV_MGT_NET_MOID=${NSXV_EXTERNAL_NETWORK}
   fi
   if [ -z "${NSXV_MGT_NET_PROXY_IPS}" ]; then
-    export NSXV_MGT_NET_PROXY_IPS='172.16.0.11'
+    export NSXV_MGT_NET_PROXY_IPS='172.16.211.99'
   fi
   if [ -z "${NSXV_MGT_NET_PROXY_NETMASK}" ]; then
     export NSXV_MGT_NET_PROXY_NETMASK='255.255.255.0'
   fi
   if [ -z "${NSXV_MGT_NET_DEFAULT_GW}" ]; then
-    export NSXV_MGT_NET_DEFAULT_GW='172.16.0.1'
+    export NSXV_MGT_NET_DEFAULT_GW=${NSXV_FLOATING_NET_GW}
   fi
   if [ -z "${NSXV_EDGE_HA}" ]; then
     export NSXV_EDGE_HA='false'
@@ -593,6 +593,7 @@ RunTest() {
 
     # Configre vcenter nodes and interfaces
     setup_net $ENV_NAME
+    setup_management_net $ENV_NAME
     clean_iptables
     revert_ws "$WORKSTATION_NODES" || { echo "killing $SYSTEST_PID and its childs" && pkill --parent $SYSTEST_PID && kill $SYSTEST_PID && exit 1; }
 
@@ -701,10 +702,19 @@ revert_ws() {
 
 setup_net() {
   env=$1
-  add_interface_to_bridge $env private vmnet2 10.0.0.1/24
   add_interface_to_bridge $env public vmnet1 172.16.0.1/24
 }
 
+setup_management_net() {
+  env=$1
+  management_ip=${POOL_MANAGEMENT%\.*}.253
+  management_mask=${POOL_MANAGEMENT##*\:}
+  floating_ip=${NSXV_FLOATING_NET_GW}
+  floating_mask=${NSXV_FLOATING_NET_CIDR##*\/}
+  add_interface_to_bridge $env management vmnet5 ${management_ip}/${management_mask}
+  add_interface_to_bridge $env management vmnet5 ${floating_ip}/${floating_mask}
+  sudo /sbin/iptables -t nat -A POSTROUTING -s ${floating_ip}/${floating_mask} -d ${management_ip}/${management_mask} -j SNAT --to ${management_ip}
+}
 
 # MAIN
 
