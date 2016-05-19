@@ -23,6 +23,7 @@ from proboscis import test
 from proboscis.asserts import assert_false
 from proboscis.asserts import assert_true
 
+import fuelweb_test.tests.base_test_case
 from fuelweb_test import logger
 from fuelweb_test.helpers import os_actions
 from fuelweb_test.helpers import utils
@@ -33,11 +34,12 @@ from fuelweb_test.settings import NEUTRON_SEGMENT_TYPE
 from fuelweb_test.settings import SERVTEST_PASSWORD
 from fuelweb_test.settings import SERVTEST_TENANT
 from fuelweb_test.settings import SERVTEST_USERNAME
-from fuelweb_test.tests.base_test_case import SetupEnvironment
-from fuelweb_test.tests.base_test_case import TestBasic
 from helpers import settings as pt_settings  # Plugin Tests Settings
 from helpers.openstack import HopenStack
 
+
+TestBasic = fuelweb_test.tests.base_test_case.TestBasic
+SetupEnvironment = fuelweb_test.tests.base_test_case.SetupEnvironment
 
 @test(groups=["plugins", "nsxv_plugin"])
 class TestNSXvPlugin(TestBasic):
