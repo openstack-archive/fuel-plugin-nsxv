@@ -337,7 +337,7 @@ CheckVariables() {
     export NSXV_MGT_NET_DEFAULT_GW='172.16.211.1'
   fi
   if [ -z "${NSXV_EDGE_HA}" ]; then
-    export NSXV_EDGE_HA='true'
+    export NSXV_EDGE_HA='false'
   fi
   if [ -z "${NSXV_INSECURE}" ]; then
     export NSXV_INSECURE='true'
