@@ -88,11 +88,14 @@ class TestNSXvPlugin(TestBasic):
 
         # Enable additional settings
         if settings:
-            self.fuel_web.update_plugin_settings(cluster_id,
-                                                 self.plugin_name,
-                                                 self.plugin_version,
-                                                 {'nsxv_additional/value':
-                                                  True})
+            pt_settings.plugin_configuration.update(
+                {'nsxv_additional/value': True})
+            self.fuel_web.update_plugin_settings(
+                cluster_id,
+                self.plugin_name,
+                self.plugin_version,
+                pt_settings.plugin_configuration)
+
         # Update plugin settings
         self.fuel_web.update_plugin_settings(
             cluster_id,
