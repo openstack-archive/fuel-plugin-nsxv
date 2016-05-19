@@ -476,7 +476,7 @@ class TestNSXvPlugin(TestBasic):
         Duration 90 min
 
         """
-        self.env.revert_snapshot('ready_with_1_slaves', skip_timesync=True)
+        self.env.revert_snapshot('ready_with_1_slaves')
 
         self.install_nsxv_plugin()
 
@@ -538,7 +538,7 @@ class TestNSXvPlugin(TestBasic):
         Duration 90 min
 
         """
-        self.env.revert_snapshot('ready_with_5_slaves', skip_timesync=True)
+        self.env.revert_snapshot('ready_with_5_slaves')
 
         self.install_nsxv_plugin()
 
@@ -613,7 +613,7 @@ class TestNSXvPlugin(TestBasic):
         Duration 3 hours
 
         """
-        self.env.revert_snapshot("ready_with_9_slaves", skip_timesync=True)
+        self.env.revert_snapshot("ready_with_9_slaves")
 
         self.install_nsxv_plugin()
 
@@ -673,7 +673,7 @@ class TestNSXvPlugin(TestBasic):
         Duration 3 hours
 
         """
-        self.env.revert_snapshot("ready_with_9_slaves", skip_timesync=True)
+        self.env.revert_snapshot("ready_with_9_slaves")
 
         self.install_nsxv_plugin()
 
@@ -755,7 +755,7 @@ class TestNSXvPlugin(TestBasic):
         Duration 3.5 hours
 
         """
-        self.env.revert_snapshot("ready_with_9_slaves", skip_timesync=True)
+        self.env.revert_snapshot("ready_with_9_slaves")
 
         self.install_nsxv_plugin()
 
@@ -869,7 +869,7 @@ class TestNSXvPlugin(TestBasic):
         Duration 3 hours
 
         """
-        self.env.revert_snapshot("ready_with_5_slaves", skip_timesync=True)
+        self.env.revert_snapshot("ready_with_5_slaves")
 
         self.install_nsxv_plugin()
 
@@ -926,7 +926,7 @@ class TestNSXvPlugin(TestBasic):
         Duration 2.5 hours
 
         """
-        self.env.revert_snapshot("ready_with_5_slaves", skip_timesync=True)
+        self.env.revert_snapshot("ready_with_5_slaves")
 
         self.install_nsxv_plugin()
 
@@ -983,7 +983,7 @@ class TestNSXvPlugin(TestBasic):
         Duration 1,5 hours
 
         """
-        self.env.revert_snapshot("ready_with_3_slaves", skip_timesync=True)
+        self.env.revert_snapshot("ready_with_3_slaves")
 
         self.install_nsxv_plugin()
 
@@ -1088,7 +1088,7 @@ class TestNSXvPlugin(TestBasic):
         Duration 1 hour
 
         """
-        self.env.revert_snapshot("deploy_nsxv", skip_timesync=True)
+        self.env.revert_snapshot("deploy_nsxv")
 
         cluster_id = self.fuel_web.get_last_created_cluster()
 
@@ -1119,7 +1119,7 @@ class TestNSXvPlugin(TestBasic):
         Duration 1 hour
 
         """
-        self.env.revert_snapshot("deploy_nsxv", skip_timesync=True)
+        self.env.revert_snapshot("deploy_nsxv")
 
         # Try to uninstall plugin
         cmd = 'fuel plugins --remove {}=={}'.format(
@@ -1145,7 +1145,7 @@ class TestNSXvPlugin(TestBasic):
         Duration 10 mins
 
         """
-        self.env.revert_snapshot('ready_with_3_slaves', skip_timesync=True)
+        self.env.revert_snapshot('ready_with_3_slaves')
 
         self.install_nsxv_plugin()
 
@@ -1401,7 +1401,7 @@ class TestNSXvPlugin(TestBasic):
         Duration 30 min
 
         """
-        self.env.revert_snapshot("ready_with_3_slaves", skip_timesync=True)
+        self.env.revert_snapshot("ready_with_3_slaves")
 
         self.install_nsxv_plugin()
 
