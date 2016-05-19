@@ -217,6 +217,7 @@ class TestNSXvPlugin(TestBasic):
 
         for srv in srv_list:
             addresses = srv.addresses[srv.addresses.keys()[0]]
+
             fip = [
                 add['addr'] for add in addresses
                 if add['OS-EXT-IPS:type'] == 'floating'][0]
@@ -453,13 +454,15 @@ class TestNSXvPlugin(TestBasic):
         :param router_id: router id
         :param sub_id: subnet id
         :param cluster_id: cluster id to use with Common
+        :return answer: dict with params of attached subnet
         """
         if not cluster_id:
             cluster_id = self.fuel_web.get_last_created_cluster()
         common = self.get_common(cluster_id)
-        common.neutron.add_interface_router(
+        answer = common.neutron.add_interface_router(
             router_id,
             {'subnet_id': sub_id})
+        return answer
 
     def create_subnet(self, network, cidr, cluster_id=None):
         """Create a subnet.
@@ -1088,7 +1091,7 @@ class TestNSXvPlugin(TestBasic):
         hos = HopenStack(nsxv_ip)
 
         # Create  nets, subnet and attach them to the router
-        net = os_conn.get_network(pt_settings.PRIVATE_NET)
+        net = os_conn.get_network(pt_settings.ADMIN_NET)
         router = self.add_router("shared", net)
         private_net_1 = hos.create_network(self.net1['name'])
         private_net_2 = hos.create_network(self.net2['name'])
@@ -1988,3 +1991,85 @@ class TestNSXvPlugin(TestBasic):
             port['id'], {'port': {'admin_state_up': True}})
         time.sleep(pt_settings.HALF_MIN_WAIT)
         self.check_connection_vms(os_conn, srv_list)
+
+    @test(depends_on=[nsxv_ha_mode],
+          groups=["nsxv_connectivity_diff_networks", "nsxv_plugin"])
+    @log_snapshot_after_test
+    def nsxv_connectivity_diff_networks(self):
+        """Verify that there is a connection between networks.
+
+        Scenario:
+            1. Setup nsxv_ha_mode
+            2. Add two private networks (net01, and net02).
+            3. Create Router_01, set gateway and add interface to external
+               network.
+            4. Add new Router_02, set gateway and add interface to external
+               network.
+            5. Launch instances VM_1 and VM_2 in the network net_1
+               with image TestVM-VMDK and flavor m1.tiny in vcenter1 az.
+            6. Launch instances VM_3 and VM_4 in the network net_2
+               with image TestVM-VMDK and flavor m1.tiny in vcenter2 az.
+            7. Assign floating IPs for all created VMs.
+            8. Verify that VMs of same networks should communicate between
+               each other. Send icmp ping from VM_1 to VM_2, VM_3 to VM_4
+               and vice versa.
+            9. Verify that VMs of different networks should communicate between
+               each other through floating ip. Send icmp ping from VM_1 to
+               VM_3, VM_4 to VM_2 and vice versa.
+
+        Duration 90 min
+
+        """
+        key = 'diff_networks'
+        cluster_id = self.fuel_web.get_last_created_cluster()
+        common = self.get_common(cluster_id)
+        os_ip = self.fuel_web.get_public_vip(cluster_id)
+        os_conn = os_actions.OpenStackActions(
+            os_ip, SERVTEST_USERNAME,
+            SERVTEST_PASSWORD,
+            SERVTEST_TENANT)
+
+        common.create_key(key)
+        ext = os_conn.get_network(pt_settings.ADMIN_NET)
+
+        # Create private networks with subnets
+        logger.info('Create network {}'.format(self.net1))
+        private_net1 = self.create_network(self.net1['name'])
+        subnet1 = self.create_subnet(private_net1, self.net1['cidr'])
+        logger.info('Create network {}'.format(self.net2))
+        private_net2 = self.create_network(self.net2['name'])
+        subnet2 = self.create_subnet(private_net2, self.net2['cidr'])
+
+        router1 = self.add_router("Router_01", ext)
+        router2 = self.add_router("Router_02", ext)
+        self.add_subnet_to_router(router1['id'], subnet1['id'])
+        self.add_subnet_to_router(router2['id'], subnet2['id'])
+
+        sec_grp = os_conn.create_sec_group_for_ssh()
+        self.create_instances(os_conn,
+                              vm_count=2,
+                              nics=[{'net-id': private_net1['id']}],
+                              security_group=sec_grp.name,
+                              availability_zone=pt_settings.AZ_VCENTER1,
+                              key_name=key)
+        srv_list_ids = [srv.id for srv in os_conn.get_servers()]
+        self.create_instances(os_conn,
+                              vm_count=2,
+                              nics=[{'net-id': private_net2['id']}],
+                              security_group=sec_grp.name,
+                              availability_zone=pt_settings.AZ_VCENTER2,
+                              key_name=key)
+        fips = self.create_and_assign_floating_ip(os_conn=os_conn, ext_net=ext)
+        srv_list = os_conn.get_servers()
+        srv_list1 = [srv for srv in srv_list if srv.id in srv_list_ids]
+        srv_list2 = [srv for srv in srv_list if srv.id not in srv_list_ids]
+
+        self.check_connection_vms(
+            os_conn, srv_list1)
+
+        self.check_connection_vms(
+            os_conn, srv_list2)
+
+        srv_list_between_networks = [srv_list1[0], srv_list2[0]]
+        self.check_connection_vms(
+            os_conn, srv_list_between_networks, destination_ip=fips)
