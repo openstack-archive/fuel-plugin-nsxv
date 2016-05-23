@@ -1,0 +1,5 @@
+vmware-nsx (8.0.0-1~u14.04+mos0) unstable; urgency=medium
+
+  * branche stable/mitaka, commit COMMIT
+
+ -- Mirantis <tpi-ci@mirantis.com>  Thu, 01 Jan 2016 00:00:00 +0000
