@@ -6,6 +6,7 @@ class nsxv (
   $lbaas_plugin_name = 'python-neutron-lbaas',
   $neutron_url_timeout = '600',
   $settings,
+  $roles,
   $nova_metadata_ips = '',
   $nova_metadata_port = '',
   $metadata_shared_secret = '',
@@ -29,6 +30,13 @@ class nsxv (
       content => $ca_certificate_content,
       require => File[$nsxv_config_dirs],
     }
+  }
+
+  # we must explicitly disable metadata server initialization for all nodes except the primary-controller
+  if 'primary-controller' in $roles {
+    $metadata_initializer = $settings['nsxv_metadata_initializer']
+  } else {
+    $metadata_initializer = false
   }
 
   if $settings['nsxv_metadata_initializer'] {
