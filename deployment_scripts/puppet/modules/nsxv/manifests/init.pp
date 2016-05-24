@@ -6,8 +6,8 @@ class nsxv (
 ) {
 
   $neutron_config = hiera_hash('neutron_config')
-
-  $settings = hiera($plugin_name)
+  $settings       = hiera($plugin_name)
+  $roles          = hiera('roles')
 
   # Do not remove unused variables: template nsx.ini.erb refers to them
   $nova_metadata_ips = hiera('public_vip')
@@ -26,6 +26,13 @@ class nsxv (
       content => $ca_certificate_content,
       require => File[$nsxv_config_dirs],
     }
+  }
+
+  # we must explicitly disable metadata server initialization for all nodes except the primary-controller
+  if 'primary-controller' in $roles {
+    $metadata_initializer = true
+  } else {
+    $metadata_initializer = false
   }
 
   package { $neutron_plugin_name:
