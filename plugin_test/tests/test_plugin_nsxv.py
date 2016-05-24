@@ -156,7 +156,7 @@ class TestNSXvPlugin(TestBasic):
 
         for image in images_list:
             if image.name == 'TestVM-VMDK':
-                os_conn.nova.servers.create(
+                vm = os_conn.nova.servers.create(
                     flavor=flavors_list[0],
                     name='test_{0}'.format(image.name),
                     image=image,
@@ -183,6 +183,7 @@ class TestNSXvPlugin(TestBasic):
             # assign security group
             if security_group:
                 srv.add_security_group(security_group)
+        return vm
 
     def check_connection_vms(self, os_conn, srv_list, remote=None,
                              command='pingv4', result_of_command=0,
@@ -2314,3 +2315,86 @@ class TestNSXvPlugin(TestBasic):
                                   srv_list_tenant,
                                   result_of_command=1,
                                   destination_ip=ip)
+
+    @test(depends_on=[SetupEnvironment.prepare_slaves_5],
+          groups=["nsxv_disable_hosts"])
+    @log_snapshot_after_test
+    def nsxv_disable_hosts(self):
+        """Check instance creation on enabled cluster.
+
+        Scenario:
+            1. Setup cluster with 3 controllers and cinder-vmware +
+               compute-vmware role.
+            2. Assign instances in each az.
+            3. Disable one of compute host with vCenter cluster
+               (Admin -> Hypervisors).
+            4. Create several instances in vcenter az.
+            5. Check that instances were created on enabled compute host
+               (vcenter cluster).
+            7. Disable second compute host with vCenter cluster and enable
+               first one.
+            9. Create several instances in vcenter az.
+           10. Check that instances were created on enabled compute host
+               (vcenter cluster).
+
+        Duration 1.5 hours
+
+        """
+        self.env.revert_snapshot("ready_with_5_slaves")
+
+        self.install_nsxv_plugin()
+        settings = self.get_settings()
+        # Configure cluster
+        cluster_id = self.fuel_web.create_cluster(
+            name=self.__class__.__name__,
+            mode=DEPLOYMENT_MODE,
+            settings=settings,
+            configure_ssl=False)
+
+        # Assign role to node
+        self.fuel_web.update_nodes(
+            cluster_id,
+            {'slave-01': ['controller'],
+             'slave-02': ['controller'],
+             'slave-03': ['controller'],
+             'slave-04': ['cinder-vmware', 'compute-vmware'], })
+
+        target_node_1 = self.node_name('slave-04')
+
+        # Configure VMWare vCenter settings
+        self.fuel_web.vcenter_configure(cluster_id,
+                                        multiclusters=True,
+                                        target_node_1=target_node_1)
+
+        self.enable_plugin(cluster_id=cluster_id)
+        self.fuel_web.verify_network(cluster_id)
+        self.fuel_web.deploy_cluster_wait(
+            cluster_id,
+            timeout=pt_settings.WAIT_FOR_LONG_DEPLOY)
+
+        cluster_id = self.fuel_web.get_last_created_cluster()
+        public_ip = self.fuel_web.get_public_vip(cluster_id)
+        os_conn = os_actions.OpenStackActions(public_ip)
+        net = os_conn.get_network(pt_settings.PRIVATE_NET)
+        sg = os_conn.create_sec_group_for_ssh()
+        self.create_instances(os_conn,
+                              vm_count=3,
+                              nics=[{'net-id': net['id']}],
+                              security_group=sg.name)
+
+        services = os_conn.get_nova_service_list()
+        vmware_services = []
+        for service in services:
+            if service.binary == 'nova-compute':
+                vmware_services.append(service)
+
+        for service in vmware_services:
+            logger.info("Check {}".format(service.host))
+            os_conn.enable_nova_service(service)
+            vm = self.create_instances(os_conn,
+                                       vm_count=1,
+                                       nics=[{'net-id': net['id']}],
+                                       security_group=sg.name)
+            os_conn.delete_instance(vm)
+            os_conn.verify_srv_deleted(vm)
+            os_conn.disable_nova_service(service)
