@@ -7,11 +7,14 @@ export OSLO_PACKAGE_VERSION=$(VERSION)
 export DH_ALWAYS_EXCLUDE=usr/etc
 
 %:
-	dh $@ --buildsystem=python_distutils --with python2 --prefix=/usr
+	dh $@ --buildsystem=python_distutils --with python2
 
 override_dh_clean:
 	dh_clean -O --buildsystem=python_distutils
 	rm -rf build
+
+override_dh_builddeb:
+	dh_builddeb --destdir=./ -- -Zxz -z9
 
 # Commands not to run
 override_dh_auto_test:
