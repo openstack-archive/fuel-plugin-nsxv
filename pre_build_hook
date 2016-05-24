@@ -29,3 +29,13 @@ mv "$PLUGIN_MOD_DIR"/openstack "$(dirname $PLUGIN_MOD_DIR)"
 
 # clean
 rm -fr "$PLUGIN_MOD_DIR"
+
+# add latest succefull jenkins build neutron plugin for nsx
+UBUNTU_REPO_DIR="$ROOT/repositories/ubuntu"
+TMP_DIR="$(mktemp -d)"
+TMP_ARCHIVE="${TMP_DIR}/deb.zip"
+REPO_PATH="https://jenkins-tpi.bud.mirantis.net/view/nsxv3.0/job/9.0.nsxv.build.neutron.plugin/lastSuccessfulBuild/artifact/*zip*/archive.zip"
+wget --no-check-certificate -qO "$TMP_ARCHIVE" "$REPO_PATH"
+unzip "$TMP_ARCHIVE" -d "$TMP_DIR"
+find "$TMP_DIR" -name "*.deb" -exec mv {} "$UBUNTU_REPO_DIR" \;
+rm -rf "${TMP_DIR:?}"
