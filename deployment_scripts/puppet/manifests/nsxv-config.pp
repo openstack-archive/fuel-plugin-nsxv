@@ -3,6 +3,7 @@ notice('fuel-plugin-nsxv: nsxv-config.pp')
 include ::nsxv::params
 
 $settings = hiera($::nsxv::params::plugin_name)
+$roles    = hiera('roles')
 
 if $settings['nsxv_metadata_initializer'] {
   $neutron_config         = hiera_hash('neutron_config')
@@ -30,10 +31,12 @@ if $settings['nsxv_metadata_initializer'] {
     mgt_gateway            => $mgt_gateway,
     neutron_url_timeout    => $::nsxv::params::neutron_url_timeout,
     settings               => $settings,
+    roles                  => $roles,
   }
 } else {
   class { '::nsxv':
     neutron_url_timeout => $::nsxv::params::neutron_url_timeout,
     settings            => $settings,
+    roles               => $roles,
   }
 }
