@@ -103,39 +103,6 @@ class TestNSXvPlugin(TestBasic):
             self.plugin_version,
             dict(pt_settings.plugin_configuration, **settings))
 
-    def patch_haproxy(self, controllers):
-        """To avoid 504 error we need to patch haproxy config.
-
-        :param controllers: list of controller nodes
-        """
-        change_neutron_client_config = "sed -i 's/timeout  client-fin.*/" \
-                                       "timeout  client-fin 600s/' " \
-                                       "/etc/haproxy/conf.d/*neutron.cfg"
-        change_neutron_server_config = "sed -i 's/timeout  server-fin.*/" \
-                                       "timeout  server-fin 600s/' " \
-                                       "/etc/haproxy/conf.d/*neutron.cfg"
-        stop_haproxy = "service haproxy stop"
-        start_haproxy = "service haproxy start"
-        for controller in controllers:
-            with self.fuel_web.get_ssh_for_node(controller) as remote:
-                remote.execute(change_neutron_client_config)
-                remote.execute(change_neutron_server_config)
-                try:
-                    wait(
-                        lambda: remote.execute(stop_haproxy)['exit_code'] == 0,
-                        timeout=60)
-                except TimeoutError:
-                    raise TimeoutError("Haproxy does not stop during 1 minute")
-
-                try:
-                    wait(
-                        lambda: remote.execute(start_haproxy)[
-                            'exit_code'] == 0,
-                        timeout=60)
-                except TimeoutError:
-                    raise TimeoutError(
-                        "Haproxy does not start during 1 minute")
-
     def create_instances(self, os_conn=None, vm_count=1, nics=None,
                          security_group=None, key_name=None,
                          availability_zone=None):
@@ -156,7 +123,7 @@ class TestNSXvPlugin(TestBasic):
 
         for image in images_list:
             if image.name == 'TestVM-VMDK':
-                os_conn.nova.servers.create(
+                vm = os_conn.nova.servers.create(
                     flavor=flavors_list[0],
                     name='test_{0}'.format(image.name),
                     image=image,
@@ -183,6 +150,7 @@ class TestNSXvPlugin(TestBasic):
             # assign security group
             if security_group:
                 srv.add_security_group(security_group)
+        return vm
 
     def check_connection_vms(self, os_conn, srv_list, remote=None,
                              command='pingv4', result_of_command=0,
@@ -209,6 +177,10 @@ class TestNSXvPlugin(TestBasic):
             remote = self.fuel_web.get_ssh_for_node(
                 primary_controller.name)
 
+        if not destination_ip:
+            srv_list_ip = [s.networks[s.networks.keys()[0]][0]
+                           for s in srv_list]
+
         for srv in srv_list:
             addresses = srv.addresses[srv.addresses.keys()[0]]
 
@@ -221,8 +193,8 @@ class TestNSXvPlugin(TestBasic):
                 raise
 
             if not destination_ip:
-                destination_ip = [s.networks[s.networks.keys()[0]][0]
-                                  for s in srv_list if s != srv]
+                destination_ip = srv_list_ip.copy()
+                destination_ip.remove(srv.networks[srv.networks.keys()[0]][0])
 
             for ip in destination_ip:
                 if ip != srv.networks[srv.networks.keys()[0]][0]:
@@ -271,14 +243,14 @@ class TestNSXvPlugin(TestBasic):
         :param tenant_id: id for current tenant. Admin tenant is by default.
         """
         fips = []
+        if not srv_list:
+            srv_list = os_conn.get_servers()
         if not ext_net:
             ext_net = [net for net
                        in os_conn.neutron.list_networks()["networks"]
                        if net['name'] == pt_settings.ADMIN_NET][0]
         if not tenant_id:
             tenant_id = os_conn.get_tenant(SERVTEST_TENANT).id
-        if not srv_list:
-            srv_list = os_conn.get_servers()
         for srv in srv_list:
             fip = os_conn.neutron.create_floatingip(
                 {'floatingip': {
@@ -387,36 +359,6 @@ class TestNSXvPlugin(TestBasic):
         common = self.get_common(cluster_id)
         common.neutron.delete_network(name)
 
-    def create_net_public(self, cluster_id=None):
-        """Create custom exteral net and subnet.
-
-        :param cluster_id: cluster id to use with Common
-        """
-        if not cluster_id:
-            cluster_id = self.fuel_web.get_last_created_cluster()
-        common = self.get_common(cluster_id)
-        network = common.neutron.create_network(body={
-            'network': {
-                'name': pt_settings.ADMIN_NET,
-                'admin_state_up': True,
-                'router:external': True,
-                'shared': True, }})
-
-        network_id = network['network']['id']
-        logger.debug("id {0} to master node".format(network_id))
-
-        common.neutron.create_subnet(body={
-            'subnet': {
-                'network_id': network_id,
-                'ip_version': 4,
-                'cidr': '172.16.0.0/24',
-                'name': 'subnet04_ext',
-                'allocation_pools': [{"start": "172.16.0.30",
-                                      "end": "172.16.0.40"}],
-                'gateway_ip': '172.16.0.1',
-                'enable_dhcp': False, }})
-        return network['network']
-
     def add_router(self, router_name, ext_net, distributed=False,
                    router_type='shared', cluster_id=None):
         """Create a router.
@@ -481,14 +423,6 @@ class TestNSXvPlugin(TestBasic):
                        }
         subnet = common.neutron.create_subnet(subnet_body)['subnet']
         return subnet
-
-    def create_all_necessary_stuff(self):
-        """Create all that is required to launch smoke OSTF."""
-        private_net = self.create_network(pt_settings.PRIVATE_NET)
-        subnet_private = self.create_subnet(private_net, '10.100.0.0/24')
-        public_net = self.create_net_public()
-        router = self.add_router(pt_settings.DEFAULT_ROUTER_NAME, public_net)
-        self.add_subnet_to_router(router['id'], subnet_private['id'])
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_1],
           groups=["nsxv_smoke"])
@@ -633,7 +567,8 @@ class TestNSXvPlugin(TestBasic):
             1. Upload plugins to the master node.
             2. Install plugin.
             3. Create cluster with vcenter.
-            4. Add 3 node with controller role, compute-vmware, cinder-vmware.
+            4. Add 3 node with controller role, 3 ceph,
+               compute-vmware, cinder-vmware.
             5. Deploy cluster.
             6. Run OSTF.
 
@@ -690,11 +625,14 @@ class TestNSXvPlugin(TestBasic):
             1. Upload plugins to the master node.
             2. Install plugin.
             3. Create cluster with vcenter.
-            4. Add 3 node with controller role, compute-vmware, cinder-vmware.
-            5. Remove node cinder-vmware.
-            6. Add node with cinder role.
+            4. Add 3 node with controller role, compute-vmware.
+            5. Run OSTF.
+            6. Add node cinder-vmware.
             7. Redeploy cluster.
             8. Run OSTF.
+            9. Remove node cinder-vmware.
+           10. Redeploy cluster.
+           11. Run OSTF.
 
         Duration 3 hours
 
@@ -744,7 +682,7 @@ class TestNSXvPlugin(TestBasic):
         self.fuel_web.run_ostf(
             cluster_id=cluster_id, test_sets=['smoke'])
 
-        # Remove node with cinder-vmware role
+        # Remove node with cinder-vmware role and redeploy cluster
         self.fuel_web.update_nodes(
             cluster_id,
             {'slave-05': ['cinder-vmware'], }, False, True)
@@ -2355,3 +2293,86 @@ class TestNSXvPlugin(TestBasic):
                                   srv_list_tenant,
                                   result_of_command=1,
                                   destination_ip=ip)
+
+    @test(depends_on=[SetupEnvironment.prepare_slaves_5],
+          groups=["nsxv_disable_hosts"])
+    @log_snapshot_after_test
+    def nsxv_disable_hosts(self):
+        """Check instance creation on enabled cluster.
+
+        Scenario:
+            1. Setup cluster with 3 controllers and cinder-vmware +
+               compute-vmware role.
+            2. Assign instances in each az.
+            3. Disable one of compute host with vCenter cluster
+               (Admin -> Hypervisors).
+            4. Create several instances in vcenter az.
+            5. Check that instances were created on enabled compute host
+               (vcenter cluster).
+            7. Disable second compute host with vCenter cluster and enable
+               first one.
+            9. Create several instances in vcenter az.
+           10. Check that instances were created on enabled compute host
+               (vcenter cluster).
+
+        Duration 1.5 hours
+
+        """
+        self.env.revert_snapshot("ready_with_5_slaves")
+
+        self.install_nsxv_plugin()
+        settings = self.get_settings()
+        # Configure cluster
+        cluster_id = self.fuel_web.create_cluster(
+            name=self.__class__.__name__,
+            mode=DEPLOYMENT_MODE,
+            settings=settings,
+            configure_ssl=False)
+
+        # Assign role to node
+        self.fuel_web.update_nodes(
+            cluster_id,
+            {'slave-01': ['controller'],
+             'slave-02': ['controller'],
+             'slave-03': ['controller'],
+             'slave-04': ['cinder-vmware', 'compute-vmware'], })
+
+        target_node_1 = self.node_name('slave-04')
+
+        # Configure VMWare vCenter settings
+        self.fuel_web.vcenter_configure(cluster_id,
+                                        multiclusters=True,
+                                        target_node_1=target_node_1)
+
+        self.enable_plugin(cluster_id=cluster_id)
+        self.fuel_web.verify_network(cluster_id)
+        self.fuel_web.deploy_cluster_wait(
+            cluster_id,
+            timeout=pt_settings.WAIT_FOR_LONG_DEPLOY)
+
+        public_ip = self.fuel_web.get_public_vip(cluster_id)
+        os_conn = os_actions.OpenStackActions(public_ip)
+        net = os_conn.get_network(pt_settings.PRIVATE_NET)
+        sg = os_conn.create_sec_group_for_ssh()
+        self.create_instances(os_conn,
+                              vm_count=3,
+                              nics=[{'net-id': net['id']}],
+                              security_group=sg.name)
+
+        services = os_conn.get_nova_service_list()
+        vmware_services = []
+        for service in services:
+            if service.binary == 'nova-compute':
+                vmware_services.append(service)
+                os_conn.disable_nova_service(service)
+
+        for service in vmware_services:
+            logger.info("Check {}".format(service.host))
+            os_conn.enable_nova_service(service)
+            vm = self.create_instances(os_conn,
+                                       vm_count=1,
+                                       nics=[{'net-id': net['id']}],
+                                       security_group=sg.name)
+            os_conn.delete_instance(vm)
+            os_conn.verify_srv_deleted(vm)
+            os_conn.disable_nova_service(service)
