@@ -779,6 +779,24 @@ class TestNSXvPlugin(TestBasic):
         Duration 3.5 hours
 
         """
+        def check_diff(diff):
+            """Check the diff between mysql dumps.
+
+            :param diff: list of strings that are the difference between dumps
+            """
+            for line in diff:
+                # Cleaning diff list
+                if 'Dump completed on' in line:
+                    diff.remove(line)
+            # There are 2 unfiltered elements
+            return True if len(diff) < 3 else False
+        neutron_without_data = "mysqldump --no-data neutron >" \
+                               "neutron_without_data.sql"
+        neutron_add_controller = "mysqldump --no-data neutron >" \
+                                 "neutron_without_data_add_controller.sql"
+        compare_data_vs_no_data = "diff neutron_without_data.sql neutron_" \
+                                  "without_data_add_controller.sql"
+
         self.env.revert_snapshot("ready_with_9_slaves")
 
         self.install_nsxv_plugin()
@@ -856,6 +874,18 @@ class TestNSXvPlugin(TestBasic):
                     "Check that there are sufficient resources to create VMs")
         self.check_connection_vms(os_conn, srv_list)
 
+        primary_controller = self.fuel_web.get_nailgun_primary_node(
+            self.env.d_env.nodes().slaves[0])
+
+        with self.fuel_web.get_ssh_for_node(primary_controller.name) as remote:
+            try:
+                wait(
+                    lambda: remote.execute(
+                        neutron_without_data)['exit_code'] == 0,
+                    timeout=60)
+            except TimeoutError:
+                raise TimeoutError("mqsqldump error")
+
         # Add node with controller role
         self.fuel_web.update_nodes(
             cluster_id,
@@ -872,6 +902,17 @@ class TestNSXvPlugin(TestBasic):
         assert_true(len(srv_list) == 2,
                     "Check that there are sufficient resources to create VMs")
         self.check_connection_vms(os_conn, srv_list)
+
+        with self.fuel_web.get_ssh_for_node(primary_controller.name) as remote:
+            try:
+                wait(
+                    lambda: remote.execute(
+                        neutron_add_controller)['exit_code'] == 0,
+                    timeout=60)
+            except TimeoutError:
+                raise TimeoutError("mqsqldump error")
+                diff = remote.execute(compare_data_vs_no_data)['stdout']
+                assert_true(check_diff(diff), "Check the diff {}".format(diff))
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_5],
           groups=["nsxv_ceilometer"])
