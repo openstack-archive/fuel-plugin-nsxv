@@ -913,8 +913,8 @@ Expected result
 Environment has been deployed successfully.
 
 
-Check availability metadata server with disabled nsxv_metadata_listen_mgmt
-------------------------------------------------------------------
+Check that metadata server is not available with disabled nsxv_metadata_initializer
+-----------------------------------------------------------------------------------
 
 
 ID
@@ -926,7 +926,7 @@ nsxv_metadata_mgt_disabled
 Description
 ###########
 
-Test case verifies option nsxv_metadata_listen_mgmt in disabled state.
+Test case verifies option nsxv_metadata_initializer in disabled state.
 
 Complexity
 ##########
@@ -940,6 +940,47 @@ Steps
     1. Configure cluster.
     2. Install fuel and nsxv plugin.
     3. Configure nsxv plugin.
+       Uncheck 'Init metadata infrastructure'.
+    4. Launch instance and run command from it::
+
+	wget -O - 169.254.169.254
+
+
+Expected result
+###############
+
+Options about metadata are in hide state.
+Request should return nothing.
+
+
+Check availability metadata server in public network
+----------------------------------------------------
+
+
+ID
+##
+
+nsxv_metadata_listen_public
+
+
+Description
+###########
+
+Test case verifies option nsxv_metadata_listen in public state.
+
+Complexity
+##########
+
+core
+
+
+Steps
+#####
+
+    1. Configure cluster.
+    2. Install fuel and nsxv plugin.
+    3. Configure nsxv plugin.
+       In field 'Which network will be used to access the nova-metadata' choose 'Public network'.
        Manually specify the IP address, network mask and default route for the proxy metadata router.
     4. Launch instance and run command from it::
 
@@ -949,7 +990,7 @@ Steps
 Expected result
 ###############
 
-Option 'Use mgmt network to access the metadata server' (nsxv_metadata_listen_mgmt) was disabled by default.
+'Init metadata infrastructure' is checked by default.
 Request should return::
 
  Connecting to 169.254.169.254 (169.254.169.254:80)
@@ -964,74 +1005,20 @@ Request should return::
  2009-04-04
 
 
-Check availability metadata server with nsxv_metadata_listen_mgmt enabled and nsxv_mgt_reserve_ip disabled
---------------------------------------------------------------------------------------------------
+Check availability metadata server in management network
+--------------------------------------------------------
 
 
 ID
 ##
 
-nsxv_metadata_mgt_enabled
+nsxv_metadata_listen_management
 
 
 Description
 ###########
 
-Test case verifies option nsxv_metadata_listen_mgmt in enabled state, nsxv_mgt_reserve_ip is disabled.
-
-Complexity
-##########
-
-core
-
-
-Steps
-#####
-
-    1. Configure cluster.
-    2. Install fuel and nsxv plugin and enable option 'Use mgmt network to access the metadata server' (nsxv_metadata_listen_mgmt).
-    3. Configure nsxv plugin.
-       Manually specify the IP address, network mask and default route for the proxy metadata router.
-    4. Launch instance and run command from it::
-
-	wget -O - 169.254.169.254
-
-
-Expected result
-###############
-
-Option 'Use mgmt network to access the metadata server' and
-option 'Reservation ip address in management network for use with NSXv metadata proxy' are disabled by default.
-Request should return::
-
- Connecting to 169.254.169.254 (169.254.169.254:80)
- 1.0
- 2007-01-19
- 2007-03-01
- 2007-08-29
- 2007-10-10
- 2007-12-15
- 2008-02-01
- 2008-09-01
- 2009-04-04
-
-
-Check availability metadata server with nsxv_metadata_listen_mgmt enabled and nsxv_mgt_reserve_ip enabled
--------------------------------------------------------------------------------------------------
-
-
-ID
-##
-
-nsxv_metadata_mgt_reserve_enabled
-
-
-Description
-###########
-
-Test case verifies options:
-nsxv_metadata_listen_mgmt enabled
-nsxv_mgt_reserve_ip enabled.
+Test case verifies option nsxv_metadata_listen in management state.
 
 Complexity
 ##########
@@ -1044,9 +1031,9 @@ Steps
 
     1. Configure cluster.
     2. Install fuel and nsxv plugin.
-    3. Configure nsxv plugin and enable both options 'Use mgmt network to access the metadata server' (nsxv_metadata_listen_mgmt),
-       'Reservation ip address in management network for use with NSXv metadata proxy' (nsxv_mgt_reserve_ip).
-       You must specify the portgroup id as "Metadata portgroup MoRef ID" which looks at management network openstack.
+       Configure nodes interfaces. Connect third interface (enp0s5) to Management.
+    3. Configure nsxv plugin.
+       In field 'Which network will be used to access the nova-metadata' choose 'Management network'.
     4. Launch instance and run command from it::
 
 	wget -O - 169.254.169.254
@@ -1055,8 +1042,8 @@ Steps
 Expected result
 ###############
 
-Option 'Use mgmt network to access the metadata server' and
-option 'Reservation ip address in management network for use with NSXv metadata proxy' are disabled by default.
+'Init metadata infrastructure' is checked by default.
+Options about metadata are in hide state.
 Request should return::
 
  Connecting to 169.254.169.254 (169.254.169.254:80)
