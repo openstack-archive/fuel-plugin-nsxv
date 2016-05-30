@@ -10,7 +10,7 @@ if $settings['nsxv_metadata_initializer'] {
   $metadata_shared_secret = $neutron_config['metadata']['metadata_proxy_shared_secret']
   $nova_metadata_ips      = get_nova_metadata_ip($settings['nsxv_metadata_listen'])
 
-  if $settings['nsxv_mgt_reserve_ip'] {
+  if $settings['nsxv_metadata_listen'] == 'management' {
     prepare_network_config(hiera('network_scheme'))
     $network_metadata = hiera('network_metadata')
     $mgt_ip           = $network_metadata['vips']['nsxv_metadataproxy_ip']['ipaddr']

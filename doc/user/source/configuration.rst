@@ -97,10 +97,9 @@ Plugin contains the following settings:
    nodes. Currently two options are available *Public* and *Management*
    networks.
 
-   Subitem "Allocate IP address in management network for NSX metadata proxy"
-   allows automatically allocate free IP address from management network range
-   for nova-api-metadata, if you want to specify you own IP address, netmask
-   and gateway see metadata related settings below.
+   If *Management* network selected, then free IP address from management
+   network range for nova-api-metadata will be allocated automatically and
+   you not need to specify you own IP address, netmask, gateway.
 
    To enable Nova metadata service, the following settings must be set:
 
