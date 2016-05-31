@@ -1583,14 +1583,8 @@ class TestNSXvPlugin(TestBasic):
         # Configure VMWare vCenter settings
         self.fuel_web.vcenter_configure(cluster_id)
 
-        self.enable_plugin(cluster_id)
-
-        plugin_data = self.fuel_web.get_plugin_data(
-            cluster_id, self.plugin_name, self.plugin_version)
-        assert_true(plugin_data['nsxv_metadata_listen']['value'] == "public",
-                    "Check default value of nsxv_metadata_listen")
-        assert_true(plugin_data['nsxv_mgt_reserve_ip']['value'] is False,
-                    "Check default value of nsxv_mgt_reserve_ip")
+        self.enable_plugin(cluster_id, {'nsxv_metadata_initializer/value':
+                                        False})
 
         self.fuel_web.deploy_cluster_wait(cluster_id)
 
@@ -1598,6 +1592,7 @@ class TestNSXvPlugin(TestBasic):
             cluster_id=cluster_id,
             test_sets=['smoke'])
 
+        key = 'mgmt_key'
         common = self.get_common(cluster_id)
         os_ip = self.fuel_web.get_public_vip(cluster_id)
         os_conn = os_actions.OpenStackActions(
@@ -1608,7 +1603,7 @@ class TestNSXvPlugin(TestBasic):
         ext = os_conn.get_network(pt_settings.ADMIN_NET)
         router = os_conn.get_router_by_name(pt_settings.DEFAULT_ROUTER_NAME)
 
-        common.create_key('mgmt_key')
+        common.create_key(key)
 
         # Create non default network with subnet.
         logger.info('Create network {}'.format(self.net1))
@@ -1620,32 +1615,204 @@ class TestNSXvPlugin(TestBasic):
                               vm_count=1,
                               nics=[{'net-id': private_net['id']}],
                               security_group=sec_grp.name,
-                              key_name='mgmt_key')
+                              key_name=key)
 
-        self.create_and_assign_floating_ip(os_conn=os_conn, ext_net=ext)
-        srv_list = os_conn.get_servers()
+        fip = self.create_and_assign_floating_ip(os_conn=os_conn, ext_net=ext)
 
         # SSH to instance and wget metadata ip
         primary_controller = self.fuel_web.get_nailgun_primary_node(
             self.env.d_env.nodes().slaves[0])
         remote = self.fuel_web.get_ssh_for_node(
             primary_controller.name)
+        cmd = "wget -O - {}".format(pt_settings.METADATA_IP)
+        command_result = os_conn.execute_through_host(
+            remote, fip[0], cmd)
+        assert_false(
+            command_result['exit_code'] == 0, "Wget should get error.")
+        assert_true(
+            command_result['stderr'].split(
+                '\n')[1] == 'wget: download timed out',
+            "Wget downloaded something from metadata ip.")
 
-        for srv in srv_list:
-            addresses = srv.addresses[srv.addresses.keys()[0]]
-            fip = [
-                add['addr'] for add in addresses
-                if add['OS-EXT-IPS:type'] == 'floating'][0]
+    @test(depends_on=[SetupEnvironment.prepare_slaves_1],
+          groups=["nsxv_metadata_listen_public"])
+    @log_snapshot_after_test
+    def nsxv_metadata_listen_public(self):
+        """Check that option nsxv_metadata_listen is public by default.
 
-            cmd = "wget -O - {}".format(pt_settings.METADATA_IP)
-            command_result = os_conn.execute_through_host(
-                remote, fip, cmd)
+        Scenario:
+            1. Upload the plugin to master node
+            2. Create cluster and configure NSXv for that cluster
+            3. Provision one controller node
+            4. Deploy cluster with plugin
+            5. Launch instance
+            6. wget metadata server address from launched instance
 
-            assert_true(
-                command_result['exit_code'] == 0, "Wget exits with error!")
-            assert_true(
-                command_result['stdout'].split('\n')[-1] == 'latest',
-                "Wget does not return 'latest' item in stdout")
+        Duration 60 min
+
+        """
+        self.env.revert_snapshot('ready_with_1_slaves')
+
+        self.install_nsxv_plugin()
+
+        # Configure cluster
+        settings = self.get_settings()
+        # Configure cluster
+        cluster_id = self.fuel_web.create_cluster(
+            name=self.__class__.__name__,
+            mode=DEPLOYMENT_MODE,
+            settings=settings,
+            configure_ssl=False)
+
+        # Assign roles to nodes
+        self.fuel_web.update_nodes(
+            cluster_id,
+            {'slave-01': ['controller'], })
+
+        # Configure VMWare vCenter settings
+        self.fuel_web.vcenter_configure(cluster_id)
+
+        self.enable_plugin(cluster_id)
+
+        plugin_data = self.fuel_web.get_plugin_data(
+            cluster_id, self.plugin_name, self.plugin_version)
+        assert_true(plugin_data['nsxv_metadata_listen']['value'] == "public",
+                    "Check default value of nsxv_metadata_listen")
+
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id,
+            test_sets=['smoke'])
+
+        key = 'mgmt_key'
+        common = self.get_common(cluster_id)
+        os_ip = self.fuel_web.get_public_vip(cluster_id)
+        os_conn = os_actions.OpenStackActions(
+            os_ip, SERVTEST_USERNAME,
+            SERVTEST_PASSWORD,
+            SERVTEST_TENANT)
+
+        ext = os_conn.get_network(pt_settings.ADMIN_NET)
+        router = os_conn.get_router_by_name(pt_settings.DEFAULT_ROUTER_NAME)
+
+        common.create_key(key)
+
+        # Create non default network with subnet.
+        logger.info('Create network {}'.format(self.net1))
+        private_net = self.create_network(self.net1['name'])
+        subnet_private = self.create_subnet(private_net, self.net1['cidr'])
+        self.add_subnet_to_router(router['id'], subnet_private['id'])
+        sec_grp = os_conn.create_sec_group_for_ssh()
+        self.create_instances(os_conn,
+                              vm_count=1,
+                              nics=[{'net-id': private_net['id']}],
+                              security_group=sec_grp.name,
+                              key_name=key)
+
+        fip = self.create_and_assign_floating_ip(os_conn=os_conn, ext_net=ext)
+
+        # SSH to instance and wget metadata ip
+        primary_controller = self.fuel_web.get_nailgun_primary_node(
+            self.env.d_env.nodes().slaves[0])
+        remote = self.fuel_web.get_ssh_for_node(
+            primary_controller.name)
+        cmd = "wget -O - {}".format(pt_settings.METADATA_IP)
+        command_result = os_conn.execute_through_host(
+            remote, fip[0], cmd)
+        assert_true(
+            command_result['exit_code'] == 0, "Wget exits with error!")
+        assert_true(
+            command_result['stdout'].split('\n')[-1] == 'latest',
+            "Wget does not return 'latest' item in stdout")
+
+    @test(depends_on=[SetupEnvironment.prepare_slaves_1],
+          groups=["nsxv_metadata_listen_management"])
+    @log_snapshot_after_test
+    def nsxv_metadata_listen_management(self):
+        """Check that option nsxv_metadata_listen is public by default.
+
+        Scenario:
+            1. Upload the plugin to master node
+            2. Create cluster and configure NSXv for that cluster
+            3. Provision one controller node
+            4. Deploy cluster with plugin
+            5. Launch instance
+            6. wget metadata server address from launched instance
+
+        Duration 60 min
+
+        """
+        self.env.revert_snapshot('ready_with_1_slaves')
+
+        self.install_nsxv_plugin()
+
+        # Configure cluster
+        settings = self.get_settings()
+        # Configure cluster
+        cluster_id = self.fuel_web.create_cluster(
+            name=self.__class__.__name__,
+            mode=DEPLOYMENT_MODE,
+            settings=settings,
+            configure_ssl=False)
+
+        # Assign roles to nodes
+        self.fuel_web.update_nodes(
+            cluster_id,
+            {'slave-01': ['controller'], })
+
+        # Configure VMWare vCenter settings
+        self.fuel_web.vcenter_configure(cluster_id)
+
+        self.enable_plugin(cluster_id, {'nsxv_metadata_listen/value':
+                                        'management'})
+
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id,
+            test_sets=['smoke'])
+
+        key = 'mgmt_key'
+        common = self.get_common(cluster_id)
+        os_ip = self.fuel_web.get_public_vip(cluster_id)
+        os_conn = os_actions.OpenStackActions(
+            os_ip, SERVTEST_USERNAME,
+            SERVTEST_PASSWORD,
+            SERVTEST_TENANT)
+
+        ext = os_conn.get_network(pt_settings.ADMIN_NET)
+        router = os_conn.get_router_by_name(pt_settings.DEFAULT_ROUTER_NAME)
+
+        common.create_key(key)
+
+        # Create non default network with subnet.
+        logger.info('Create network {}'.format(self.net1))
+        private_net = self.create_network(self.net1['name'])
+        subnet_private = self.create_subnet(private_net, self.net1['cidr'])
+        self.add_subnet_to_router(router['id'], subnet_private['id'])
+        sec_grp = os_conn.create_sec_group_for_ssh()
+        self.create_instances(os_conn,
+                              vm_count=1,
+                              nics=[{'net-id': private_net['id']}],
+                              security_group=sec_grp.name,
+                              key_name=key)
+
+        fip = self.create_and_assign_floating_ip(os_conn=os_conn, ext_net=ext)
+
+        # SSH to instance and wget metadata ip
+        primary_controller = self.fuel_web.get_nailgun_primary_node(
+            self.env.d_env.nodes().slaves[0])
+        remote = self.fuel_web.get_ssh_for_node(
+            primary_controller.name)
+        cmd = "wget -O - {}".format(pt_settings.METADATA_IP)
+        command_result = os_conn.execute_through_host(
+            remote, fip[0], cmd)
+        assert_true(
+            command_result['exit_code'] == 0, "Wget exits with error!")
+        assert_true(
+            command_result['stdout'].split('\n')[-1] == 'latest',
+            "Wget does not return 'latest' item in stdout")
 
     @test(depends_on=[nsxv_ha_mode],
           groups=["nsxv_create_and_delete_secgroups"])
