@@ -323,3 +323,84 @@ Expected result
 
 Check that nsx.ini on controller nodes is properly configured.
 
+
+Verify disabled roles
+---------------------
+
+
+ID
+##
+
+nsxv_disabled_roles
+
+
+Description
+###########
+
+Need to check that some disabled roles are unavailable in Fuel wizard.
+
+
+Complexity
+##########
+
+smoke
+
+
+Steps
+#####
+
+    1. Create new OpenStack environment.
+    2. Enable options 'QENU-KVM' and 'vCenter'.
+    3. Select 'Neutron with NSXv plugin'.
+    4. On tab 'Storage Backends' check that are not available:
+        * Ceph - Block Storage
+        * Ceph - Ephemeral Storage
+    5. On tab 'Additional Services' check that are not available:
+        * Install Sahara
+        * Install Murano
+        * Install Ironic
+    6. Finish creating new environment.
+    7. On 'Nodes' tab press 'Add Nodes'.
+    8. Check that following roles are not available:
+        * Compute
+        * Cinder
+
+
+Expected result
+###############
+
+
+Deploy with specified tenant_router_types option
+------------------------------------------------
+
+
+ID
+##
+
+nsxv_specified_router_type
+
+
+Description
+###########
+
+Deploy with tenant_router_types=exclusive in nsx.ini
+
+
+Complexity
+##########
+
+core
+
+
+Steps
+#####
+
+    1. Install and configure nsxv plugin.
+    2. Specify additional parameter tenant_router_types with value 'exclusive'.
+    3. Deploy cluster.
+    4. Run OSTF.
+
+
+Expected result
+###############
+No errors.
