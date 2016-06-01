@@ -28,7 +28,7 @@ neutron_config {
 Exec['neutron-server-stop'] -> Service['neutron-server-start']
 Neutron_config<||> ~> Service['neutron-server']
 
-if 'primary-controller' in hiera('role') {
+if 'primary-controller' in hiera('roles') {
   include ::neutron::db::sync
 
   Exec['neutron-server-stop'] -> Exec['neutron-db-sync'] ~> Service['neutron-server-start']
@@ -65,5 +65,19 @@ if 'primary-controller' in hiera('role') {
     provider    => 'shell',
     subscribe   => Service['neutron-server'],
     refreshonly => true,
+  }
+
+  $settings      = hiera('NAME')
+  $nsxv_ip       = $settings['nsxv_manager_host']
+  $nsxv_user     = $settings['nsxv_user']
+  $nsxv_password = $settings['nsxv_password']
+  $datacenter_id = $settings['nsxv_datacenter_moid']
+
+  class {'nsxv::neutron_server_check_md_proxy':
+    nsxv_ip       => $nsxv_ip,
+    nsxv_user     => $nsxv_user,
+    nsxv_password => $nsxv_password,
+    datacenter_id => $datacenter_id,
+    require       => [Service['neutron-server'],Exec['waiting-for-neutron-api']],
   }
 }
