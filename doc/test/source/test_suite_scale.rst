@@ -46,14 +46,15 @@ Steps
     7. Configure VMware vCenter Settings. Add 2 vSphere clusters and configure Nova Compute instances on conrollers and compute-vmware.
     8. Deploy cluster.
     9. Run OSTF.
-    10. Remove node with controller role.
-    11. Redeploy cluster.
+    10. Launch 2 VMs.
+    11. Remove node with controller role.
+    12. Redeploy cluster.
         Check that all instances are in place.
-    12. Run OSTF.
-    13. Add controller.
-    14. Redeploy cluster.
+    13. Run OSTF.
+    14. Add controller.
+    15. Redeploy cluster.
         Check that all instances are in place.
-    15. Run OSTF.
+    16. Run OSTF.
 
 
 Expected result
