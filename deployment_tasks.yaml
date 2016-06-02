@@ -83,6 +83,8 @@
     puppet_manifest: puppet/manifests/neutron-server-start.pp
     puppet_modules: puppet/modules
     timeout: 1800
+    strategy:
+      type: one_by_one
 - id: primary-openstack-network-neutron-start
   version: 2.0.0
   refresh_on: [neutron_config]
