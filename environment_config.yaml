@@ -126,18 +126,6 @@ attributes:
     restrictions:
       - condition: 'settings:nsxv.nsxv_metadata_initializer.value == false'
         action: 'hide'
-  nsxv_mgt_reserve_ip:
-    value: false
-    label: 'Allocate IP address in management network for NSX metadata proxy'
-    description: 'If enabled, then IP address for NSX metadata proxy will be allocated in the OpenStack management network. In the parameter "Metadata portgroup MoRef ID", you must specify portgroup id, which is adjacent with OpenStack management network'
-    weight: 80
-    type: 'checkbox'
-    restrictions:
-      - condition: "settings:nsxv.nsxv_metadata_listen.value == 'public'"
-        message: 'Management network to access the nova-api-metadata not selected'
-        action: 'disable'
-      - condition: 'settings:nsxv.nsxv_metadata_initializer.value == false'
-        action: 'hide'
   nsxv_metadata_nova_client_cert:
     value: ''
     label: 'Certificate for metadata proxy'
@@ -195,7 +183,7 @@ attributes:
       source: '^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$'
       error: 'Invalid IP address'
     restrictions:
-      - condition: 'settings:nsxv.nsxv_mgt_reserve_ip.value == true'
+      - condition: "settings:nsxv.nsxv_metadata_listen.value == 'management'"
         action: 'hide'
       - condition: 'settings:nsxv.nsxv_metadata_initializer.value == false'
         action: 'hide'
@@ -209,7 +197,7 @@ attributes:
       source: '^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$'
       error: 'Invalid netmask'
     restrictions:
-      - condition: 'settings:nsxv.nsxv_mgt_reserve_ip.value == true'
+      - condition: "settings:nsxv.nsxv_metadata_listen.value == 'management'"
         action: 'hide'
       - condition: 'settings:nsxv.nsxv_metadata_initializer.value == false'
         action: 'hide'
@@ -223,7 +211,7 @@ attributes:
       source: '^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$'
       error: 'Invalid IP address of the default gateway'
     restrictions:
-      - condition: 'settings:nsxv.nsxv_mgt_reserve_ip.value == true'
+      - condition: "settings:nsxv.nsxv_metadata_listen.value == 'management'"
         action: 'hide'
       - condition: 'settings:nsxv.nsxv_metadata_initializer.value == false'
         action: 'hide'
