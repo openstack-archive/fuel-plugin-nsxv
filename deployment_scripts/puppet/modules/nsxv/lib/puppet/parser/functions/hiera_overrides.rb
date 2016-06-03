@@ -30,6 +30,17 @@ EOS
     test_vm_image['public'] = 'true'
     hiera_overrides['test_vm_image'] = test_vm_image
 
+    # override storage settings
+    storage = function_hiera_hash(['storage'])
+    storage['volumes_block_device'] = false
+    storage['volumes_ceph'] = false
+    storage['volumes_lvm'] = false
+    storage['ephemeral_ceph'] = false
+    storage['volume_backend_names'] = { 'volumes_block_device' => false,
+                                        'volumes_ceph' => false,
+                                        'volumes_lvm' => false }
+    hiera_overrides['storage'] = storage
+
     # write to hiera override yaml file
     File.open(filename, 'w') { |file| file.write(hiera_overrides.to_yaml) }
   end

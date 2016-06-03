@@ -6,4 +6,6 @@ class nsxv::params {
   $core_plugin       = 'vmware_nsx.plugin.NsxVPlugin'
   $service_plugins   = 'neutron_lbaas.services.loadbalancer.plugin.LoadBalancerPluginv2'
   $service_providers = 'LOADBALANCERV2:VMWareEdge:neutron_lbaas.drivers.vmware.edge_driver_v2.EdgeLoadBalancerDriverV2:default'
+
+  $hiera_override_file = "/etc/hiera/plugins/${plugin_name}.yaml"
 }
