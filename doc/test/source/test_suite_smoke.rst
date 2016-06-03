@@ -220,7 +220,7 @@ Steps
     6. Enable and configure NSXv plugin.
     7. Configure settings:
         * Enable VMWare vCenter/ESXi datastore for images (Glance).
-    8. Configure VMware vCenter Settings. Add 1 vSphere cluster and configure Nova Compute instances on conrollers.
+    8. Configure VMware vCenter Settings. Add 1 vSphere cluster and configure Nova Compute instances on controllers.
     9. Deploy cluster.
     10. Run OSTF.
 
@@ -232,7 +232,7 @@ Cluster should be deployed and all OSTF test cases should be passed.
 
 
 Deploy HA cluster with NSXv plugin.
-------------------------------------
+-----------------------------------
 
 
 ID
@@ -273,7 +273,7 @@ Steps
     4. Configure interfaces on nodes.
     5. Configure network settings.
     6. Enable and configure NSXv plugin.
-    7. Configure VMware vCenter Settings. Add 2 vSphere clusters and configure Nova Compute instances on conrollers and compute-vmware.
+    7. Configure VMware vCenter Settings. Add 2 vSphere clusters and configure Nova Compute instances on controllers and compute-vmware.
     8. Verify networks.
     9. Deploy cluster.
     10. Run OSTF.
@@ -286,7 +286,7 @@ Cluster should be deployed and all OSTF test cases should be passed.
 
 
 Verify that nsxv driver configured properly after enabling NSXv plugin
------------------------------------------------------------------------
+----------------------------------------------------------------------
 
 
 ID
@@ -313,9 +313,8 @@ Steps
     1. Install NSXv plugin.
     2. Enable plugin on tab Settings -> NSXv plugin.
     3. Fill the form with corresponding values.
-    4. Uncheck option "Bypass NSX Manager certificate verification".
-    5. Do all things that are necessary to provide interoperability of NSXv plugin and NSX Manager with certificate.
-    6. Check Additional settings. Fill the form with corresponding values. Save settings by pressing the button.
+    4. Do all things that are necessary to provide interoperability of NSXv plugin and NSX Manager with certificate.
+    5. Check Additional settings. Fill the form with corresponding values. Save settings by pressing the button.
 
 
 Expected result
@@ -323,3 +322,85 @@ Expected result
 
 Check that nsx.ini on controller nodes is properly configured.
 
+
+Verify disabled roles
+---------------------
+
+
+ID
+##
+
+nsxv_disabled_roles
+
+
+Description
+###########
+
+Need to check that some disabled roles are unavailable in Fuel wizard.
+
+
+Complexity
+##########
+
+smoke
+
+
+Steps
+#####
+
+    1. Create new OpenStack environment.
+    2. Enable options 'QENU-KVM' and 'vCenter'.
+    3. Select 'Neutron with NSXv plugin'.
+    4. On tab 'Storage Backends' check that are not available:
+        * Ceph - Block Storage
+        * Ceph - Ephemeral Storage
+    5. On tab 'Additional Services' check that are not available:
+        * Install Sahara
+        * Install Murano
+        * Install Ironic
+    6. Finish creating new environment.
+    7. On 'Nodes' tab press 'Add Nodes'.
+    8. Check that following roles are not available:
+        * Compute
+        * Cinder
+
+
+Expected result
+###############
+All described roles are unavailable or in disabled state.
+
+
+Deploy with specified tenant_router_types option
+------------------------------------------------
+
+
+ID
+##
+
+nsxv_specified_router_type
+
+
+Description
+###########
+
+Deploy with tenant_router_types=exclusive in nsx.ini
+
+
+Complexity
+##########
+
+core
+
+
+Steps
+#####
+
+    1. Install and configure nsxv plugin.
+    2. Specify additional parameter tenant_router_types with value 'exclusive'.
+    3. Deploy cluster.
+    4. Run OSTF.
+
+
+Expected result
+###############
+All OSTF are passed.

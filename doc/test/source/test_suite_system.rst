@@ -1059,3 +1059,60 @@ Request should return::
  2008-02-01
  2008-09-01
  2009-04-04
+
+
+Verify that nsxv driver configured properly if use certificates for access nova-metadata
+----------------------------------------------------------------------------------------
+
+
+ID
+##
+
+nsxv_config_ok_metadata
+
+
+Description
+###########
+
+Need to check that nsxv plugin can access nova-metadata with certificate.
+
+
+Complexity
+##########
+
+advanced
+
+
+Steps
+#####
+
+    1. Install NSXv plugin.
+    2. Enable plugin on tab Settings -> NSXv plugin.
+    3. Fill the form with corresponding values.
+    4. Generate certificate and upload it into field 'Certificate for metadata proxy'.
+    5. Upload key into field 'Private key'('Private key for metadata certificate').
+    6. Add to field 'Metadata allowed ports' value '443,8775'.
+    7. Deploy cluster.
+    8. Run OSTF.
+    4. Launch instance and run command from it::
+
+	wget -O - 169.254.169.254
+
+
+Expected result
+###############
+
+Check that nsx.ini on controller nodes is properly configured.
+Connection to nova-metadata is established.
+Request should return::
+
+ Connecting to 169.254.169.254 (169.254.169.254:80)
+ 1.0
+ 2007-01-19
+ 2007-03-01
+ 2007-08-29
+ 2007-10-10
+ 2007-12-15
+ 2008-02-01
+ 2008-09-01
+ 2009-04-04
