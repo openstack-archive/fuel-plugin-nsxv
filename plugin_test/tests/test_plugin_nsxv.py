@@ -118,13 +118,15 @@ class TestNSXvPlugin(TestBasic):
         :param availability_zone:  type string, instance AZ
         """
         # Get list of available images,flavors and hipervisors
+        flavor = os_conn.get_flavor_by_name(pt_settings.FLAVOR_NAME)
+        if not flavor:
+            flavor = os_conn.create_flavor(pt_settings.FLAVOR_NAME, 128, 1, 1)
         images_list = os_conn.nova.images.list()
-        flavors_list = os_conn.nova.flavors.list()
 
         for image in images_list:
             if image.name == 'TestVM-VMDK':
                 vm = os_conn.nova.servers.create(
-                    flavor=flavors_list[0],
+                    flavor=flavor,
                     name='test_{0}'.format(image.name),
                     image=image,
                     min_count=vm_count,
@@ -193,7 +195,7 @@ class TestNSXvPlugin(TestBasic):
                 raise
 
             if not destination_ip:
-                destination_ip = srv_list_ip.copy()
+                destination_ip = list(srv_list_ip)
                 destination_ip.remove(srv.networks[srv.networks.keys()[0]][0])
 
             for ip in destination_ip:
@@ -1126,8 +1128,8 @@ class TestNSXvPlugin(TestBasic):
 
         private_net = os_conn.get_network(pt_settings.PRIVATE_NET)
 
-        # Create 5 instances of vcenter simultaneously
-        self.create_instances(os_conn, vm_count=5, nics=[{'net-id':
+        # Create 30 instances of vcenter simultaneously
+        self.create_instances(os_conn, vm_count=30, nics=[{'net-id':
                                                           private_net['id']}])
         srv_list = os_conn.get_servers()
         for server in srv_list:
