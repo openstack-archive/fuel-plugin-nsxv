@@ -31,6 +31,7 @@ VM_USER = 'cirros'
 VM_PASS = 'cubswin:)'
 AZ_VCENTER1 = 'vcenter'
 AZ_VCENTER2 = 'vcenter2'
+FLAVOR_NAME = 'm1.micro128'
 
 
 NSXV_PLUGIN_PATH = os.environ.get('NSXV_PLUGIN_PATH')
