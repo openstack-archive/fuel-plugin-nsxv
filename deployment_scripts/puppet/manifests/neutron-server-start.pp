@@ -12,7 +12,7 @@ service { 'neutron-server-start':
 
 # Need to stop neutron-server for applying new settings after refresh_on/rexecute_on.
 # For example applying new cluster_morefid settings if new compute-vmware role has been added
-exec {'neutron-server-stop':
+exec { 'neutron-server-stop':
   path     => '/usr/sbin:/usr/bin:/sbin:/bin',
   command  => "service ${::neutron::params::server_service} stop",
   provider => 'shell',
@@ -27,7 +27,7 @@ neutron_config {
   'service_providers/service_provider': value => $::nsxv::params::service_providers;
 }
 
-Neutron_config<||> ~> Service['neutron-server']
+Neutron_config<||> ~> Service['neutron-server-start']
 Exec['neutron-server-stop'] -> Service['neutron-server-start']
 
 if 'primary-controller' in hiera('roles') {
@@ -65,7 +65,7 @@ if 'primary-controller' in hiera('roles') {
     try_sleep   => '15',
     command     => 'neutron net-list --http-timeout=4 2>&1 > /dev/null',
     provider    => 'shell',
-    subscribe   => Service['neutron-server'],
+    subscribe   => Service['neutron-server-start'],
     refreshonly => true,
   }
 
@@ -75,11 +75,14 @@ if 'primary-controller' in hiera('roles') {
   $nsxv_password = $settings['nsxv_password']
   $datacenter_id = $settings['nsxv_datacenter_moid']
 
-  class {'nsxv::neutron_server_check_md_proxy':
-    nsxv_ip       => $nsxv_ip,
-    nsxv_user     => $nsxv_user,
-    nsxv_password => $nsxv_password,
-    datacenter_id => $datacenter_id,
-    require       => [Service['neutron-server'],Exec['waiting-for-neutron-api']],
+  # We can not rely on NSX Manager response regarding readiness of metadata router.
+  # Seems that NSX Manager responses with deployedStatus true, but in fact metadata
+  # router serve requests and neutron-server on secondary controller may fail with
+  # metadata initialization step (unrecoverable error).
+  # Ten seconds should be enough even for very loaded environment.
+  exec { 'wait-for-metadata-router':
+    exec    => "sleep 10",
+    path    => "/bin:/usr/bin",
+    require => [Service['neutron-server-start'],Exec['waiting-for-neutron-api']],
   }
 }
