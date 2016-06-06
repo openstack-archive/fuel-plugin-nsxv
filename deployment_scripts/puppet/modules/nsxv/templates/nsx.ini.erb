@@ -88,7 +88,7 @@ retries = <%= settings['nsxv_retries'] %>
 
 # If True, the server instance will attempt to initialize the metadata
 # infrastructure for access to nova-metadata service
-metadata_initializer = <%= scope.lookupvar('metadata_initializer') %>
+metadata_initializer =
 <% if settings['nsxv_metadata_initializer'] -%>
 # (Optional) Network ID for management network connectivity
 <% if not (settings['nsxv_mgt_net_moid']).to_s.strip.empty? -%>
