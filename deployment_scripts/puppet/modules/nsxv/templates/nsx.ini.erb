@@ -122,7 +122,11 @@ mgt_net_default_gateway = <%= scope.lookupvar('mgt_gateway') %>
 nova_metadata_ips = <%= scope.lookupvar('nova_metadata_ips') %>
 
 # (Optional) TCP Port used by Nova metadata server
-nova_metadata_port = <%= scope.lookupvar('nova_metadata_port') %>
++<% if not (scope.lookupvar('nova_metadata_port')).to_s.strip.empty? -%>
+ nova_metadata_port = <%= scope.lookupvar('nova_metadata_port') %>
++<% else -%>
++# mgt_metadata_port =
++<% end -%>
 
 # (Optional) Shared secret to sign metadata requests
 metadata_shared_secret = <%= scope.lookupvar('metadata_shared_secret') %>
