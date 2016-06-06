@@ -27,8 +27,7 @@ user = ARGV[1]
 pass = ARGV[2]
 datacenter_id = ARGV[3]
 
-api_url = 'https://' + ip + '/api/4.0/edges/'
-list_edges_url = api_url + '?datacenter=' + datacenter_id
+list_edges_url = "https://#{ip}/api/4.0/edges/?datacenter=#{datacenter_id}"
 
 # in worst case this scripts overall timeout is 15 seconds (3 tries * 5 second each try
 def get_nsxv_api(url, user, pass)
@@ -40,13 +39,14 @@ def get_nsxv_api(url, user, pass)
     else
       fail
     end
-  rescue
+  rescue => e
     retry_count -= 1
     if retry_count > 0
       sleep 5
       retry
     else
-      puts 'Can not get response for request ' + url
+      puts "Cannot get response for request #{url}"
+      puts "NSX Manager responded: #{e.message}"
       raise
     end
   end
@@ -54,12 +54,22 @@ def get_nsxv_api(url, user, pass)
 end
 
 # list all edges
-response = get_nsxv_api(list_edges_url, user, pass )
+
+EDGE_METADATA_TYPE = 'metadata_proxy_router*'
+EDGE_DEPLOYED_STATE = 'deployed'
+EDGE_READY_STATUS = 'green'
+
+EXIT_SUCCESS = 0
+EXIT_FAILURE = 1
+
+response = get_nsxv_api(list_edges_url, user, pass)
 response.xpath("//edgeSummary").each do |edge|
-  if /metadata_proxy_router*/i.match(edge.xpath("name").text)
-    if /deployed/i.match(edge.at_xpath("state").text) and /green/i.match(edge.at_xpath("edgeStatus").text)
-      exit 0
+  if /#{EDGE_METADATA_TYPE}/i.match(edge.xpath("name").text)
+    if /#{EDGE_DEPLOYED_STATE}/i.match(edge.at_xpath("state").text) and
+      /#{EDGE_READY_STATE}/i.match(edge.at_xpath("edgeStatus").text)
+      exit EXIT_SUCCESS
     end
   end
 end
-exit 1
+
+exit EXIT_FAILURE
