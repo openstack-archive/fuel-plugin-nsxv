@@ -1,7 +1,7 @@
 - id: hiera-override
   version: 2.0.0
   type: puppet
-  groups: [primary-controller,controller,compute-vmware]
+  groups: [primary-controller, controller, compute-vmware]
   required_for: [netconfig]
   requires: [globals]
   parameters:
@@ -11,8 +11,8 @@
 - id: gem-install
   version: 2.0.0
   type: puppet
-  groups: [primary-controller,controller]
-  required_for: [nsxv-install]
+  groups: [primary-controller, controller]
+  required_for: [nsxv-install-packages]
   requires: [globals]
   parameters:
     puppet_manifest: puppet/manifests/gem-install.pp
@@ -49,53 +49,88 @@
     puppet_manifest: puppet/manifests/haproxy-neutron-config.pp
     puppet_modules: puppet/modules
     timeout: 120
-- id: nsxv-install
+- id: nsxv-install-packages
   version: 2.0.0
   refresh_on: [neutron_config,nova_config]
   type: puppet
   groups: [primary-controller,controller]
-  required_for: [openstack-network-neutron-start,primary-openstack-network-neutron-start,vmware-vcenter]
+  required_for: [neutron-start-primary-controller, neutron-start-controller, vmware-vcenter]
   requires: [openstack-network-server-nova]
   parameters:
-    puppet_manifest: puppet/manifests/nsxv-config.pp
+    puppet_manifest: puppet/manifests/nsxv-install-packages.pp
     puppet_modules: puppet/modules
-    timeout: 300
+    timeout: 60
 - id: openstack-network-neutron-policy
   version: 2.0.0
   type: puppet
   groups: [primary-controller,controller]
-  required_for: [openstack-network-neutron-start,primary-openstack-network-neutron-start]
+  required_for: [neutron-start-primary-controller, neutron-start-controller]
   requires: [openstack-network-server-config]
   parameters:
     puppet_manifest: puppet/manifests/neutron-server-policy.pp
     puppet_modules: puppet/modules
     timeout: 300
-- id: openstack-network-neutron-start
+- id: nsxv-neutron-configure-common
   version: 2.0.0
   refresh_on: [neutron_config]
   type: puppet
-  groups: [controller]
-  required_for: [openstack-network-end]
-  requires: [openstack-network-neutron-policy,nsxv-install]
-  cross-depends:
-    - name: primary-openstack-network-neutron-start
+  groups: [primary-controller, controller]
+  required_for: [openstack-network-networks-nsxv]
+  requires: [openstack-network-neutron-policy, nsxv-install-packages]
   parameters:
-    puppet_manifest: puppet/manifests/neutron-server-start.pp
+    puppet_manifest: puppet/manifests/neutron-configure-common.pp
     puppet_modules: puppet/modules
-    timeout: 1800
-    strategy:
-      type: one_by_one
-- id: primary-openstack-network-neutron-start
+    timeout: 60
+- id: neutron-start-primary-controller
   version: 2.0.0
   refresh_on: [neutron_config]
   type: puppet
   groups: [primary-controller]
   required_for: [openstack-network-networks-nsxv]
-  requires: [openstack-network-neutron-policy,nsxv-install]
+  requires: [openstack-network-neutron-policy, nsxv-configure-primary-controller, nsxv-install-packages]
   parameters:
-    puppet_manifest: puppet/manifests/neutron-server-start.pp
+    puppet_manifest: puppet/manifests/neutron-start-primary-controller.pp
     puppet_modules: puppet/modules
-    timeout: 1800
+    timeout: 60
+- id: neutron-start-controller
+  version: 2.0.0
+  refresh_on: [neutron_config]
+  type: puppet
+  groups: [controller]
+  required_for: [openstack-network-networks-nsxv, nsxv-configure-controller]
+  requires: [deploy_end]
+  parameters:
+    puppet_manifest: puppet/manifests/neutron-start-controller.pp
+    puppet_modules: puppet/modules
+    timeout: 60
+    strategy:
+      type: one_by_one
+- id: nsxv-configure-common
+  version: 2.0.0
+  refresh_on: [openstack-network-neutron-policy, nsxv-install-packages]
+  type: puppet
+  groups: [primary-controller, controller]
+  parameters:
+    puppet_manifest: puppet/manifests/neutron-server-configure.pp
+    puppet_modules: puppet/modules
+- id: nsxv-configure-primary-controller
+  version: 2.0.0
+  refresh_on: [nsxv-configure-common]
+  type: puppet
+  groups: [primary-controller]
+  parameters:
+    puppet_manifest: puppet/manifests/nsxv-configure-primary-controller.pp
+    puppet_modules: puppet/modules
+    timeout: 30
+- id: nsxv-configure-controller
+  version: 2.0.0
+  refresh_on: [nsxv-configure-common]
+  type: puppet
+  groups: [controller]
+  parameters:
+    puppet_manifest: puppet/manifests/nsxv-configure-controller.pp
+    puppet_modules: puppet/modules
+    timeout: 30
 - id: openstack-network-networks-nsxv
   version: 2.0.0
   type: puppet
