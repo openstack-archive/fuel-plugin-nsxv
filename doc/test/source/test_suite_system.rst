@@ -1094,7 +1094,7 @@ Steps
     6. Add to field 'Metadata allowed ports' value '443,8775'.
     7. Deploy cluster.
     8. Run OSTF.
-    4. Launch instance and run command from it::
+    9. Launch instance and run command from it::
 
 	wget -O - 169.254.169.254
 
