@@ -129,18 +129,18 @@ metadata_shared_secret = <%= scope.lookupvar('metadata_shared_secret') %>
 
 # (Optional) If True, the end to end connection for metadata service is
 # not verified. If False, the default CA truststore is used for verification.
-metadata_insecure = <%= scope.lookupvar('metadata_insecure') %>
+metadata_insecure = <%= settings['nsxv_metadata_insecure'] %>
 
 # (Optional) Client certificate to use when metadata connection is to be
 # verified. If not provided, a self signed certificate will be used.
-<% if not scope.lookupvar('metadata_insecure') -%>
+<% if scope.lookupvar('metadata_nova_client_cert_file') -%>
 metadata_nova_client_cert = <%= scope.lookupvar('metadata_nova_client_cert_file') %>
 <% else -%>
 # metadata_nova_client_cert =
 <% end -%>
 
 # (Optional) Private key to use for client certificate
-<% if not scope.lookupvar('metadata_insecure') -%>
+<% if scope.lookupvar('metadata_nova_client_priv_key_file') -%>
 metadata_nova_client_priv_key = <%= scope.lookupvar('metadata_nova_client_priv_key_file') %>
 <% else -%>
 # metadata_nova_client_priv_key =
