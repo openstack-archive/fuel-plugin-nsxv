@@ -68,18 +68,4 @@ if 'primary-controller' in hiera('roles') {
     subscribe   => Service['neutron-server'],
     refreshonly => true,
   }
-
-  $settings      = hiera($::nsxv::params::plugin_name)
-  $nsxv_ip       = $settings['nsxv_manager_host']
-  $nsxv_user     = $settings['nsxv_user']
-  $nsxv_password = $settings['nsxv_password']
-  $datacenter_id = $settings['nsxv_datacenter_moid']
-
-  class {'nsxv::neutron_server_check_md_proxy':
-    nsxv_ip       => $nsxv_ip,
-    nsxv_user     => $nsxv_user,
-    nsxv_password => $nsxv_password,
-    datacenter_id => $datacenter_id,
-    require       => [Service['neutron-server'],Exec['waiting-for-neutron-api']],
-  }
 }
