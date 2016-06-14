@@ -805,9 +805,7 @@ class TestNSXvPlugin(TestBasic):
         self.fuel_web.deploy_cluster_wait(cluster_id, check_services=False)
 
         self.fuel_web.run_ostf(
-            cluster_id=cluster_id, test_sets=['smoke', 'sanity', 'ha'],
-            should_fail=1,
-            failed_test_name=['Check that required services are running'])
+            cluster_id=cluster_id, test_sets=['smoke', 'sanity', 'ha'])
 
         srv_list = os_conn.get_servers()
         assert_true(len(srv_list) == 2,
@@ -834,9 +832,7 @@ class TestNSXvPlugin(TestBasic):
         self.fuel_web.deploy_cluster_wait(cluster_id, check_services=False)
 
         self.fuel_web.run_ostf(
-            cluster_id=cluster_id, test_sets=['smoke', 'sanity', 'ha'],
-            should_fail=1,
-            failed_test_name=['Check that required services are running'])
+            cluster_id=cluster_id, test_sets=['smoke', 'sanity', 'ha'])
 
         srv_list = os_conn.get_servers()
         assert_true(len(srv_list) == 2,
@@ -865,7 +861,7 @@ class TestNSXvPlugin(TestBasic):
             2. Install plugin.
             3. Create cluster with vcenter.
             4. Add 3 node with controller + mongo roles.
-            5. Add 2 node with compute role.
+            5. Add 1 node with compute role.
             5. Deploy the cluster.
             6. Run OSTF.
 
@@ -916,15 +912,17 @@ class TestNSXvPlugin(TestBasic):
         """Deploy cluster with plugin in HA mode.
 
         Scenario:
-            1. Upload plugins to the master node
+            1. Upload plugin to the master node
             2. Install plugin.
             3. Create cluster with vcenter.
             4. Add 3 node with controller role.
-            5. Add 2 node with compute role.
+            5. Add 1 node with compute role.
             6. Deploy the cluster.
             7. Run OSTF.
+            8. Split Availability zone 'vcenter'. Move one vmcluster to
+               created az.
 
-        Duration 2.5 hours
+        Duration 1 hours
 
         """
         self.env.revert_snapshot("ready_with_5_slaves")
@@ -1095,6 +1093,8 @@ class TestNSXvPlugin(TestBasic):
                               nics=[{'net-id': private_net_2['id']}],
                               security_group=sec_group.name,
                               availability_zone=pt_settings.AZ_VCENTER1)
+
+        self.create_and_assign_floating_ip(os_conn=os_conn, ext_net=net)
 
         # Send ping from instances VM_1 and VM_2 to 8.8.8.8
         srv_list = os_conn.get_servers()
