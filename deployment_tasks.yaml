@@ -70,21 +70,6 @@
     puppet_manifest: puppet/manifests/neutron-server-policy.pp
     puppet_modules: puppet/modules
     timeout: 300
-- id: openstack-network-neutron-start
-  version: 2.0.0
-  refresh_on: [neutron_config]
-  type: puppet
-  groups: [controller]
-  required_for: [openstack-network-end]
-  requires: [openstack-network-neutron-policy,nsxv-install]
-  cross-depends:
-    - name: primary-openstack-network-neutron-start
-  parameters:
-    puppet_manifest: puppet/manifests/neutron-server-start.pp
-    puppet_modules: puppet/modules
-    timeout: 1800
-    strategy:
-      type: one_by_one
 - id: primary-openstack-network-neutron-start
   version: 2.0.0
   refresh_on: [neutron_config]
@@ -116,6 +101,21 @@
     puppet_manifest: puppet/manifests/horizon-enable-lbaas.pp
     puppet_modules: puppet/modules
     timeout: 120
+
+# post deployment tasks
+- id: openstack-network-neutron-start
+  version: 2.0.0
+  refresh_on: [neutron_config]
+  type: puppet
+  groups: [controller]
+  required_for: [openstack-network-end]
+  requires: [post_deployment_start]
+  parameters:
+    puppet_manifest: puppet/manifests/neutron-server-start.pp
+    puppet_modules: puppet/modules
+    timeout: 1800
+    strategy:
+      type: one_by_one
 
 # skipped tasks
 - id: primary-openstack-network-plugins-l2
