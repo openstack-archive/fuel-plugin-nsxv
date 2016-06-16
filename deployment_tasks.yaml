@@ -108,7 +108,6 @@
   refresh_on: [neutron_config]
   type: puppet
   groups: [controller]
-  required_for: [openstack-network-end]
   requires: [post_deployment_start]
   parameters:
     puppet_manifest: puppet/manifests/neutron-server-start.pp
