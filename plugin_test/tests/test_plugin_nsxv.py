@@ -704,15 +704,15 @@ class TestNSXvPlugin(TestBasic):
             1. Upload plugins to the master node.
             2. Install plugin.
             3. Create cluster with vcenter.
-            4. Add 4 node with controller role.
-            5. Add 1 node with cinder-vmware role.
-            6. Add 1 node with compute role.
+            4. Add 5 node with controller role.
+               Add 1 node with cinder-vmware role.
+               Add 1 node with compute role.
             7. Deploy cluster.
             8. Run OSTF.
-            9. Remove node with controller role.
+            9. Remove 2 nodes with controller role.
             10. Redeploy cluster.
             11. Run OSTF.
-            12. Add node with controller role.
+            12. Add 2 nodes with controller role.
             13. Redeploy cluster.
             14. Run OSTF.
 
@@ -756,10 +756,11 @@ class TestNSXvPlugin(TestBasic):
              'slave-02': ['controller'],
              'slave-03': ['controller'],
              'slave-04': ['controller'],
-             'slave-05': ['cinder-vmware'],
-             'slave-06': ['compute-vmware'], })
+             'slave-05': ['controller'],
+             'slave-06': ['cinder-vmware'],
+             'slave-07': ['compute-vmware'], })
 
-        target_node_1 = self.node_name('slave-06')
+        target_node_1 = self.node_name('slave-07')
 
         # Configure VMWare vCenter settings
         self.fuel_web.vcenter_configure(cluster_id,
@@ -797,17 +798,16 @@ class TestNSXvPlugin(TestBasic):
                     "Check that there are sufficient resources to create VMs")
         self.check_connection_vms(os_conn, srv_list)
 
-        # Remove node with controller role
+        # Remove 2 nodes with controller role
         self.fuel_web.update_nodes(
             cluster_id,
-            {'slave-04': ['controller'], }, False, True)
+            {'slave-04': ['controller'], 'slave-05': ['controller']},
+            False, True)
 
         self.fuel_web.deploy_cluster_wait(cluster_id, check_services=False)
 
         self.fuel_web.run_ostf(
-            cluster_id=cluster_id, test_sets=['smoke', 'sanity', 'ha'],
-            should_fail=1,
-            failed_test_name=['Check that required services are running'])
+            cluster_id=cluster_id, test_sets=['smoke', 'sanity', 'ha'])
 
         srv_list = os_conn.get_servers()
         assert_true(len(srv_list) == 2,
@@ -824,19 +824,17 @@ class TestNSXvPlugin(TestBasic):
                         neutron_without_data)['exit_code'] == 0,
                     timeout=60)
             except TimeoutError:
-                raise TimeoutError("mqsqldump error")
+                raise TimeoutError("mysqldump error")
 
-        # Add node with controller role
+        # Add 2 nodes with controller role
         self.fuel_web.update_nodes(
             cluster_id,
-            {'slave-04': ['controller'], })
+            {'slave-04': ['controller'], 'slave-05': ['controller']})
 
         self.fuel_web.deploy_cluster_wait(cluster_id, check_services=False)
 
         self.fuel_web.run_ostf(
-            cluster_id=cluster_id, test_sets=['smoke', 'sanity', 'ha'],
-            should_fail=1,
-            failed_test_name=['Check that required services are running'])
+            cluster_id=cluster_id, test_sets=['smoke', 'sanity', 'ha'])
 
         srv_list = os_conn.get_servers()
         assert_true(len(srv_list) == 2,
@@ -850,7 +848,7 @@ class TestNSXvPlugin(TestBasic):
                         neutron_add_controller)['exit_code'] == 0,
                     timeout=60)
             except TimeoutError:
-                raise TimeoutError("mqsqldump error")
+                raise TimeoutError("mysqldump error")
                 diff = remote.execute(compare_data_vs_no_data)['stdout']
                 assert_true(check_diff(diff), "Check the diff {}".format(diff))
 
@@ -865,7 +863,7 @@ class TestNSXvPlugin(TestBasic):
             2. Install plugin.
             3. Create cluster with vcenter.
             4. Add 3 node with controller + mongo roles.
-            5. Add 2 node with compute role.
+            5. Add 1 node with compute role.
             5. Deploy the cluster.
             6. Run OSTF.
 
@@ -916,15 +914,17 @@ class TestNSXvPlugin(TestBasic):
         """Deploy cluster with plugin in HA mode.
 
         Scenario:
-            1. Upload plugins to the master node
+            1. Upload plugin to the master node
             2. Install plugin.
             3. Create cluster with vcenter.
             4. Add 3 node with controller role.
-            5. Add 2 node with compute role.
+            5. Add 1 node with compute role.
             6. Deploy the cluster.
             7. Run OSTF.
+            8. Split Availability zone 'vcenter'. Move one vmcluster to
+               created az.
 
-        Duration 2.5 hours
+        Duration 1 hours
 
         """
         self.env.revert_snapshot("ready_with_5_slaves")
@@ -1095,6 +1095,8 @@ class TestNSXvPlugin(TestBasic):
                               nics=[{'net-id': private_net_2['id']}],
                               security_group=sec_group.name,
                               availability_zone=pt_settings.AZ_VCENTER1)
+
+        self.create_and_assign_floating_ip(os_conn=os_conn, ext_net=net)
 
         # Send ping from instances VM_1 and VM_2 to 8.8.8.8
         srv_list = os_conn.get_servers()
