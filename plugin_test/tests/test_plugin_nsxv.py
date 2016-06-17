@@ -485,7 +485,7 @@ class TestNSXvPlugin(TestBasic):
           groups=["nsxv_smoke_add_compute"])
     @log_snapshot_after_test
     def nsxv_smoke_add_compute(self):
-        """Deploy a cluster with NSXv Plugin, after add compute-vmware role.
+        """Add compute-vmware role and redeploy cluster with NSXv Plugin.
 
         Scenario:
             1. Upload the plugin to master node
@@ -493,9 +493,9 @@ class TestNSXvPlugin(TestBasic):
             3. Provision three controller node
             4. Deploy cluster with plugin
             5. Get configured clusters morefid from neutron config
-            6. Add compute-vmware role
+            6. Add node with compute-vmware role
             7. Redeploy cluster with new node
-            8. Get new configured clusters modrefid from neutron config
+            8. Get new configured clusters morefid from neutron config
             9. Check new cluster added in neutron config
 
         Duration 90 min
@@ -635,6 +635,9 @@ class TestNSXvPlugin(TestBasic):
             9. Remove node cinder-vmware.
            10. Redeploy cluster.
            11. Run OSTF.
+           12. Remove node compute-vmware.
+           13. Redeploy cluster.
+           14. Run OSTF.
 
         Duration 3 hours
 
@@ -688,6 +691,17 @@ class TestNSXvPlugin(TestBasic):
         self.fuel_web.update_nodes(
             cluster_id,
             {'slave-05': ['cinder-vmware'], }, False, True)
+
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id, test_sets=['smoke'])
+
+        # Remove node with compute-vmware role and redeploy cluster
+        self.fuel_web.update_nodes(
+            cluster_id,
+            {'slave-04': ['compute-vmware'], }, False, True)
+        self.fuel_web.vcenter_configure(cluster_id)
 
         self.fuel_web.deploy_cluster_wait(cluster_id)
 
@@ -2474,16 +2488,16 @@ class TestNSXvPlugin(TestBasic):
         Scenario:
             1. Setup cluster with 3 controllers and cinder-vmware +
                compute-vmware role.
-            2. Assign instances in each az.
+            2. Assign instances in vcenter az.
             3. Disable one of compute host with vCenter cluster
                (Admin -> Hypervisors).
             4. Create several instances in vcenter az.
             5. Check that instances were created on enabled compute host
                (vcenter cluster).
-            7. Disable second compute host with vCenter cluster and enable
+            6. Disable second compute host with vCenter cluster and enable
                first one.
-            9. Create several instances in vcenter az.
-           10. Check that instances were created on enabled compute host
+            7. Create several instances in vcenter az.
+            8. Check that instances were created on enabled compute host
                (vcenter cluster).
 
         Duration 1.5 hours

@@ -1116,3 +1116,91 @@ Request should return::
  2008-02-01
  2008-09-01
  2009-04-04
+
+
+Verify that instances could be launched on enabled compute host
+---------------------------------------------------------------
+
+
+ID
+##
+
+nsxv_disable_hosts
+
+
+Description
+###########
+
+Check instance creation on enabled cluster.
+
+
+Complexity
+##########
+
+core
+
+
+Steps
+#####
+
+            1. Setup cluster with 3 controllers and cinder-vmware +
+               compute-vmware role.
+            2. Assign instances in each az.
+            3. Disable one of compute host with vCenter cluster
+               (Admin -> Hypervisors).
+            4. Create several instances in vcenter az.
+            5. Check that instances were created on enabled compute host
+               (vcenter cluster).
+            6. Disable second compute host with vCenter cluster and enable
+               first one.
+            7. Create several instances in vcenter az.
+            8. Check that instances were created on enabled compute host
+               (vcenter cluster).
+
+
+Expected result
+###############
+
+All instances work fine.
+
+
+Check that settings about new cluster are placed in neutron config
+------------------------------------------------------------------
+
+
+ID
+##
+
+nsxv_smoke_add_compute
+
+
+Description
+###########
+
+Adding compute-vmware role and redeploy cluster with NSXv Plugin has effect in neutron configs.
+
+
+Complexity
+##########
+
+core
+
+
+Steps
+#####
+
+            1. Upload the plugin to master node.
+            2. Create cluster and configure NSXv for that cluster.
+            3. Provision three controller node.
+            4. Deploy cluster with plugin.
+            5. Get configured clusters morefid from neutron config.
+            6. Add node with compute-vmware role.
+            7. Redeploy cluster with new node.
+            8. Get new configured clusters morefid from neutron config.
+            9. Check new cluster added in neutron config.
+
+
+Expected result
+###############
+
+Clusters are reconfigured after compute-vmware has been added.
