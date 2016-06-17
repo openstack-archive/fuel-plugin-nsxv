@@ -285,6 +285,45 @@ Expected result
 Cluster should be deployed and all OSTF test cases should be passed.
 
 
+Check option 'HA for edges' works correct
+-----------------------------------------
+
+
+ID
+##
+
+nsxv_ha_edges
+
+
+Description
+###########
+
+Check that HA on edges functions properly.
+
+
+Complexity
+##########
+
+core
+
+
+Steps
+#####
+
+    1. Install NSXv plugin.
+    2. Enable plugin on tab Settings -> NSXv plugin.
+    3. Fill the form with corresponding values.
+    4. Set checkbox 'Enable HA for NSX Edges'.
+    5. Deploy cluster with one controller.
+    6. Run OSTF.
+
+
+Expected result
+###############
+
+Cluster should be deployed and all OSTF test cases should be passed.
+
+
 Verify that nsxv driver configured properly after enabling NSXv plugin
 ----------------------------------------------------------------------
 
