@@ -1,0 +1,10 @@
+Code-Review+1: Fuel TPI CI <pi-ci@mirantis.com>
+Code-Review+1: Ilya Bumarskov <ibumarskov@mirantis.com>
+Code-Review+2: Igor Zinovik <izinovik@mirantis.com>
+Workflow+1: Igor Zinovik <izinovik@mirantis.com>
+Verified+2: Jenkins
+Submitted-by: Jenkins
+Submitted-at: Mon, 20 Jun 2016 13:18:31 +0000
+Reviewed-on: https://review.openstack.org/330947
+Project: openstack/fuel-plugin-nsxv
+Branch: refs/heads/master
