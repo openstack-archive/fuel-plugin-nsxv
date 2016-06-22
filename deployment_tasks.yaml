@@ -70,6 +70,19 @@
     puppet_manifest: puppet/manifests/neutron-server-policy.pp
     puppet_modules: puppet/modules
     timeout: 300
+- id: openstack-network-neutron-stop
+  version: 2.0.0
+  refresh_on: [neutron_config]
+  type: puppet
+  groups: [controller]
+  required_for: [deploy_end]
+  requires: [openstack-network-neutron-policy,nsxv-install]
+  cross-depended-by:
+    - name: primary-openstack-network-neutron-start
+  parameters:
+    puppet_manifest: puppet/manifests/neutron-server-stop.pp
+    puppet_modules: puppet/modules
+    timeout: 180
 - id: primary-openstack-network-neutron-start
   version: 2.0.0
   refresh_on: [neutron_config]
