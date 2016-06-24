@@ -31,6 +31,9 @@ from fuelweb_test.settings import NEUTRON_SEGMENT_TYPE
 from fuelweb_test.settings import SERVTEST_PASSWORD
 from fuelweb_test.settings import SERVTEST_TENANT
 from fuelweb_test.settings import SERVTEST_USERNAME
+from fuelweb_test.settings import VCENTER_IP
+from fuelweb_test.settings import VCENTER_PASSWORD
+from fuelweb_test.settings import VCENTER_USERNAME
 
 from fuelweb_test.tests.base_test_case import SetupEnvironment
 from fuelweb_test.tests.base_test_case import TestBasic
@@ -664,13 +667,20 @@ class TestNSXvPlugin(TestBasic):
             1. Upload plugins to the master node.
             2. Install plugin.
             3. Create cluster with vcenter.
-            4. Add 3 node with controller role, compute-vmware, cinder-vmware.
-            5. Remove node cinder-vmware.
-            6. Add node with cinder role.
-            7. Redeploy cluster.
-            8. Run OSTF.
+            4. Add 3 nodes with controller role, compute-vmware.
+            5. Deploy cluster.
+            6. Run OSTF.
+            7. Add node cinder-vmware.
+            8. Redeploy cluster.
+            9. Run OSTF.
+           10. Remove node cinder-vmware.
+           11. Redeploy cluster.
+           12. Run OSTF.
+           13. Remove node compute-vmware.
+           14. Redeploy cluster.
+           15. Run OSTF.
 
-        Duration 3 hours
+        Duration 2 hours
 
         """
         self.env.revert_snapshot("ready_with_9_slaves")
@@ -678,7 +688,6 @@ class TestNSXvPlugin(TestBasic):
         self.install_nsxv_plugin()
 
         settings = self.get_settings()
-        settings["images_vcenter"] = True
         # Configure cluster
         cluster_id = self.fuel_web.create_cluster(
             name=self.__class__.__name__,
@@ -698,7 +707,6 @@ class TestNSXvPlugin(TestBasic):
 
         # Configure VMWare vCenter settings
         self.fuel_web.vcenter_configure(cluster_id,
-                                        vc_glance=True,
                                         multiclusters=True,
                                         target_node_1=target_node_1)
 
@@ -710,11 +718,10 @@ class TestNSXvPlugin(TestBasic):
         self.fuel_web.run_ostf(
             cluster_id=cluster_id, test_sets=['smoke'])
 
-        # Add 1 node with cinder-vmware role and redeploy cluster
+        # Add node with cinder-vmware role
         self.fuel_web.update_nodes(
             cluster_id,
             {'slave-05': ['cinder-vmware'], })
-
         self.fuel_web.deploy_cluster_wait(cluster_id)
 
         self.fuel_web.run_ostf(
@@ -724,11 +731,49 @@ class TestNSXvPlugin(TestBasic):
         self.fuel_web.update_nodes(
             cluster_id,
             {'slave-05': ['cinder-vmware'], }, False, True)
-
         self.fuel_web.deploy_cluster_wait(cluster_id)
 
         self.fuel_web.run_ostf(
             cluster_id=cluster_id, test_sets=['smoke'])
+
+        # Remove node with compute-vmware role and redeploy cluster
+        self.fuel_web.update_nodes(
+            cluster_id,
+            {'slave-04': ['compute-vmware'], }, False, True)
+        vcenter_value = {
+            "glance": {
+                "vcenter_username": "",
+                "datacenter": "",
+                "vcenter_host": "",
+                "vcenter_password": "",
+                "datastore": "", },
+            "availability_zones": [
+                {"vcenter_username": VCENTER_USERNAME,
+                 "nova_computes": [
+                     {"datastore_regex": ".*",
+                      "vsphere_cluster": "Cluster2",
+                      "service_name": "vmcluster2",
+                      "target_node": {
+                          "current": {"id": 'controllers',
+                                      "label": 'controllers'},
+                          "options": [{"id": "controllers",
+                                       "label": "controllers"}, ]},
+                      },
+
+                 ],
+                    "vcenter_host": VCENTER_IP,
+                    "az_name": "vcenter",
+                    "vcenter_password": VCENTER_PASSWORD,
+                 }],
+            "network": {"esxi_vlan_interface": "vmnic0"}
+        }
+        self.fuel_web.vcenter_configure(cluster_id, vcenter_value)
+        self.fuel_web.deploy_cluster_wait(cluster_id, check_services=False)
+
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id, test_sets=['smoke'],
+            should_fail=1,
+            failed_test_name=['Check that required services are running'])
 
     @test(depends_on=[SetupEnvironment.prepare_slaves_9],
           groups=["nsxv_add_delete_controller", "nsxv_plugin"])
