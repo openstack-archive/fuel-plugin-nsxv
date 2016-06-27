@@ -39,19 +39,16 @@ class nsxv (
     $metadata_initializer = false
   }
 
-  if $settings['nsxv_metadata_initializer'] {
-    $metadata_nova_client_cert_filename = try_get_value($settings['nsxv_metadata_nova_client_cert'], 'name', '')
+  if !$settings['nsxv_metadata_insecure'] {
+    $metadata_nova_client_cert_filename     = try_get_value($settings['nsxv_metadata_nova_client_cert'], 'name', '')
     $metadata_nova_client_priv_key_filename = try_get_value($settings['nsxv_metadata_nova_client_priv_key'], 'name', '')
-    if empty($metadata_nova_client_cert_filename) and empty($metadata_nova_client_priv_key_filename) {
-      $metadata_insecure = true # used in nsx.ini.erb template
-    } else {
-      $metadata_insecure = false
 
+    if !empty($metadata_nova_client_cert_filename) and !empty($metadata_nova_client_priv_key_filename) {
       $metadata_nova_client_cert_content = $settings['nsxv_metadata_nova_client_cert']['content']
-      $metadata_nova_client_cert_file = "${nsxv_config_dir}/cert_${metadata_nova_client_cert_filename}"
+      $metadata_nova_client_cert_file    = "${nsxv_config_dir}/cert_${metadata_nova_client_cert_filename}"
 
       $metadata_nova_client_priv_key_content = $settings['nsxv_metadata_nova_client_priv_key']['content']
-      $metadata_nova_client_priv_key_file = "${nsxv_config_dir}/key_${metadata_nova_client_priv_key_filename}"
+      $metadata_nova_client_priv_key_file    = "${nsxv_config_dir}/key_${metadata_nova_client_priv_key_filename}"
 
       file { $metadata_nova_client_cert_file:
         ensure  => present,
