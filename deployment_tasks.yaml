@@ -12,7 +12,7 @@
   version: 2.0.0
   type: puppet
   groups: [primary-controller,controller]
-  required_for: [nsxv-install]
+  required_for: [nsxv-config]
   requires: [globals]
   parameters:
     puppet_manifest: puppet/manifests/gem-install.pp
@@ -49,7 +49,7 @@
     puppet_manifest: puppet/manifests/haproxy-neutron-config.pp
     puppet_modules: puppet/modules
     timeout: 120
-- id: nsxv-install
+- id: nsxv-config
   version: 2.0.0
   refresh_on: [neutron_config,nova_config]
   type: puppet
@@ -76,7 +76,7 @@
   type: puppet
   groups: [controller]
   required_for: [deploy_end]
-  requires: [openstack-network-neutron-policy,nsxv-install]
+  requires: [openstack-network-neutron-policy,nsxv-config]
   cross-depended-by:
     - name: primary-openstack-network-neutron-start
   parameters:
@@ -89,7 +89,7 @@
   type: puppet
   groups: [primary-controller]
   required_for: [openstack-network-networks-nsxv]
-  requires: [openstack-network-neutron-policy,nsxv-install]
+  requires: [openstack-network-neutron-policy,nsxv-config]
   parameters:
     puppet_manifest: puppet/manifests/neutron-server-start.pp
     puppet_modules: puppet/modules
