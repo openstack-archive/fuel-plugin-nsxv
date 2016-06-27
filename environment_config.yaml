@@ -113,16 +113,12 @@ attributes:
     description: 'If enabled, instance will attempt to initialize the metadata infrastructure to access to metadata proxy  service'
     weight: 70
     type: 'checkbox'
-  nsxv_metadata_listen:
-    label: 'Which network will be used to access the nova-metadata'
+  nsxv_metadata_insecure:
+    value: true
+    label: 'Bypass metadata service certificate verification'
+    description: ''
     weight: 75
-    type: 'select'
-    value: 'public'
-    values:
-      - data: 'public'
-        label: 'Public network'
-      - data: 'management'
-        label: 'Management network'
+    type: 'checkbox'
     restrictions:
       - condition: 'settings:nsxv.nsxv_metadata_initializer.value == false'
         action: 'hide'
@@ -130,7 +126,7 @@ attributes:
     value: ''
     label: 'Certificate for metadata proxy'
     description: 'PEM format'
-    weight: 85
+    weight: 80
     type: 'file'
     restrictions:
       - condition: 'settings:nsxv.nsxv_metadata_nova_client_priv_key.value.name != null and settings:nsxv.nsxv_metadata_nova_client_cert.value.name == null'
@@ -139,17 +135,34 @@ attributes:
         message: 'Private key loaded, but certificate is absent'
       - condition: 'settings:nsxv.nsxv_metadata_initializer.value == false'
         action: 'hide'
+      - condition: 'settings:nsxv.nsxv_metadata_insecure.value == true'
+        action: 'hide'
   nsxv_metadata_nova_client_priv_key:
     value: ''
     label: 'Private key'
     description: 'Private key for metadata certificate'
-    weight: 90
+    weight: 85
     type: 'file'
     restrictions:
       - condition: 'settings:nsxv.nsxv_metadata_nova_client_priv_key.value.name == null and settings:nsxv.nsxv_metadata_nova_client_cert.value.name != null'
         action: 'none'
         strict: false
         message: 'Certificate loaded, but private key is absent.'
+      - condition: 'settings:nsxv.nsxv_metadata_initializer.value == false'
+        action: 'hide'
+      - condition: 'settings:nsxv.nsxv_metadata_insecure.value == true'
+        action: 'hide'
+  nsxv_metadata_listen:
+    label: 'Which network will be used to access the nova-metadata'
+    weight: 90
+    type: 'select'
+    value: 'public'
+    values:
+      - data: 'public'
+        label: 'Public network'
+      - data: 'management'
+        label: 'Management network'
+    restrictions:
       - condition: 'settings:nsxv.nsxv_metadata_initializer.value == false'
         action: 'hide'
   nsxv_metadata_service_allowed_ports:
