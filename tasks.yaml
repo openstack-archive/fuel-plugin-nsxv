@@ -1,0 +1,6 @@
+- role: ['primary-controller','controller']
+  stage: post_deployment/6010
+  type: shell
+  parameters:
+    cmd: /usr/sbin/service nova-api restart
+    timeout: 60
