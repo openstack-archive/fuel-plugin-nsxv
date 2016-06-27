@@ -34,11 +34,16 @@ if $settings['nsxv_metadata_initializer'] {
     neutron_url_timeout    => $::nsxv::params::neutron_url_timeout,
     settings               => $settings,
     roles                  => $roles,
+    nsxv_config_dirs       => $::nsxv::params::nsxv_config_dirs,
+    nsxv_config_dir        => $::nsxv::params::nsxv_config_dir,
+
   }
 } else {
   class { '::nsxv':
     neutron_url_timeout => $::nsxv::params::neutron_url_timeout,
     settings            => $settings,
     roles               => $roles,
+    nsxv_config_dirs       => $::nsxv::params::nsxv_config_dirs,
+    nsxv_config_dir        => $::nsxv::params::nsxv_config_dir,
   }
 }
