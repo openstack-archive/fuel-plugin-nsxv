@@ -128,6 +128,15 @@
     timeout: 1800
     strategy:
       type: one_by_one
+- id: nova-api-restart
+  version: 2.0.0
+  type: puppet
+  groups: [primary-controller, controller]
+  requires: [post_deployment_start]
+  parameters:
+    puppet_manifest: puppet/manifests/nova-api-restart.pp
+    puppet_modules: puppet/modules
+    timeout: 180
 
 # skipped tasks
 - id: primary-openstack-network-plugins-l2
