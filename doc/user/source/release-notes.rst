@@ -1,6 +1,18 @@
 Release notes
 =============
 
+Release notes for Fuel NSXv plugin 3.0.0:
+
+  * Plugin is compatible with Fuel 9.0.
+  * Plugin settings were moved to Networks tab.
+  * Roles that are not applicable to environment with the plugin are hidden.
+  * Novas timeout of HTTP requests to Neutron was increased up to 900 seconds.
+    On big amount of requests neutron may be busy for a long period of time.
+  * User can assign nova-api-metadata to listen OpenStack public or management
+    network.
+  * LBaaS v2 support gets configured by default.
+  * Troubleshooting section was added to plugin guide.
+
 Release notes for Fuel NSXv plugin 2.0.0:
 
   * Plugin is compatible with Fuel 8.0.
