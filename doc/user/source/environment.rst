@@ -23,7 +23,7 @@ these steps:
    .. image:: /image/wizard-step2.png
       :scale: 70 %
 
-#. Once you get environment created add one or more controller node.
+#. Once you get environment created add one or more controller nodes.
 
 Pay attention on which interface you assign *Public* network, OpenStack
 controllers must have connectivity with NSX Manager host through *Public*

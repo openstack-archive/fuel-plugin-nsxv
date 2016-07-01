@@ -8,9 +8,16 @@ settings are shown on the screenshot below:
 .. image:: /image/nsxv-settings-filled.png
    :scale: 60 %
 
-Several plugins input fields refer to MoRef ID (Managed Object Reference ID),
+Several plugin input fields refer to MoRef ID (Managed Object Reference ID),
 these object IDs can be obtained via Managed Object Browser which is located on
 the vCenter host, e.g. https://hostname.yourdomain.org/mob
+
+Starting from Fuel 9.0 settings on web UI are not disabled and it is possible
+to run deployment process with changed settings against working cluster.  This
+change also impacts plugin settings which means that plugin settings can be
+changed and applied to Neutron. From plugin perspective it is not possible to
+disable specific input fields, below settings that break Neutron operations are
+commented.
 
 Plugin contains the following settings:
 
@@ -39,8 +46,10 @@ Plugin contains the following settings:
    deployed.
 
 #. Resource pool MoRef ID -- resource pool for NSX Edge nodes deployment.
+   Setting change on deployed cluster affects only new Edges.
 
-#. Datastore MoRef ID -- datastore for NSX Edge nodes.
+#. Datastore MoRef ID -- datastore for NSX Edge nodes. Change of datastore
+   setting on deployed cluster affects only new Edges.
 
 #. External portgroup MoRef ID -- portgroup through which NSX Edge nodes get
    connectivity with physical network.
@@ -91,6 +100,7 @@ Plugin contains the following settings:
 
 #. Enable HA for NSX Edges -- if you enable this option NSX Edges will be
    deployed in active/standby pair on different ESXi hosts.
+   Setting change on deployed cluster affects only new Edges.
 
 #. Which network will be used to access the nova-metadata -- select network
    through which nova-api-metadata service will be available for NSX edge
@@ -103,6 +113,10 @@ Plugin contains the following settings:
 
    If *Public* network selected, then you need to specify you own IP address, netmask
    and gateway. See metadata related settings below.
+
+   .. warning::
+
+      Do not change metadata settings after cluster is deployed!
 
    To enable Nova metadata service, the following settings must be set:
 
