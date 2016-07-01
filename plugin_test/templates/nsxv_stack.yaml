@@ -1,0 +1,80 @@
+heat_template_version: 2015-04-30
+
+description: >
+  HOT template to create a new neutron network plus a router to the public
+  network, and for deploying servers into the new network.
+
+parameters:
+  admin_floating_net:
+    type: string
+    label: admin_floating_net
+    description: ID or name of public network for which floating IP addresses will be allocated
+    default: admin_floating_net
+  image:
+    type: string
+    label: image
+    description: Image to use for servers
+    default: TestVM-VMDK
+
+resources:
+  flavor:
+    type: OS::Nova::Flavor
+    properties:
+      ram: 128
+      disk: 1
+      vcpus: 1
+
+  sg:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      description: desc
+      name: SG1
+      rules: [{"protocol": tcp,  "port_range_max": 22, "direction": ingress, "port_range_min": 22, "ethertype": IPv4}]
+      
+  private_net:
+    type: OS::Neutron::Net
+    properties:
+      name: net_1
+
+  private_subnet:
+    type: OS::Neutron::Subnet
+    properties:
+      network_id: { get_resource: private_net }
+      cidr: 10.0.0.0/29
+      dns_nameservers: [ 8.8.8.8, 8.8.4.4 ]
+
+  router:
+    type: OS::Neutron::Router
+    properties:
+      external_gateway_info:
+        network: { get_param: admin_floating_net }
+
+  router_interface:
+    type: OS::Neutron::RouterInterface
+    properties:
+      router_id: { get_resource: router }
+      subnet_id: { get_resource: private_subnet }
+
+  master_image_server_port:
+    type: OS::Neutron::Port
+    properties:
+      network_id: { get_resource: private_net }
+      security_groups:
+        - default
+        - { get_resource: sg }
+      fixed_ips:
+        - subnet_id: { get_resource: private_subnet }
+
+  master_image_server:
+    type: OS::Nova::Server
+    properties:
+      name: instance_1
+      image: { get_param: image }
+      flavor: { get_resource: flavor }
+      availability_zone: "vcenter"
+      networks:
+        - port: { get_resource: master_image_server_port }
+
+outputs:
+  server_info:
+    value: { get_attr: [master_image_server, show ] }
