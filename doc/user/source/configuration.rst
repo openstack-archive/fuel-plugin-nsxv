@@ -110,11 +110,10 @@ Plugin contains the following settings:
    initialize the metadata infrastructure to access to metadata proxy  service,
    otherwise metadata proxy will not be deployed.
 
-#. Certificate for metadata proxy -- certificate in PEM format that will be
-   used to secure connection between metadata proxy and metadata agent (NSX
-   Edge).
-
-#. Private key -- key that was used to generate aforementioned certificate.
+#. Bypass metadata service certificate verification -- If enabled connection
+   metadata service will be listening HTTP port, otherwise self-signed
+   certificate will generated, installed into edge nodes and nova-api-metadata
+   will be also switched to HTTPS with self-signed certificate.
 
 #. Metadata allowed ports -- comma separated list of TCP port allowed access to
    the metadata proxy, in addition to 80, 443 and 8775.
