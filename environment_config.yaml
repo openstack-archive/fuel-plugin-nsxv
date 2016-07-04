@@ -32,12 +32,21 @@ attributes:
     regex:
       source: '^.+$'
       error: 'You must specify the password'
+  nsxv_insecure:
+    value: true
+    label: "Bypass NSX Manager certificate verification"
+    description: ''
+    weight: 22
+    type: 'checkbox'
   nsxv_ca_file:
     value: ''
     label: 'CA certificate file'
-    description: 'Specify a CA certificate file to use in NSX Manager certificate verification, if empty - certificate will not be verified'
+    description: 'Specify a CA certificate file to use in NSX Manager certificate verification'
     weight: 25
     type: 'file'
+    restrictions:
+      - condition: "settings:nsxv.nsxv_insecure.value == true"
+        action: "hide"
   nsxv_datacenter_moid:
     value: ''
     label: 'Datacenter MoRef ID'

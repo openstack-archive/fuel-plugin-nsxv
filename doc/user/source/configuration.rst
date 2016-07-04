@@ -31,9 +31,20 @@ Plugin contains the following settings:
 
 #. NSX Manager password.
 
+#. Bypass NSX Manager certificate verification -- if enabled then HTTPS
+   connection will not be verified. Otherwise two options are available:
+
+   * setting "CA certificate file" appear below making it possible to upload CA
+     certificate that issued NSX Manager certificate.
+
+   * no CA certificate provided, then NSX Manager certificate will be verified
+     against CA certificate bundle that comes by default within OpenStack
+     controller node operating system.
+
 #. CA certificate file -- file in PEM format that contains bundle of CA
-   certificates which will be used by Neutron during HTTPS connection to NSX
-   Manager.  If no file is present, then HTTPS connection will not be verified.
+   certificates which will be used by the plugin during NSX Manager certificate
+   verification. If no file is present, then HTTPS connection will not be
+   verified.
 
 #. Datacenter MoRef ID -- ID of Datacenter where NSX Edge nodes will be
    deployed.

@@ -19,7 +19,7 @@ class nsxv (
 
   $ca_filename = try_get_value($settings['nsxv_ca_file'],'name','')
   if empty($ca_filename) {
-    $insecure = true # used in nsx.ini.erb template
+    $insecure = $settings['nsxv_insecure'] # used in nsx.ini.erb template
   } else {
     $insecure = false
     $ca_certificate_content = $settings['nsxv_ca_file']['content']
