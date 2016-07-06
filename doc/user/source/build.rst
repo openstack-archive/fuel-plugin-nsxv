@@ -1,5 +1,5 @@
-How to build the plugin
-=======================
+How to build the plugin from source
+===================================
 
 To build the plugin you first need to install fuel-plugin-builder_ 4.0.0
 
