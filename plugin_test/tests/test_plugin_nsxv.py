@@ -607,6 +607,98 @@ class TestNSXvPlugin(TestBasic):
             cluster_id=cluster_id,
             test_sets=['smoke'])
 
+    @test(depends_on=[SetupEnvironment.prepare_slaves_1],
+          groups=["nsxv_insecure_false"])
+    @log_snapshot_after_test
+    def nsxv_insecure_false(self):
+        """Check that NSXv can configure SSL connection.
+
+        Scenario:
+            1. Upload the plugin to master node.
+            2. Create cluster and provision one controller node.
+            3. Configure NSXv for that cluster.
+            4. Uncheck checkbox 'Bypass NSX Manager certificate verification'.
+            5. Deploy cluster.
+            6. Run OSTF.
+
+        Duration 90 min
+
+        """
+        self.env.revert_snapshot('ready_with_1_slaves')
+
+        self.install_nsxv_plugin()
+
+        # Configure cluster
+        settings = self.get_settings()
+        # Configure cluster
+        cluster_id = self.fuel_web.create_cluster(
+            name=self.__class__.__name__,
+            mode=DEPLOYMENT_MODE,
+            settings=settings,
+            configure_ssl=False)
+
+        # Assign roles to nodes
+        self.fuel_web.update_nodes(
+            cluster_id,
+            {'slave-01': ['controller'], })
+
+        # Configure VMWare vCenter settings
+        self.fuel_web.vcenter_configure(cluster_id)
+
+        self.enable_plugin(cluster_id, {'nsxv_insecure/value': False})
+
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id,
+            test_sets=['smoke'])
+
+    @test(depends_on=[SetupEnvironment.prepare_slaves_1],
+          groups=["nsxv_spoofguard"])
+    @log_snapshot_after_test
+    def nsxv_spoofguard(self):
+        """Check that NSXv can configure SpoofGuard.
+
+        Scenario:
+            1. Upload the plugin to master node.
+            2. Create cluster and provision one controller node.
+            3. Configure NSXv for that cluster.
+            4. Set checkbox 'Enable SpoofGuard'.
+            5. Deploy cluster.
+            6. Run OSTF.
+
+        Duration 90 min
+
+        """
+        self.env.revert_snapshot('ready_with_1_slaves')
+
+        self.install_nsxv_plugin()
+
+        # Configure cluster
+        settings = self.get_settings()
+        # Configure cluster
+        cluster_id = self.fuel_web.create_cluster(
+            name=self.__class__.__name__,
+            mode=DEPLOYMENT_MODE,
+            settings=settings,
+            configure_ssl=False)
+
+        # Assign roles to nodes
+        self.fuel_web.update_nodes(
+            cluster_id,
+            {'slave-01': ['controller'], })
+
+        # Configure VMWare vCenter settings
+        self.fuel_web.vcenter_configure(cluster_id)
+
+        self.enable_plugin(cluster_id, {'nsxv_spoofguard_enabled/value': True})
+
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id,
+            test_sets=['smoke'])
+
     @test(depends_on=[SetupEnvironment.prepare_slaves_9],
           groups=["nsxv_bvt"])
     @log_snapshot_after_test
