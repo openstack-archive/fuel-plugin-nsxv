@@ -443,3 +443,43 @@ Steps
 Expected result
 ###############
 All OSTF are passed.
+
+
+Deploy HOT
+----------
+
+
+ID
+##
+
+nsxv_hot
+
+
+Description
+###########
+
+Template creates flavor, net, security group, instance.
+
+
+Complexity
+##########
+
+smoke
+
+
+Steps
+#####
+
+    1. Deploy cluster with NSXv.
+    2. Copy nsxv_stack.yaml to controller on which heat will be run.
+    3. On controller node run command::
+
+         . ./openrc
+         heat stack-create -f nsxv_stack.yaml teststack
+       Wait for status COMPLETE.
+    4. Run OSTF.
+
+
+Expected result
+###############
+All OSTF are passed.

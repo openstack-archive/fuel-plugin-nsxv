@@ -10,7 +10,7 @@ Setup for system tests
 ID
 ##
 
-nsxv_setup_system
+nsxv_ha_mode
 
 
 Description
