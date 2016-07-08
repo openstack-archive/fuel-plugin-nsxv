@@ -32,6 +32,9 @@ VM_PASS = 'cubswin:)'
 AZ_VCENTER1 = 'vcenter'
 AZ_VCENTER2 = 'vcenter2'
 FLAVOR_NAME = 'm1.micro128'
+CERT_FILE = "plugin_test/certificates/certificate.pem"
+KEY_FILE = "plugin_test/certificates/key.pem"
+CN = "metadata.nsx.local"
 
 
 NSXV_PLUGIN_PATH = os.environ.get('NSXV_PLUGIN_PATH')

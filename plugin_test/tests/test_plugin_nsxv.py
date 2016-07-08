@@ -1787,7 +1787,8 @@ class TestNSXvPlugin(TestBasic):
         command_result = os_conn.execute_through_host(
             remote, fip[0], cmd)
         assert_true(
-            command_result['exit_code'] == 0, "Wget exits with error!")
+            command_result['exit_code'] == 0,
+            "Wget exits with error: {}".format(command_result['stderr']))
         assert_true(
             command_result['stdout'].split('\n')[-1] == 'latest',
             "Wget does not return 'latest' item in stdout")
@@ -1875,7 +1876,8 @@ class TestNSXvPlugin(TestBasic):
         command_result = os_conn.execute_through_host(
             remote, fip[0], cmd)
         assert_true(
-            command_result['exit_code'] == 0, "Wget exits with error!")
+            command_result['exit_code'] == 0,
+            "Wget exits with error: {}".format(command_result['stderr']))
         assert_true(
             command_result['stdout'].split('\n')[-1] == 'latest',
             "Wget does not return 'latest' item in stdout")
@@ -2436,13 +2438,13 @@ class TestNSXvPlugin(TestBasic):
             3. Add admin with 'admin' and 'member' roles.
             4. In tenant 'test' create net1 with subnet1 and subnet2.
             5. Attach both subnets to router.
-            7. In tenant 'test' create security group 'SG_1' and
+            6. In tenant 'test' create security group 'SG_1' and
                add rule that allows ingress icmp and tcp traffic.
-            8. Launch instance in tenant 'test'.
-            9. In default tenant create security group 'SG_1' and
+            7. Launch instance in tenant 'test'.
+            8. In default tenant create security group 'SG_1' and
                add rule that allows ingress icmp and tcp traffic.
-            10. Launch instance in default tenant on default net.
-            11. Verify that VMs on different tenants should not communicate
+            9. Launch instance in default tenant on default net.
+           10. Verify that VMs on different tenants should not communicate
                 between each other. Send icmp ping from VM_1 of admin tenant
                 to VM_2 of test_tenant and vice versa.
 
@@ -2609,3 +2611,204 @@ class TestNSXvPlugin(TestBasic):
             os_conn.delete_instance(vm)
             os_conn.verify_srv_deleted(vm)
             os_conn.disable_nova_service(service)
+
+    @test(depends_on=[SetupEnvironment.prepare_slaves_1],
+          groups=["nsxv_config_ok_metadata_custom_certificate"])
+    @log_snapshot_after_test
+    def nsxv_config_ok_metadata_custom_certificate(self):
+        """Need to check that plugin can access nova-metadata with certificate.
+
+        Scenario:
+            1. Install NSXv plugin.
+            2. Enable plugin on tab Settings -> NSXv plugin.
+            3. Fill the form with corresponding values.
+            4. Unset checkbox "Metadata insecure".
+            5. Generate certificate and upload it into field 'Certificate
+               for metadata proxy'.
+            6. Upload key into field 'Private key'('Private key for metadata
+               certificate').
+            7. Add to field 'Metadata allowed ports' value '443,8775'.
+            8. Deploy cluster.
+            9. Run OSTF.
+            10. Launch instance and run wget command from it.
+
+        Duration 1.5 hours
+
+        """
+        self.env.revert_snapshot('ready_with_1_slaves')
+
+        self.install_nsxv_plugin()
+
+        # Configure cluster
+        settings = self.get_settings()
+        # Configure cluster
+        cluster_id = self.fuel_web.create_cluster(
+            name=self.__class__.__name__,
+            mode=DEPLOYMENT_MODE,
+            settings=settings,
+            configure_ssl=False)
+
+        # Assign roles to nodes
+        self.fuel_web.update_nodes(
+            cluster_id,
+            {'slave-01': ['controller'], })
+
+        # Configure VMWare vCenter settings
+        self.fuel_web.vcenter_configure(cluster_id)
+
+        cert_data = {}
+        with open(pt_settings.CERT_FILE, 'r') as f:
+            cert_data['content'] = f.read()
+            cert_data['name'] = os.path.basename(pt_settings.CERT_FILE)
+        key_data = {}
+        with open(pt_settings.KEY_FILE, 'r') as f:
+            key_data['content'] = f.read()
+            key_data['name'] = os.path.basename(pt_settings.KEY_FILE)
+
+        self.enable_plugin(cluster_id,
+                           {"nsxv_metadata_insecure/value": False,
+                            "nsxv_metadata_service_allowed_ports/value":
+                            "443,8775",
+                            "nsxv_metadata_nova_client_cert/value": cert_data,
+                            "nsxv_metadata_nova_client_priv_key/value":
+                            key_data,
+                            "nsxv_metadata_nova_client_priv_key_pass/value":
+                            "1234"})
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id,
+            test_sets=['smoke'])
+
+        key = 'mgmt_key'
+        common = self.get_common(cluster_id)
+        os_ip = self.fuel_web.get_public_vip(cluster_id)
+        os_conn = os_actions.OpenStackActions(
+            os_ip, SERVTEST_USERNAME,
+            SERVTEST_PASSWORD,
+            SERVTEST_TENANT)
+
+        ext = os_conn.get_network(pt_settings.ADMIN_NET)
+        router = os_conn.get_router_by_name(pt_settings.DEFAULT_ROUTER_NAME)
+
+        common.create_key(key)
+
+        # Create non default network with subnet.
+        logger.info('Create network {}'.format(self.net1))
+        private_net = self.create_network(self.net1['name'])
+        subnet_private = self.create_subnet(private_net, self.net1['cidr'])
+        self.add_subnet_to_router(router['id'], subnet_private['id'])
+        sec_grp = os_conn.create_sec_group_for_ssh()
+        self.create_instances(os_conn,
+                              vm_count=1,
+                              nics=[{'net-id': private_net['id']}],
+                              security_group=sec_grp.name,
+                              key_name=key)
+
+        fip = self.create_and_assign_floating_ip(os_conn=os_conn, ext_net=ext)
+
+        # SSH to instance and wget metadata ip
+        primary_controller = self.fuel_web.get_nailgun_primary_node(
+            self.env.d_env.nodes().slaves[0])
+        remote = self.fuel_web.get_ssh_for_node(
+            primary_controller.name)
+        cmd = "wget  --no-check-certificate -O - https://{}".format(
+            pt_settings.METADATA_IP)
+        command_result = os_conn.execute_through_host(
+            remote, fip[0], cmd)
+        assert_true(
+            command_result['exit_code'] == 0,
+            "Wget exits with error: {}".format(command_result['stderr']))
+        assert_true(
+            command_result['stdout'].split('\n')[-1] == 'latest',
+            "Wget does not return 'latest' item in stdout")
+
+    @test(depends_on=[SetupEnvironment.prepare_slaves_1],
+          groups=["nsxv_config_ok_metadata_self_signed_certificate"])
+    @log_snapshot_after_test
+    def nsxv_config_ok_metadata_self_signed_certificate(self):
+        """Need to check that plugin can access nova-metadata with certificate.
+
+        Scenario:
+            1. Install NSXv plugin.
+            2. Enable plugin on tab Settings -> NSXv plugin.
+            3. Fill the form with corresponding values.
+            4. Unset checkbox "Metadata insecure".
+            7. Deploy cluster.
+            8. Run OSTF.
+            9. Launch instance and run wget command from it.
+
+        Duration 1.5 hours
+
+        """
+        self.env.revert_snapshot('ready_with_1_slaves')
+
+        self.install_nsxv_plugin()
+
+        # Configure cluster
+        settings = self.get_settings()
+        # Configure cluster
+        cluster_id = self.fuel_web.create_cluster(
+            name=self.__class__.__name__,
+            mode=DEPLOYMENT_MODE,
+            settings=settings,
+            configure_ssl=False)
+
+        # Assign roles to nodes
+        self.fuel_web.update_nodes(
+            cluster_id,
+            {'slave-01': ['controller'], })
+
+        # Configure VMWare vCenter settings
+        self.fuel_web.vcenter_configure(cluster_id)
+
+        self.enable_plugin(cluster_id,
+                           {"nsxv_metadata_insecure/value": False})
+        self.fuel_web.deploy_cluster_wait(cluster_id)
+
+        self.fuel_web.run_ostf(
+            cluster_id=cluster_id,
+            test_sets=['smoke'])
+
+        key = 'mgmt_key'
+        common = self.get_common(cluster_id)
+        os_ip = self.fuel_web.get_public_vip(cluster_id)
+        os_conn = os_actions.OpenStackActions(
+            os_ip, SERVTEST_USERNAME,
+            SERVTEST_PASSWORD,
+            SERVTEST_TENANT)
+
+        ext = os_conn.get_network(pt_settings.ADMIN_NET)
+        router = os_conn.get_router_by_name(pt_settings.DEFAULT_ROUTER_NAME)
+
+        common.create_key(key)
+
+        # Create non default network with subnet.
+        logger.info('Create network {}'.format(self.net1))
+        private_net = self.create_network(self.net1['name'])
+        subnet_private = self.create_subnet(private_net, self.net1['cidr'])
+        self.add_subnet_to_router(router['id'], subnet_private['id'])
+        sec_grp = os_conn.create_sec_group_for_ssh()
+        self.create_instances(os_conn,
+                              vm_count=1,
+                              nics=[{'net-id': private_net['id']}],
+                              security_group=sec_grp.name,
+                              key_name=key)
+
+        fip = self.create_and_assign_floating_ip(os_conn=os_conn, ext_net=ext)
+
+        # SSH to instance and wget metadata ip
+        primary_controller = self.fuel_web.get_nailgun_primary_node(
+            self.env.d_env.nodes().slaves[0])
+        remote = self.fuel_web.get_ssh_for_node(
+            primary_controller.name)
+        cmd = "wget --no-check-certificate -O - https://{}".format(
+            pt_settings.METADATA_IP)
+        command_result = os_conn.execute_through_host(
+            remote, fip[0], cmd)
+        assert_true(
+            command_result['exit_code'] == 0,
+            "Wget exits with error: {}".format(command_result['stderr']))
+        assert_true(
+            command_result['stdout'].split('\n')[-1] == 'latest',
+            "Wget does not return 'latest' item in stdout")
