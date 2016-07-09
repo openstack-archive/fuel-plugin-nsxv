@@ -75,3 +75,8 @@ Ironic support
 --------------
 
 Ironic is not supported.
+
+Ceilometer support
+------------------
+
+Ceilometer is not supported.

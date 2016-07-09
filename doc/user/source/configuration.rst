@@ -10,7 +10,7 @@ settings are shown on the screenshot below:
 
 Several plugins input fields refer to MoRef ID (Managed Object Reference ID),
 these object IDs can be obtained via Managed Object Browser which is located on
-the vCenter host, e.g. https://hostname.yourdomain.org/mob
+the vCenter host, e.g. https://<vcenter_host>/mob
 
 Plugin contains the following settings:
 
@@ -61,7 +61,7 @@ Plugin contains the following settings:
    .. note::
 
       This ID can be fetched using NSX Manager API
-      https://nsx-manager.yourdomain.org/api/2.0/vdn/scopes
+      https://<nsx_manager_host>/api/2.0/vdn/scopes
 
 #. Distributed virtual switch MoRef ID -- ID of vSwitch connected to Edge
    cluster.
