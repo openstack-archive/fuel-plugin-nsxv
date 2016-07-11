@@ -311,9 +311,48 @@ Steps
 #####
 
     1. Install NSXv plugin.
-    2. Enable plugin on tab Settings -> NSXv plugin.
+    2. Enable plugin on tab Networks -> NSXv plugin.
     3. Fill the form with corresponding values.
     4. Set checkbox 'Enable HA for NSX Edges'.
+    5. Deploy cluster with one controller.
+    6. Run OSTF.
+
+
+Expected result
+###############
+
+Cluster should be deployed and all OSTF test cases should be passed.
+
+
+Check option 'Bypass NSX Manager certificate verification' works correct
+------------------------------------------------------------------------
+
+
+ID
+##
+
+nsxv_insecure_false
+
+
+Description
+###########
+
+Check that insecure checkbox functions properly.
+
+
+Complexity
+##########
+
+core
+
+
+Steps
+#####
+
+    1. Install NSXv plugin.
+    2. Enable plugin on tab Networks -> NSXv plugin.
+    3. Fill the form with corresponding values.
+    4. Uncheck checkbox 'Bypass NSX Manager certificate verification'.
     5. Deploy cluster with one controller.
     6. Run OSTF.
 
@@ -350,7 +389,7 @@ Steps
 #####
 
     1. Install NSXv plugin.
-    2. Enable plugin on tab Settings -> NSXv plugin.
+    2. Enable plugin on tab Networks -> NSXv plugin.
     3. Fill the form with corresponding values.
     4. Do all things that are necessary to provide interoperability of NSXv plugin and NSX Manager with certificate.
     5. Check Additional settings. Fill the form with corresponding values. Save settings by pressing the button.
@@ -437,6 +476,46 @@ Steps
     1. Install and configure nsxv plugin.
     2. Specify additional parameter tenant_router_types with value 'exclusive'.
     3. Deploy cluster.
+    4. Run OSTF.
+
+
+Expected result
+###############
+All OSTF are passed.
+
+
+Deploy HOT
+----------
+
+
+ID
+##
+
+nsxv_hot
+
+
+Description
+###########
+
+Template creates flavor, net, security group, instance.
+
+
+Complexity
+##########
+
+smoke
+
+
+Steps
+#####
+
+    1. Deploy cluster with NSXv.
+    2. Copy nsxv_stack.yaml to controller on which heat will be run.
+    3. On controller node run command::
+
+         . ./openrc
+         heat stack-create -f nsxv_stack.yaml teststack
+       Wait for status COMPLETE.
     4. Run OSTF.
 
 

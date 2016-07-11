@@ -17,3 +17,11 @@ Change of ``admin_state_up`` does not affect actual port state
 NSX plugin does not change *admin_state_up* of a port. Even if operator
 executes ``neutron port-update`` command, port will remain in active state, but
 will be reported as ``admin_state_up: False`` by ``neutron port-show`` command.
+
+3 OSTF fails in configuration with ceilometer
+---------------------------------------------
+
+Test nsxv_ceilometer marked as Passed.
+We don't have TestVM image due to disabled 'nova' AZ. So we wish to see these
+tests with TestVM-VMDK image only.
+See `LP1592357 <https://bugs.launchpad.net/fuel-plugin-nsxv/+bug/1592357>`_.
