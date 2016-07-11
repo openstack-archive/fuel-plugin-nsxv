@@ -9,7 +9,7 @@ Installation
 
    .. code-block:: bash
 
-    [root@nailgun ~] fuel plugins --install nsxv-2.0-2.0.0-1.noarch.rpm
+    [root@nailgun ~] fuel plugins --install nsxv-3.0-3.0.0-1.noarch.rpm
 
 
 #. Verify that the plugin is installed successfully:
@@ -19,7 +19,7 @@ Installation
     [root@nailgun ~] fuel plugins
     id | name | version | package_version
     ---|------|---------|----------------
-    1  | nsxv | 2.0.0   | 4.0.0
+    1  | nsxv | 3.0.0   | 4.0.0
 
 After installation plugin can be used for new OpenStack clusters, it is not
 possible to enable plugin on deployed clusters.
@@ -34,6 +34,6 @@ To uninstall plugin run following:
 
 .. code-block:: bash
 
-   [root@nailgun ~] fuel plugins --remove nsxv==2.0.0
+   [root@nailgun ~] fuel plugins --remove nsxv==3.0.0
 
 .. _Fuel plugin catalog: https://www.mirantis.com/products/openstack-drivers-and-plugins/fuel-plugins

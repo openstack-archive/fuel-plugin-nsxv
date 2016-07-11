@@ -1,14 +1,13 @@
 Limitations
 ===========
 
-Nested clusters are not supported
+Vcenter cluster names must be unique within the data center
 ---------------------------------
 
 vCenter inventory allows user to form hierarchy by organizing vSphere entities
 into folders. Clusters by default are created on first level of hierarchy, then
-they can be put into folders. Plugin supports clusters that are located on
-first level of hierarchy, if you have cluster inside folder that you want to
-use it for OpenStack you have to put it on first level of hierarchy.
+they can be put into folders. Plugin supports the clusters that are located on
+all levels of the hierarchy, thus cluster names must be unique.
 
 Incompatible roles are explicitly hidden
 ----------------------------------------
