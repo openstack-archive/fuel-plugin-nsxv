@@ -10,7 +10,7 @@ Setup for system tests
 ID
 ##
 
-nsxv_setup_system
+nsxv_ha_mode
 
 
 Description
@@ -1087,7 +1087,7 @@ Steps
 #####
 
     1. Install NSXv plugin.
-    2. Enable plugin on tab Settings -> NSXv plugin.
+    2. Enable plugin on tab Networks -> NSXv plugin.
     3. Fill the form with corresponding values.
     4. Unset checkbox "Metadata insecure".
     5. Generate certificate and upload it into field 'Certificate for metadata proxy'.
