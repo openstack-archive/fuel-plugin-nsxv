@@ -5,7 +5,7 @@ To build the plugin you first need to install fuel-plugin-builder_ 4.0.0
 
 .. code-block:: bash
 
-  $ pip install fuel-plugin-builder==4.0.0
+  $ pip install fuel-plugin-builder==4.1.0
 
 After that you can build the plugin:
 
@@ -23,6 +23,14 @@ upstream fuel-library_ puppet modules that plugin use. It can be installed via
 
   $ gem install librarian-puppet
 
+or if you are using ubuntu linux - you can install it from the repository:
+
+.. code-block:: bash
+
+  $ apt-get install librarian-puppet
+
+and build plugin:
+
 .. code-block:: bash
 
   $ fpb --build .
@@ -34,7 +42,7 @@ upload to Fuel master node:
 
   $ ls nsxv-*.rpm
 
-  nsxv-2.0-2.0.0-1.noarch.rpm
+  nsxv-3.0-3.0.0-1.noarch.rpm
 
 .. _fuel-plugin-builder: https://pypi.python.org/pypi/fuel-plugin-builder/4.0.0
 .. _librarian-puppet: http://librarian-puppet.com

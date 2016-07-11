@@ -37,6 +37,9 @@ Summarizing all of these we get 1554 bytes.  Consider increasing MTU on network
 hardware up to 1600 bytes (default MTU value when you are configuring VXLAN on
 ESXi hosts during *Host Preparation* step).
 
+To configure the jumbo frame please look recommendations from here:
+https://kb.vmware.com/selfservice/microsites/search.do?language=en_US&cmd=displayKC&externalId=2093324
+
 Instances usage notes
 ---------------------
 

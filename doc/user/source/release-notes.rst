@@ -12,6 +12,9 @@ Release notes for Fuel NSXv plugin 3.0.0:
     network.
   * LBaaS v2 support gets configured by default.
   * Troubleshooting section was added to plugin guide.
+  * The plugin supports searching vcenter clusters name across a given data center
+    hierarchy.
+  * Add new parameters that were added to Neutron NSX plugin during Mitaka release.
 
 Release notes for Fuel NSXv plugin 2.0.0:
 
