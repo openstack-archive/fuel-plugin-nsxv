@@ -113,6 +113,15 @@ Plugin contains the following settings:
    deployed in active/standby pair on different ESXi hosts.
    Setting change on deployed cluster affects only new Edges.
 
+#. Init metadata infrastructure -- If enabled, instance will attempt to
+   initialize the metadata infrastructure to access to metadata proxy  service,
+   otherwise metadata proxy will not be deployed.
+
+#. Bypass metadata service certificate verification -- If enabled connection
+   metadata service will be listening HTTP port. Otherwise self-signed
+   certificate will be generated, installed into edge nodes and
+   nova-api-metadata, HTTPS will be enabled.
+
 #. Which network will be used to access the nova-metadata -- select network
    through which nova-api-metadata service will be available for NSX edge
    nodes. Currently two options are available *Public* and *Management*
@@ -130,15 +139,6 @@ Plugin contains the following settings:
       Do not change metadata settings after cluster is deployed!
 
    To enable Nova metadata service, the following settings must be set:
-
-#. Init metadata infrastructure -- If enabled, instance will attempt to
-   initialize the metadata infrastructure to access to metadata proxy  service,
-   otherwise metadata proxy will not be deployed.
-
-#. Bypass metadata service certificate verification -- If enabled connection
-   metadata service will be listening HTTP port. Otherwise self-signed
-   certificate will be generated, installed into edge nodes and
-   nova-api-metadata, HTTPS will be enabled.
 
 #. Metadata allowed ports -- comma separated list of TCP port allowed access to
    the metadata proxy, in addition to 80, 443 and 8775.
