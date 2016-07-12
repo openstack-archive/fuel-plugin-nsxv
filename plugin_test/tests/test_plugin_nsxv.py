@@ -756,12 +756,12 @@ class TestNSXvPlugin(TestBasic):
              'slave-03': ['controller'],
              'slave-04': ['compute-vmware'], })
 
-        target_node_1 = self.node_name('slave-04')
+        target_node_2 = self.node_name('slave-04')
 
         # Configure VMWare vCenter settings
         self.fuel_web.vcenter_configure(cluster_id,
                                         multiclusters=True,
-                                        target_node_1=target_node_1)
+                                        target_node_2=target_node_2)
 
         self.enable_plugin(cluster_id=cluster_id)
         self.fuel_web.verify_network(cluster_id)
