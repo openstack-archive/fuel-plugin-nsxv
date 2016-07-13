@@ -2758,7 +2758,7 @@ class TestNSXvPlugin(TestBasic):
             self.env.d_env.nodes().slaves[0])
         remote = self.fuel_web.get_ssh_for_node(
             primary_controller.name)
-        cmd = "wget  --no-check-certificate -O - https://{}".format(
+        cmd = "source /etc/profile; wget  --no-check-certificate -O - https://{}".format(
             pt_settings.METADATA_IP)
         command_result = os_conn.execute_through_host(
             remote, fip[0], cmd)
@@ -2848,7 +2848,7 @@ class TestNSXvPlugin(TestBasic):
             self.env.d_env.nodes().slaves[0])
         remote = self.fuel_web.get_ssh_for_node(
             primary_controller.name)
-        cmd = "wget --no-check-certificate -O - https://{}".format(
+        cmd = "source /etc/profile; wget --no-check-certificate -O - https://{}".format(
             pt_settings.METADATA_IP)
         command_result = os_conn.execute_through_host(
             remote, fip[0], cmd)
