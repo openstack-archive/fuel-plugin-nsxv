@@ -1,8 +1,8 @@
 Usage
 =====
 
-Easiest way to check that plugin works as expected would be trying to create
-network or router using ``neutron`` command line client:
+The easiest way to check that the plugin works as expected is to create a
+network or router using the ``neutron`` command-line tool:
 
 ::
 
@@ -10,20 +10,19 @@ network or router using ``neutron`` command line client:
   root@node-4:~# . openrc
   root@node-4:~# neutron router-create r1
 
-You can monitor plugin actions in ``/var/log/neutron/server.log`` and see how
-edges appear in list of ``Networking & Security -> NSX Edges`` pane in vSphere
-Web Client. If you see error messages check :ref:`Troubleshooting
-<troubleshooting>` section.
-
+You can monitor the plugin actions in ``/var/log/neutron/server.log`` and see
+how edges appear in the list of the ``Networking & Security -> NSX Edges``
+pane in vSphere Web Client. If you see error messages, check the
+:ref:`Troubleshooting <troubleshooting>` section.
 
 VXLAN MTU considerations
 ------------------------
 
 The VXLAN protocol is used for L2 logical switching across ESXi hosts. VXLAN
-adds additional data to the packet, please consider to increase MTU size on
-network equipment that is connected to ESXi hosts.
+adds additional data to the packet. Consider increasing the MTU size on the
+network equipment connected to ESXi hosts.
 
-Consider following calculation when settings MTU size:
+Consider the following calculation when settings the MTU size:
 
 Outer IPv4 header    == 20 bytes
 
@@ -33,63 +32,61 @@ VXLAN header         == 8 bytes
 
 Inner Ethernet frame == 1518 (14 bytes header, 4 bytes 802.1q header, 1500 Payload)
 
-Summarizing all of these we get 1554 bytes.  Consider increasing MTU on network
-hardware up to 1600 bytes (default MTU value when you are configuring VXLAN on
-ESXi hosts during *Host Preparation* step).
+Summarizing all of these we get 1554 bytes. Consider increasing MTU on the
+network hardware up to 1600 bytes, wich is the default MTU value when you
+configure VXLAN on ESXi hosts at the *Host Preparation* step.
 
-To configure the jumbo frame please look recommendations from here:
+To configure the jumbo frame, check the recommendations from:
 https://kb.vmware.com/selfservice/microsites/search.do?language=en_US&cmd=displayKC&externalId=2093324
 
 Instances usage notes
 ---------------------
 
-Instances that you run in OpenStack cluster with vCenter and NSXv must have
+Instances that you run in an OpenStack cluster with vCenter and NSXv must have
 VMware Tools installed, otherwise there will be no connectivity and security
 groups functionality.
-
 
 Neutron usage notes
 -------------------
 
-
-The only way to create distributed router is to use neutron CLI tool:
+The only way to createa  distributed router is to use the Neutron CLI tool:
 
 .. code-block:: bash
 
   $ neutron router-create dvr --distributed True
 
-Creation of exclusive tenant router is not supported in OpenStack dashboard
-(Horizon).  You can create exclusive router using Neutron CLI tool:
+The creation of an exclusive tenant router is not supported in the OpenStack
+dashboard (Horizon). You can create an exclusive router using Neutron CLI tool:
 
 .. code-block:: bash
 
   $ neutron router-create DbTierRouter-exclusive --router_type exclusive
 
-During creation of external network for tenants you must specify physical
-network (``--provider:physical_network`` parameter) that will be used to carry
-VM traffic into physical network segment.  For Neutron with NSX plugin this
-parameter must be set to MoRef ID of portgroup which provides connectivity with
-physical network to NSX edge nodes.
+During the creation of an external network for tenants, you must specify
+a physical network (the ``--provider:physical_network`` parameter) that
+will be used to carry the VM traffic into the physical network segment. 
+For Neutron with the NSX plugin, this parameter must be set to MoRef ID of
+the portgroup which provides connectivity with the physical network to the
+NSX edge nodes.
 
 .. code-block:: bash
 
   $ neutron net-create External --router:external --provider:physical_network network-222
 
-
 Loadbalancer as a service support
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Starting from version 2.0.0 plugin enables Neutron load balancing functionality
-and enables it in OpenStack dashboard. By default Neutron NSX plugin gets
-configured with LBaaSv2 support.
+Starting from version 2.0.0, the plugin enables the Neutron load balancing
+functionality and enables it in the OpenStack dashboard. By default, the
+Neutron NSX plugin is configured with LBaaSv2 support.
 
 .. note::
 
-  Load balancing functionality requires attachment of an **exclusive** or
-  **distributed** router to the subnet prior to provisioning of an load
+  The load balancing functionality requires attachment of an **exclusive** or
+  **distributed** router to the subnet prior to the provisioning of a load
   balancer.
 
-Create exclusive or distributed router and connect it to subnet.
+Create an exclusive or distributed router and connect it to subnet.
 
 .. code-block:: bash
 
@@ -105,13 +102,14 @@ Create servers and permit HTTP traffic.
   $ neutron security-group-rule-create --protocol tcp --port-range-min 80 \
         --port-range-max 80 default
 
-Create loadbalancer, specify name and subnet where you want to balance traffic.
+Create a loadbalancer, specify a name and a subnet where you want to balance
+the traffic.
 
 .. code-block:: bash
 
   $ neutron lbaas-loadbalancer-create --name lb-www www-subnet
 
-Create listener.
+Create a listener.
 
 .. code-block:: bash
 
@@ -125,7 +123,7 @@ Create a load balancer pool.
   $ neutron lbaas-pool-create --lb-method ROUND_ROBIN --listener www-listener \
         --protocol HTTP --name www-pool
 
-Find out IP addresses of your VMs and create members in pool.
+Find out the IP addresses of your VMs and create members in pool.
 
 .. code-block:: bash
 
@@ -139,7 +137,7 @@ Create a virtual IP address.
   $ neutron lb-vip-create --name lb_vip --subnet-id <private-subnet-id> \
         --protocol-port 80 --protocol HTTP http-pool
 
-Allocate floating IP and associate it with VIP.
+Allocate the floating IP and associate it with VIP.
 
 .. code-block:: bash
 

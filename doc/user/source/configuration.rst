@@ -1,82 +1,85 @@
 Configuration
 =============
 
-Switch to Networks tab of the Fuel web UI and click on *Settings*/*Other*
-section, the plugin checkbox enabled by default. For reasons of clarity not all
-settings are shown on the screenshot below:
+Switch to the guilabel:`Networks` tab of the Fuel web UI and click the
+guilabel:`Settings`/`Other` section. The plugin checkbox is enabled
+by default. The screenshot below shows only the settings in focus:
 
 .. image:: /image/nsxv-settings-filled.png
    :scale: 60 %
 
-Several plugin input fields refer to MoRef ID (Managed Object Reference ID),
-these object IDs can be obtained via Managed Object Browser which is located on
+Several plugin input fields refer to MoRef ID (Managed Object Reference ID);
+these object IDs can be obtained using Managed Object Browser, which is located on
 the vCenter host, e.g. https://<vcenter_host>/mob
 
-Starting from Fuel 9.0 settings on web UI are not disabled and it is possible
-to run deployment process with changed settings against working cluster.  This
-change also impacts plugin settings which means that plugin settings can be
-changed and applied to Neutron. From plugin perspective it is not possible to
-disable specific input fields, below settings that break Neutron operations are
-commented.
+Starting from Fuel 9.0, the settings on the Fuel web UI are not disabled
+and it is possible to run the deployment process with the changed settings
+against a working cluster.
+This change also impacts the plugin settings as they can be changed and
+applied to Neutron. From the plugin perspective, it is not possible to
+disable specific input fields, the settings below that break Neutron
+operations are commented.
 
-Plugin contains the following settings:
+The plugin contains the following settings:
 
 #. NSX Manager hostname (or IP) -- if you are going to use hostname in this
-   textbox be sure that your OpenStack controller will be able to resolve it.
-   Add necessary DNS servers in *Host OS DNS Servers* section.  NSX Manager
-   must be connected to vCenter server which you specified on VMware tab.
+   textbox, ensure that your OpenStack controller can resolve the hostname.
+   Add necessary DNS servers in the guilabel:`Host OS DNS Servers` section.
+   NSX Manager must be connected to the vCenter server specified on
+   the VMware tab.
 
    OpenStack Controller must have L3 connectivity with NSX Manager through
-   Public network.
+   the Public network.
 
 #. NSX Manager username.
 
    .. note::
 
-      In order for Neutron NSX plugin to operate properly account that it uses
-      must have Enterprise administrator role.
+      For the Neutron NSX plugin to operate properly, the account in use
+      must have an Enterprise administrator role.
 
 #. NSX Manager password.
 
-#. Bypass NSX Manager certificate verification -- if enabled then HTTPS
-   connection will not be verified. Otherwise two options are available:
+#. Bypass NSX Manager certificate verification -- if enabled, the HTTPS
+   connection is not verified. Otherwise, the two following options are
+   available:
 
-   * setting "CA certificate file" appear below making it possible to upload CA
-     certificate that issued NSX Manager certificate.
+   * The setting "CA certificate file" appears below making it possible to
+     upload a CA certificate that issued the NSX Manager certificate.
 
-   * no CA certificate provided, then NSX Manager certificate will be verified
-     against CA certificate bundle that comes by default within OpenStack
-     controller node operating system.
+   * With no CA certificate provided, the NSX Manager certificate is verified
+     against the CA certificate bundle that comes by default within the
+     OpenStack controller node operating system.
 
-#. CA certificate file -- file in PEM format that contains bundle of CA
-   certificates which will be used by the plugin during NSX Manager certificate
-   verification. If no file is present, then HTTPS connection will not be
+#. CA certificate file -- a file in PEM format that contains a bundle of CA
+   certificates used by the plugin during the NSX Manager certificate
+   verification. If no file is present, the HTTPS connection is not
    verified.
 
-#. Datacenter MoRef ID -- ID of Datacenter where NSX Edge nodes will be
-   deployed.
+#. Datacenter MoRef ID -- an ID of the Datacenter where the NSX Edge nodes
+   are deployed.
 
-#. Resource pool MoRef ID -- resource pool for NSX Edge nodes deployment.
-   Setting change on deployed cluster affects only new Edges.
+#. Resource pool MoRef ID -- a resource pool for the NSX Edge nodes deployment.
+   Changing this setting on a deployed cluster affects only the new Edges.
 
-#. Datastore MoRef ID -- datastore for NSX Edge nodes. Change of datastore
-   setting on deployed cluster affects only new Edges.
+#. Datastore MoRef ID -- a datastore for NSX Edge nodes. A change of the datastore
+   setting on the deployed cluster affects only the new Edges.
 
-#. External portgroup MoRef ID -- portgroup through which NSX Edge nodes get
-   connectivity with physical network.
+#. External portgroup MoRef ID -- a portgroup through which the NSX Edge nodes get
+   connectivity with the physical network.
 
-#. Transport zone MoRef ID -- transport zone for VXLAN logical networks.
+#. Transport zone MoRef ID -- a transport zone for VXLAN logical networks.
 
    .. note::
 
       This ID can be fetched using NSX Manager API
       https://<nsx_manager_host>/api/2.0/vdn/scopes
 
-#. Distributed virtual switch MoRef ID -- ID of vSwitch connected to Edge
+#. Distributed virtual switch MoRef ID -- ID of vSwitch connected to the Edge
    cluster.
 
-#. NSX backup Edge pool -- size of NSX Edge nodes and size of Edge pool, value
-   must follow format: <edge_type>:[edge_size]:<min_edges>:<max_edges>.
+#. NSX backup Edge pool -- the size of the NSX Edge nodes and the size of Edge
+   pool. The value must be in the format: <edge_type>:[edge_size]:<min_edges>:<max_edges>.
 
    **edge_type** can take the following values: *service* or *vdr* (service and
    distributed edge, respectively).
@@ -86,13 +89,13 @@ Plugin contains the following settings:
 
    NSX *vdr* nodes performs distributed routing and bridging.
 
-   **edge_size** can take following values: *compact*, *large* (default value if
-   omitted), *xlarge*, *quadlarge*.
+   **edge_size** can take the following values: *compact*, *large* (the default
+   value if omitted), *xlarge*, *quadlarge*.
 
-   **min_edges** and **max_edges** defines minimum and maximum amount of NSX
+   **min_edges** and **max_edges** define the minimum and maximum amount of NSX
    Edge nodes in pool.
 
-   Consider following table that describes NSX Edge types:
+   The following table describes the NSX Edge types:
 
    ========= ===================
    Edge size Edge VM parameters
@@ -103,104 +106,108 @@ Plugin contains the following settings:
    xlarge    6 vCPU 8192 MB vRAM
    ========= ===================
 
-   Consider following example values:
+   Example values:
 
    ``service:compact:1:2,vdr:compact:1:3``
 
    ``service:xlarge:2:6,service:large:4:10,vdr:large:2:4``
 
-#. Enable HA for NSX Edges -- if you enable this option NSX Edges will be
+#. Enable HA foan r NSX Edges -- if you enable this option, the NSX Edges will be
    deployed in active/standby pair on different ESXi hosts.
-   Setting change on deployed cluster affects only new Edges.
+   Changing this setting on a deployed cluster affects only the new Edges.
 
-#. Init metadata infrastructure -- If enabled, instance will attempt to
-   initialize the metadata infrastructure to access to metadata proxy  service,
-   otherwise metadata proxy will not be deployed.
+#. Init metadata infrastructure -- if enabled, the instance attempts to
+   initialize the metadata infrastructure to access to metadata proxy service;
+   otherwise, the metadata proxy is not deployed.
 
-#. Bypass metadata service certificate verification -- If enabled connection
-   metadata service will be listening HTTP port. Otherwise self-signed
-   certificate will be generated, installed into edge nodes and
-   nova-api-metadata, HTTPS will be enabled.
+#. Bypass metadata service certificate verification -- if enabled, the connection
+   metadata service listens the HTTP port. Otherwise, a self-signed
+   certificate is generated, installed into the Edge nodes, and
+   nova-api-metadata; HTTPS is enabled.
 
-#. Which network will be used to access the nova-metadata -- select network
-   through which nova-api-metadata service will be available for NSX edge
-   nodes. Currently two options are available *Public* and *Management*
+#. Which network will be used to access the nova-metadata -- select a network
+   through which the nova-api-metadata service will be available for the
+   NSX Edge nodes. Currently two options are available the *Public* and *Management*
    networks.
 
-   If *Management* network selected, then free IP address from management
-   network range for nova-api-metadata will be allocated automatically and
-   you don't need to specify your own IP address, netmask, gateway.
+   If the *Management* network is selected, then the free IP address from the
+   management network range for nova-api-metadata is allocated automatically;
+   you do not need to specify your own IP address, netmask, gateway.
 
-   If *Public* network selected, then you need to specify you own IP address, netmask
-   and gateway. See metadata related settings below.
+   If the *Public* network is selected, then you need to specify you own IP
+   address, netmask, and gateway. See the metadata related settings below.
 
    .. warning::
 
-      Do not change metadata settings after cluster is deployed!
+      Do not change the metadata settings after the cluster is deployed.
 
-   To enable Nova metadata service, the following settings must be set:
+   To enable the Nova metadata service, the following settings must be set:
 
-#. Metadata allowed ports -- comma separated list of TCP port allowed access to
-   the metadata proxy, in addition to 80, 443 and 8775.
+#. Metadata allowed ports -- a comma-separated list of TCP ports allowed access
+   to the metadata proxy in addition to 80, 443 and 8775.
 
-#. Metadata portgroup MoRef ID -- portgroup MoRef ID for metadata proxy service.
-
-#. Metadata proxy IP addresses -- comma separated IP addresses used by Nova
-   metadata proxy service.
-
-#. Management network netmask -- management network netmask for metadata proxy
+#. Metadata portgroup MoRef ID -- a portgroup MoRef ID for the metadata proxy
    service.
 
-#. Management network default gateway -- management network gateway for
+#. Metadata proxy IP addresses -- comma-separated IP addresses used by Nova
    metadata proxy service.
 
-#. Floating IP ranges -- dash separated IP addresses allocation pool from
+#. Management network netmask -- management network netmask for the metadata
+   proxy service.
+
+#. Management network default gateway -- management network gateway for
+   the metadata proxy service.
+
+#. Floating IP ranges -- dash-separated IP addresses allocation pool from
    external network, e.g. "192.168.30.1-192.168.30.200".
 
 #. External network CIDR -- network in CIDR notation that includes floating IP ranges.
 
-#. Gateway -- default gateway for external network, if not defined, first IP address
-   of the network is used.
+#. Gateway -- default gateway for the external network; if not defined, the
+   first IP address of the network is used.
 
 #. Internal network CIDR -- network in CIDR notation for use as internal.
 
-#. DNS for internal network -- comma separated IP addresses of DNS server for
+#. DNS for internal network -- comma-separated IP addresses of DNS server for
    internal network.
 
-   If you tick *Additional settings* checkbox following options will become
-   available for configuration:
+   If you tick the guilabel:`Additional settings` checkbox, the following
+   options will become available for configuration:
 
-#. Instance name servers -- comma separated IP addresses of name servers that
-   will be passed to instance.
+#. Instance name servers -- comma-separated IP addresses of the name servers
+   that are passed to the instance.
 
 #. Task status check interval -- asynchronous task status check interval,
-   default is 2000 (millisecond).
+   the default value is 2000 (millisecond).
 
-#. Maximum tunnels per vnic -- specify maximum amount of tunnels per vnic,
-   possible range of values 1-110 (20 is used if no other value is provided).
+#. Maximum tunnels per vnic -- specify the maximum amount of tunnels per vnic;
+   the possible range of values is 1-110 (20 is used if no other value is
+   provided).
 
 #. API retries -- maximum number of API retries (10 by default).
 
-#. Enable SpoofGuard -- option allows to control behaviour of port-security
-   feature that prevents traffic flow if IP address of VM that was reported by
-   VMware Tools does not match source IP address that is observed in outgoing
-   VM traffic (consider the case when VM was compromised).
+#. Enable SpoofGuard -- the option allows to control the behaviour of
+   the port-security feature that prevents traffic flow if the IP address
+   of the VM that was reported by VMware Tools does not match the source IP
+   address that is observed in outgoing VM traffic (consider the case when
+   VM was compromised).
 
-#. Tenant router types -- ordered list of preferred tenant router types (default
-   value is ``shared, distributed, exclusive``).
+#. Tenant router types -- an ordered list of preferred tenant router types
+   (the default value is ``shared, distributed, exclusive``).
 
    * shared -- multiple shared routers may own one edge VM.
-   * exclusive -- each router own one edge VM.
-   * distributed -- same as exclusive, but edge is created as distributed
-     logical router.  VM traffic get routed via DLR kernel modules on each
+   * exclusive -- each router owns one edge VM.
+   * distributed -- same as exclusive, but edge is created as a distributed
+     logical router. The VM traffic is routed via DLR kernel modules on each
      ESXi host.
 
-#. Exclusive router size -- size of edge for exclusive router
-   (value must be one of *compact*, *large*, *quadlarge* or *xlarge*).
+#. Exclusive router size -- the size of edge forthe  exclusive router
+   (the value must be one of *compact*, *large*, *quadlarge* or *xlarge*).
 
-#. Edge user -- user that will be created on edge VMs for remote login.
+#. Edge user -- the user that will be created on edge VMs for remote login.
 
-#. Edge password -- password for edge VMs.  It must match following rules:
+#. Edge password -- password for edge VMs. The password must match
+   the following rules:
 
    * not less 12 characters (max 255 chars)
    * at least 1 upper case letter
@@ -210,13 +217,13 @@ Plugin contains the following settings:
 
    .. warning::
 
-      Plugin cannot verify that password conforms security policy. If you enter
-      password that does not match policy, Neutron server will be not able to
-      create routers and deployment process will stop, because NSX will not
-      permit creating edge nodes with password that does not match security
-      policy.
+      The plugin cannot verify that password conforms to the security policy.
+      If you enter the password that does not match the policy, Neutron server
+      will be not able to create routers and the deployment process will stop,
+      because NSX cannot permit creating edge nodes with a password that does
+      not match the security policy.
 
-#. DHCP lease time -- DHCP lease time in seconds for VMs. Default value is
+#. DHCP lease time -- DHCP lease time in seconds for VMs. The default value is
    86400 (24 hours).
 
-#. Coordinator URL -- URL for distributed locking coordinator.
+#. Coordinator URL -- URL for the distributed locking coordinator.
