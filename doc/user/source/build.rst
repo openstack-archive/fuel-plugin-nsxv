@@ -1,13 +1,13 @@
 How to build the plugin from source
 ===================================
 
-To build the plugin you first need to install fuel-plugin-builder_ 4.1.0
+To build the plugin, you first need to install fuel-plugin-builder_ 4.1.0
 
 .. code-block:: bash
 
   $ pip install fuel-plugin-builder==4.1.0
 
-After that you can build the plugin:
+Build the plugin:
 
 .. code-block:: bash
 
@@ -15,28 +15,28 @@ After that you can build the plugin:
 
   $ cd fuel-plugin-nsxv/
 
-librarian-puppet_ ruby package is required to be installed. It is used to fetch
-upstream fuel-library_ puppet modules that plugin use. It can be installed via
-*gem* package manager:
+The librarian-puppet_ ruby package is required to be installed. It is used to fetch
+upstream fuel-library_ puppet modules that the plugin uses. It can be installed via
+the *gem* package manager:
 
 .. code-block:: bash
 
   $ gem install librarian-puppet
 
-or if you are using ubuntu linux - you can install it from the repository:
+or if you are using ubuntu linux, you can install it from the repository:
 
 .. code-block:: bash
 
   $ apt-get install librarian-puppet
 
-and build plugin:
+and build the plugin:
 
 .. code-block:: bash
 
   $ fpb --build .
 
-fuel-plugin-builder will produce .rpm package of the plugin which you need to
-upload to Fuel master node:
+fuel-plugin-builder will produce an .rpm package of the plugin which you need to
+upload to the Fuel master node:
 
 .. code-block:: bash
 

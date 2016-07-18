@@ -4,33 +4,35 @@ OpenStack environment notes
 Environment creation
 --------------------
 
-Before start actual deployment process please verify that you vSphere
-infrastructure (vCenter and NSXv) is configured and functions properly,
-Fuel NSXv plugin cannot deploy vSphere infrastructure, it must be up and
-running before OpenStack deployment.
+Before you start the actual deployment, verify that your vSphere
+infrastructure (vCenter and NSXv) is configured and functions properly.
+The Fuel NSXv plugin cannot deploy vSphere infrastructure; The
+vSphere infrastructure must be up and running before the OpenStack deployment.
 
-To use NSXv plugin create new OpenStack environment via the Fuel web UI follow
-these steps:
+To use the NSXv plugin, create a new OpenStack environment using the Fuel web
+UI by doing the following:
 
-#. On *Compute* configuration step tick 'vCenter' checkbox
+#. On the :guilabel:`Compute` configuration step, tick the :guilabel:`vCenter`
+   checkbox:
 
    .. image:: /image/wizard-step1.png
       :scale: 70 %
 
-#. After plugin gets installed it will be possible to use *Neutron with
-   NSXv plugin* at 'Networking Setup' step:
+#. After the plugin installation, use :guilabel:`Neutron with
+   NSXv plugin` at the :guilabel:`Networking Setup` step:
 
    .. image:: /image/wizard-step2.png
       :scale: 70 %
 
-#. Once you get environment created add one or more controller nodes.
+#. Once you get the environment created, add one or more controller nodes.
 
-Pay attention on which interface you assign *Public* network, OpenStack
-controllers must have connectivity with NSX Manager host through *Public*
-network since it is used as default route for packets.
+Pay attention to on which interface you assign the *Public* network. The
+OpenStack controllers must have connectivity with the NSX Manager host
+through the *Public* network since the *Public* network is the default
+route for packets.
 
-During deployment process plugin creates simple network topology for admin
-tenant. It creates provider network which connects tenants with transport
-(physical) network, one internal network and router that is connected to both
-networks.
+During the deployment, the plugin creates a simple network topology for
+the admin tenant. The plugin creates a provider network which connects the
+tenants with the transport (physical) network: one internal network and
+a router that is connected to both networks.
 

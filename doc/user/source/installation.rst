@@ -1,18 +1,18 @@
 Installation
 ============
 
-#. Download plugin .rpm package from the `Fuel plugin catalog`_.
+#. Download the plugin .rpm package from the `Fuel plugin catalog`_.
 
-#. Upload package to Fuel master node.
+#. Upload the package to the Fuel master node.
 
-#. Install the plugin with ``fuel`` command line tool:
+#. Install the plugin with the ``fuel`` command-line tool:
 
    .. code-block:: bash
 
     [root@nailgun ~] fuel plugins --install nsxv-3.0-3.0.0-1.noarch.rpm
 
 
-#. Verify that the plugin is installed successfully:
+#. Verify that the plugin installation is successful:
 
   .. code-block:: bash
 
@@ -21,16 +21,16 @@ Installation
     ---|------|---------|----------------
     1  | nsxv | 3.0.0   | 4.0.0
 
-After installation plugin can be used for new OpenStack clusters, it is not
-possible to enable plugin on deployed clusters.
+After the installation, the plugin can be used on new OpenStack clusters;
+you cannot enable the plugin on the deployed clusters.
 
 Uninstallation
 --------------
 
-Before uninstalling plugin be sure that there no environments left that use the
-plugin, otherwise it is not possible to uninstall it.
+Before uninstalling the plugin, ensure there no environments left that use the
+plugin, otherwise the uninstallation is not possible.
 
-To uninstall plugin run following:
+To uninstall the plugin, run following:
 
 .. code-block:: bash
 
