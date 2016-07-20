@@ -328,23 +328,23 @@ CheckVariables() {
     export NSXV_MGT_NET_MOID=${NSXV_EXTERNAL_NETWORK:?}
   fi
   if [ -z "${NSXV_MGT_NET_PROXY_IPS}" ]; then
-    export NSXV_MGT_NET_PROXY_IPS='172.16.211.99'
+    export NSXV_MGT_NET_PROXY_IPS='172.16.212.99'
   fi
   if [ -z "${NSXV_MGT_NET_PROXY_NETMASK}" ]; then
     export NSXV_MGT_NET_PROXY_NETMASK='255.255.255.0'
   fi
   if [ -z "${NSXV_MGT_NET_DEFAULT_GW}" ]; then
-    export NSXV_MGT_NET_DEFAULT_GW='172.16.211.1'
+    export NSXV_MGT_NET_DEFAULT_GW='172.16.212.1'
   fi
   if [ -z "${NSXV_EDGE_HA}" ]; then
     export NSXV_EDGE_HA='false'
   fi
 
   if [ -z "${NSXV_FLOATING_IP_RANGE}" ]; then
-    export NSXV_FLOATING_IP_RANGE='172.16.211.100-172.16.211.150'
+    export NSXV_FLOATING_IP_RANGE='172.16.212.100-172.16.212.150'
   fi
   if [ -z "${NSXV_FLOATING_NET_CIDR}" ]; then
-    export NSXV_FLOATING_NET_CIDR='172.16.211.0/24'
+    export NSXV_FLOATING_NET_CIDR='172.16.212.0/24'
   fi
   if [ -z "${NSXV_FLOATING_NET_GW}" ]; then
     export NSXV_FLOATING_NET_GW=${NSXV_MGT_NET_DEFAULT_GW:?}
