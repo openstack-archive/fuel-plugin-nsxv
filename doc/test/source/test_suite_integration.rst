@@ -51,5 +51,5 @@ Steps
 Expected result
 ###############
 
-Cluster should be deployed and all OSTF test cases should be passed.
+Cluster should be deployed and all OSTF test cases should be passed (excluding platform tests that require TestVM image).
 
