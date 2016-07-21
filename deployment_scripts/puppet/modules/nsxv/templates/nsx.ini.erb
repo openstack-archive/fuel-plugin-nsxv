@@ -8,7 +8,7 @@ manager_uri = https://<%= settings['nsxv_manager_host'] %>
 insecure = <%= scope.lookupvar('insecure') %>
 
 # (Optional) Specify a CA bundle file to use in verifying the NSXv server certificate.
-<% if not (settings['ca_file']).to_s.strip.empty? -%>
+<% if not (scope.lookupvar('ca_file')).to_s.strip.empty? -%>
 ca_file = <%= scope.lookupvar('ca_file') %>
 <% else -%>
 # ca_file =
