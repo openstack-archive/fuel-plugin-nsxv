@@ -244,3 +244,13 @@ Acceptance criteria
 * Critical and high issues are fixed
 * All required documents are delivered
 * Release notes including a report on the known errors of that release
+
+**********
+Test cases
+**********
+
+.. include:: test_suite_smoke.rst
+.. include:: test_suite_integration.rst
+.. include:: test_suite_scale.rst
+.. include:: test_suite_system.rst
+.. include:: test_suite_failover.rst

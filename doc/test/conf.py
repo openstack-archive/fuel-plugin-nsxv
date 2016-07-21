@@ -44,7 +44,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Fuel NSXv plugin'
-copyright = u'2015, Mirantis Inc.'
+copyright = u'2016, Mirantis Inc.'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -181,8 +181,10 @@ htmlhelp_basename = 'FuelNSXvplugindoc'
 
 # -- Options for LaTeX output ---------------------------------------------
 
-latex_elements = { 'classoptions': ',openany,oneside', 'babel': '\\usepackage[english]{babel}'
-}
+latex_elements = { 'classoptions': ',openany,oneside',
+                   'babel': '\\usepackage[english]{babel}',
+                   'preamble': '\setcounter{tocdepth}{3} '
+                               '\setcounter{secnumdepth}{0}'}
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title,
