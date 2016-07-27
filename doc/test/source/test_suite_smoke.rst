@@ -36,13 +36,13 @@ Expected result
 ###############
 Output::
 
- [root@nailgun ~]# fuel plugins --install nsxv-2.0-2.0.0-1.noarch.rpm
+ [root@nailgun ~]# fuel plugins --install nsxv-3.0-3.0.0-1.noarch.rpm
  Loaded plugins: fastestmirror, priorities
- Examining nsxv-2.0-2.0.0-1.noarch.rpm: nsxv-2.0-2.0.0-1.noarch
- Marking nsxv-2.0-2.0.0-1.noarch.rpm to be installed
+ Examining nsxv-3.0-3.0.0-1.noarch.rpm: nsxv-3.0-3.0.0-1.noarch
+ Marking nsxv-3.0-3.0.0-1.noarch.rpm to be installed
  Resolving Dependencies
  --> Running transaction check
- ---> Package nsxv-2.0.noarch 0:2.0.0-1 will be installed
+ ---> Package nsxv-3.0.noarch 0:3.0.0-1 will be installed
  --> Finished Dependency Resolution
 
  Dependencies Resolved
@@ -50,7 +50,7 @@ Output::
 
   Package Arch Version Repository Size
  Installing:
-  nsxv-2.0 noarch 2.0.0-1 /nsxv-2.0-2.0.0-1.noarch 20 M
+  nsxv-3.0 noarch 3.0.0-1 /nsxv-3.0-3.0.0-1.noarch 20 M
 
  Transaction Summary
  Install  1 Package
@@ -62,15 +62,15 @@ Output::
  Running transaction test
  Transaction test succeeded
  Running transaction
-   Installing : nsxv-2.0-2.0.0-1.noarch 1/1
+   Installing : nsxv-3.0-3.0.0-1.noarch 1/1
    Ssh key file exists, skip generation
-   Verifying  : nsxv-2.0-2.0.0-1.noarch 1/1
+   Verifying  : nsxv-3.0-3.0.0-1.noarch 1/1
 
  Installed:
-   nsxv-2.0.noarch 0:2.0.0-1
+   nsxv-3.0.noarch 0:3.0.0-1
 
  Complete!
- Plugin nsxv-2.0-2.0.0-1.noarch.rpm was successfully installed.
+ Plugin nsxv-3.0-3.0.0-1.noarch.rpm was successfully installed.
 
 Ensure that plugin is installed successfully using cli, run command 'fuel plugins'. Check name, version and package version of plugin.
 
@@ -108,18 +108,18 @@ Expected result
 ###############
 Output::
 
- [root@nailgun ~]# fuel plugins --remove nsxv==2.0.0
+ [root@nailgun ~]# fuel plugins --remove nsxv==3.0.0
  Loaded plugins: fastestmirror, priorities
  Resolving Dependencies
  --> Running transaction check
- ---> Package nsxv-2.0.noarch 0:2.0.0-1 will be erased
+ ---> Package nsxv-3.0.noarch 0:3.0.0-1 will be erased
  --> Finished Dependency Resolution
 
  Dependencies Resolved
 
   Package  Arch  Version Repository Size
  Removing:
-  nsxv-2.0 noarch 2.0.0-1 @/nsxv-2.0-2.0.0-1.noarch 20 M
+  nsxv-3.0 noarch 3.0.0-1 @/nsxv-3.0-3.0.0-1.noarch 20 M
 
  Transaction Summary
  Remove  1 Package
@@ -130,14 +130,14 @@ Output::
  Running transaction test
  Transaction test succeeded
  Running transaction
-   Erasing    : nsxv-2.0-2.0.0-1.noarch 1/1
-   Verifying  : nsxv-2.0-2.0.0-1.noarch 1/1
+   Erasing    : nsxv-3.0-3.0.0-1.noarch 1/1
+   Verifying  : nsxv-3.0-3.0.0-1.noarch 1/1
 
  Removed:
-   nsxv-2.0.noarch 0:2.0.0-1
+   nsxv-3.0.noarch 0:3.0.0-1
 
  Complete!
- Plugin nsxv==2.0.0 was successfully removed.
+ Plugin nsxv==3.0.0 was successfully removed.
 
 Verify that plugin is removed, run command 'fuel plugins'.
 
@@ -218,7 +218,7 @@ Steps
     5. Configure network settings.
     6. Enable and configure NSXv plugin.
     7. Configure settings:
-        * Enable VMWare vCenter/ESXi datastore for images (Glance).
+        * Default
     8. Configure VMware vCenter Settings. Add 1 vSphere cluster and configure Nova Compute instances on controllers.
     9. Deploy cluster.
     10. Run OSTF.

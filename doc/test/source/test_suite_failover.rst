@@ -31,7 +31,7 @@ Steps
     2. Create a new environment with enabled plugin.
     3. Try to delete plugin via cli from master node::
 
-          fuel plugins --remove nsxv==2.0.0
+          fuel plugins --remove nsxv==3.0.0
 
 
 Expected result
@@ -126,4 +126,3 @@ Expected result
 ###############
 
 Cluster should be deployed and all OSTF test cases should be passed. ping should get response.
-
