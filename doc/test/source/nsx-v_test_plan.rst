@@ -1,5 +1,5 @@
 ================================
-Test Plan for NSXv plugin v2.0.0
+Test Plan for NSXv plugin v3.0.0
 ================================
 
 ************
@@ -67,17 +67,17 @@ Product compatibility matrix
      - Version
      - Comment
    * - MOS
-     - 8.0
+     - 9.0
      -
    * - OpenStack release
-     - Liberty with Ubuntu 14.04
+     - Mitaka with Ubuntu 14.04
      -
    * - vSphere
      - 5.5 and 6.0
-     -
+     - 6.0 not tested
    * - NSXv
-     - 6.2.0 and 6.1.4 (not tested)
-     -
+     - 6.2.0 and 6.1.4
+     - 6.1.4 not tested
 
 **************************************
 Evaluation Mission and Test Motivation
@@ -85,7 +85,7 @@ Evaluation Mission and Test Motivation
 
 Project main goal is to build a MOS plugin that integrates a Neutron VMware
 NSX plugin. This will allow to use Neutron for networking in vmware-related
-environments. The plugin must be compatible with the version 8.0 of Mirantis
+environments. The plugin must be compatible with the version 9.0 of Mirantis
 OpenStack and should be tested with software/hardware described in
 `product compatibility matrix`_.
 
