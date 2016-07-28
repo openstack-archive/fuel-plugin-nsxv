@@ -1,7 +1,6 @@
-class nsxv::compute_vmware_nova_config (
-  $neutron_url_timeout = '600',
-) {
+class nsxv::compute_vmware_nova_config {
   include ::nova::params
+  include ::nsxv::params
 
   $neutron_config = hiera_hash('neutron_config')
   $neutron_metadata_proxy_secret = $neutron_config['metadata']['metadata_proxy_shared_secret']
@@ -33,7 +32,7 @@ class nsxv::compute_vmware_nova_config (
     neutron_admin_auth_url    => $admin_auth_url,
     neutron_url               => $neutron_url,
     neutron_ovs_bridge        => '',
-    neutron_url_timeout       => $neutron_url_timeout,
+    neutron_url_timeout       => $::nsxv::params::neutron_url_timeout,
   }
 
   create_resources(nova_config, $nova_parameters)
