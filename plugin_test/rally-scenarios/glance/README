@@ -1,0 +1,4 @@
+Patch rally from root dir to run create_image_and_boot_instance.yaml
+In docker container it could be found in /usr/local/lib/python2.7/dist-packages/rally
+
+patch -p0 < rally.patch

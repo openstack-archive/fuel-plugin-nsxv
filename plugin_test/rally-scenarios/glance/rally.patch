@@ -1,0 +1,17 @@
+diff --git a/rally/plugins/openstack/scenarios/glance/images.py b/rally/plugins/openstack/scenarios/glance/images.py
+index d1ea9e9..a0c79eb 100644
+--- rally/plugins/openstack/scenarios/glance/images.py
++++ rally/plugins/openstack/scenarios/glance/images.py
+@@ -109,8 +109,10 @@ class GlanceImages(utils.GlanceScenario, nova_utils.NovaScenario):
+         :param number_instances: number of Nova servers to boot
+         :param kwargs: optional parameters to create server
+         """
++        az = kwargs.pop('availability_zone', None)
+         image = self._create_image(container_format,
+                                    image_location,
+-                                   disk_format)
++                                   disk_format,
++                                   **kwargs)
+         image_id = image.id
+-        self._boot_servers(image_id, flavor, number_instances, **kwargs)
++        self._boot_servers(image_id, flavor, number_instances, kwargs={'availability_zone': az})

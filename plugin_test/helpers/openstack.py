@@ -18,9 +18,11 @@ from keystoneclient.exceptions import NotFound
 
 from fuelweb_test import logger
 from fuelweb_test import settings as fw_settings
+
 from fuelweb_test.helpers.common import Common
-from helpers.tools import ShowPos
+
 from helpers.tools import find_first
+from helpers.tools import ShowPos
 
 
 def get_openstack_list_paginator(page_size=10):

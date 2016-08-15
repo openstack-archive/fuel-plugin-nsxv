@@ -14,18 +14,21 @@ under the License.
 """
 
 import os
-import time
 import paramiko
+import time
 
 from devops.error import TimeoutError
 from devops.helpers.helpers import wait
 from proboscis import test
+
 from proboscis.asserts import assert_false
 from proboscis.asserts import assert_true
 
 from fuelweb_test import logger
+
 from fuelweb_test.helpers import os_actions
 from fuelweb_test.helpers import utils
+
 from fuelweb_test.helpers.common import Common
 from fuelweb_test.helpers.decorators import log_snapshot_after_test
 from fuelweb_test.settings import DEPLOYMENT_MODE
@@ -36,6 +39,7 @@ from fuelweb_test.settings import SERVTEST_USERNAME
 from fuelweb_test.tests.base_test_case import SetupEnvironment
 from fuelweb_test.tests.base_test_case import TestBasic
 from helpers import settings as pt_settings  # Plugin Tests Settings
+
 from helpers.openstack import HopenStack
 
 
