@@ -10,7 +10,7 @@
           tenants: {{ compute * 2 }}
           users_per_tenant: 3
         images:
-          image_url: "http://172.18.170.69:5000/distr/nsx/tcl.vmdk"
+          image_url: {{ image_link }}
           image_type: "vmdk"
           image_container: "bare"
           images_per_tenant: 3
