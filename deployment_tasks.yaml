@@ -16,7 +16,7 @@
   requires: [globals]
   parameters:
     puppet_manifest: puppet/manifests/gem-install.pp
-    puppet_modules: puppet/modules
+    puppet_modules: puppet/modules:/etc/puppet/modules
     timeout: 300
 - id: compute-vmware-nova-config
   version: 2.0.0
@@ -58,7 +58,7 @@
   requires: [openstack-network-server-nova]
   parameters:
     puppet_manifest: puppet/manifests/nsxv-config.pp
-    puppet_modules: puppet/modules
+    puppet_modules: puppet/modules:/etc/puppet/modules
     timeout: 300
 - id: openstack-network-neutron-policy
   version: 2.0.0
