@@ -14,8 +14,8 @@ The plugin supports VMware NSX 6.1.3, 6.1.4, 6.2.1.
 
 Plugin versions:
 
-* 3.x.x series is compatible with Fuel 9.0. Tests were performed on the plugin
-  v3.0 with VMware NSX 6.2.0 and vCenter 5.5.
+* 3.x.x series is compatible with Fuel 9.0 and 9.1. Tests were performed on the
+  plugin v3.0 with VMware NSX 6.2.0 and vCenter 5.5.
 
 * 2.x.x series is compatible with Fuel 8.0. Tests were performed on the plugin
   v2.0 with  VMware NSX 6.2.0 and vCenter 5.5.

@@ -1,6 +1,10 @@
 Release notes
 =============
 
+Release notes for Fuel NSXv plugin 3.0.1:
+
+  * Plugin is compatible with Fuel 9.1.
+
 Release notes for Fuel NSXv plugin 3.0.0:
 
   * Plugin is compatible with Fuel 9.0.

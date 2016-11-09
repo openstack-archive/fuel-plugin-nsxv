@@ -3,7 +3,7 @@ name: nsxv
 # Human-readable name for your plugin
 title: NSXv plugin
 # Plugin version
-version: 3.0.0
+version: 3.0.1
 # Description
 description: NSXv plugin for Fuel allows to integrate Mirantis OpenStack with VMware NSXv network virtualization platform.
 # Required fuel version
