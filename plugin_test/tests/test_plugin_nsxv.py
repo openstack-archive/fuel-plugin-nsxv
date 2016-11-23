@@ -44,8 +44,8 @@ class TestNSXvPlugin(TestBasic):
     """Here are automated tests from test plan that has mark 'Automated'."""
 
     _common = None
-    plugin_name = 'nsxv'
-    plugin_version = '3.0.0'
+    plugin_name = os.getenv(NSXV_PLUGIN_NAME,'nsxv')
+    plugin_version = os.getenv(NSXV_PLUGIN_VERSION,'3.0.1')
 
     net1 = {'name': 'net_1', 'cidr': '192.168.112.0/24'}
     net2 = {'name': 'net_2', 'cidr': '192.168.113.0/24'}
