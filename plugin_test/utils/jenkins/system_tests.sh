@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
 # functions
@@ -562,14 +562,16 @@ RunTest() {
 
     clean_old_bridges
 
+    export PLUGIN_WORKSPACE="${WORKSPACE/\/fuel-qa}/plugin_test"
+    export WORKSPACE="${PLUGIN_WORKSPACE}/fuel-qa"
+    export PYTHONPATH="${PYTHONPATH:+${PYTHONPATH}:}${WORKSPACE}:${PLUGIN_WORKSPACE}"
+
     # run python test set to create environments, deploy and test product
     if [ "${DRY_RUN}" = "yes" ]; then
         echo export PYTHONPATH="${PYTHONPATH:+${PYTHONPATH}:}${WORKSPACE}"
         echo python plugin_test/run_tests.py -q --nologcapture --with-xunit ${OPTS}
     else
-        export PYTHONPATH="${PYTHONPATH:+${PYTHONPATH}:}${WORKSPACE}"
-        echo ${PYTHONPATH}
-        python plugin_test/run_tests.py -q --nologcapture --with-xunit ${OPTS} &
+        python $PLUGIN_WORKSPACE/run_tests.py -q --nologcapture --with-xunit ${OPTS} &
 
     fi
 
