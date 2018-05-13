@@ -44,6 +44,6 @@ upload to the Fuel master node:
 
   nsxv-3.0-3.0.0-1.noarch.rpm
 
-.. _fuel-plugin-builder: https://pypi.python.org/pypi/fuel-plugin-builder/4.0.0
+.. _fuel-plugin-builder: https://pypi.org/project/fuel-plugin-builder/4.0.0
 .. _librarian-puppet: http://librarian-puppet.com
 .. _fuel-library: https://github.com/openstack/fuel-library
